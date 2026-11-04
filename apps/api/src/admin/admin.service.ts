@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderStatus, Prisma, ProductStatus } from '@prisma/client';
 
+import { Locale, pickTranslation } from '../common/utils/locale';
 import { PrismaService } from '../prisma/prisma.service';
 
 const LOW_STOCK_THRESHOLD = 5;
@@ -10,7 +11,7 @@ const LOW_STOCK_THRESHOLD = 5;
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async dashboard(days: number) {
+  async dashboard(days: number, locale: Locale) {
     const since = new Date();
     since.setUTCHours(0, 0, 0, 0);
     since.setUTCDate(since.getUTCDate() - (days - 1));
@@ -52,7 +53,7 @@ export class AdminService {
           id: true,
           sku: true,
           stockQuantity: true,
-          translations: { where: { locale: 'ru' }, select: { name: true } },
+          translations: { select: { locale: true, name: true } },
         },
         orderBy: { stockQuantity: 'asc' },
         take: 10,
@@ -136,7 +137,7 @@ export class AdminService {
       lowStock: lowStock.map((p) => ({
         id: p.id,
         sku: p.sku,
-        name: p.translations[0]?.name ?? p.sku,
+        name: pickTranslation(p.translations, locale)?.name ?? p.sku,
         stockQuantity: p.stockQuantity,
       })),
       latestNewOrders: latestOrders,

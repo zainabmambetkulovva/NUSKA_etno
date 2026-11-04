@@ -5,7 +5,7 @@ import { DEFAULT_LOCALE, isLocale, Locale } from '../utils/locale';
 
 /**
  * Resolves the content language of a request:
- * `?locale=` → `X-Locale` header → `Accept-Language` → 'ru'.
+ * `?locale=` → `X-Locale` header → `Accept-Language` → 'ky' (default).
  */
 export const RequestLocale = createParamDecorator(
   (_data: unknown, context: ExecutionContext): Locale => {

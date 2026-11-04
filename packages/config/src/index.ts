@@ -2,9 +2,9 @@
 // Secrets (DATABASE_URL, JWT secrets) are read only by the API from its own
 // environment and must never get a fallback value here.
 
-export const SUPPORTED_LOCALES = ['ru', 'ky'] as const;
+export const SUPPORTED_LOCALES = ['ky', 'ru'] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'ru';
+export const DEFAULT_LOCALE: Locale = 'ky';
 
 export const DEFAULT_CURRENCY = 'KGS';
 

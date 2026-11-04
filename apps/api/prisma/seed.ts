@@ -3,7 +3,8 @@
  *
  * Rules (TZ §6.2, §26, DATABASE.md §20):
  * - Prices come from the company's initial price list.
- * - Nothing the company has not provided is invented: no weights, volumes,
+ * - Nothing the company has not provided is invented: no weights, volumes
+ *   (except Нават 0.5 / 0.6 / 0.7 л, confirmed by the company),
  *   ingredients, storage conditions, descriptions, stock levels, addresses,
  *   phone numbers or opening hours. Such fields stay empty.
  * - The pickup location is explicitly marked as DEMO.
@@ -78,6 +79,8 @@ const products: {
   priceSom: number;
   type: ProductType;
   categorySlugs: string[];
+  /** Volume in litres, confirmed by the company (Нават 0.5 / 0.6 / 0.7 л). */
+  volumeLiters?: number;
 }[] = [
   {
     sku: 'NAVAT-0.5',
@@ -86,6 +89,8 @@ const products: {
     priceSom: 100,
     type: ProductType.FOOD,
     categorySlugs: ['national-sweets'],
+
+    volumeLiters: 0.5,
   },
   {
     sku: 'NAVAT-0.6',
@@ -94,6 +99,8 @@ const products: {
     priceSom: 115,
     type: ProductType.FOOD,
     categorySlugs: ['national-sweets'],
+
+    volumeLiters: 0.6,
   },
   {
     sku: 'NAVAT-0.7',
@@ -102,6 +109,8 @@ const products: {
     priceSom: 145,
     type: ProductType.FOOD,
     categorySlugs: ['national-sweets'],
+
+    volumeLiters: 0.7,
   },
   {
     sku: 'BESH-BARMAK',
@@ -239,6 +248,21 @@ async function seedProducts(categoryIds: Map<string, string>) {
         update: {},
         create: { productId: record.id, locale, name: product.name },
       });
+    }
+
+    if (product.volumeLiters) {
+      // "Литр" / "л" is the same word in Kyrgyz and Russian.
+      const hasUnit = await prisma.productUnit.count({ where: { productId: record.id } });
+      if (!hasUnit) {
+        await prisma.productUnit.create({
+          data: {
+            productId: record.id,
+            unitName: 'Литр',
+            quantityValue: product.volumeLiters,
+            quantityUnit: 'л',
+          },
+        });
+      }
     }
 
     for (const slug of product.categorySlugs) {
@@ -402,7 +426,7 @@ async function seedDemoOrders(
         subtotalAmount: subtotal,
         totalAmount: subtotal,
         currency: 'KGS',
-        locale: 'ru',
+        locale: 'ky',
         customerName,
         customerPhone: '+996000000001', // fictitious demo number
         customerEmail: customer.email,

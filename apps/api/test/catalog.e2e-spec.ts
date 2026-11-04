@@ -40,15 +40,17 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
         data: { deletedAt: new Date() },
       });
 
-      const ru = (await http().get('/api/products').expect(200)).body;
+      const ru = (await http().get('/api/products?locale=ru').expect(200)).body;
       expect(ru.meta.total).toBe(1);
       expect(ru.data[0].name).toBe('Нават');
       const ky = (await http().get('/api/products?locale=ky').expect(200)).body;
       expect(ky.data[0].name).toBe('Нават (ky)');
-      const header = (
-        await http().get('/api/products').set('Accept-Language', 'ky-KG,ky;q=0.9').expect(200)
+      const byDefault = (await http().get('/api/products').expect(200)).body;
+      expect(byDefault.data[0].name).toBe('Нават (ky)'); // Kyrgyz is the default language
+      const byHeader = (
+        await http().get('/api/products').set('Accept-Language', 'ru-RU,ru;q=0.9').expect(200)
       ).body;
-      expect(header.data[0].name).toBe('Нават (ky)');
+      expect(byHeader.data[0].name).toBe('Нават');
 
       await http().get(`/api/products/${deleted.slug}`).expect(404);
     });
@@ -77,23 +79,32 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
 
       const names = (res: request.Response) => res.body.data.map((p: { name: string }) => p.name);
 
-      expect(names(await http().get('/api/products').query({ search: 'НАВАТ' }))).toEqual([
-        'Нават 0.5',
-      ]);
       expect(
-        names(await http().get('/api/products').query({ category: 'sweets', sort: 'price_asc' }))
+        names(await http().get('/api/products').query({ locale: 'ru', search: 'НАВАТ' }))
+      ).toEqual(['Нават 0.5']);
+      expect(
+        names(
+          await http()
+            .get('/api/products')
+            .query({ locale: 'ru', category: 'sweets', sort: 'price_asc' })
+        )
       ).toEqual(['Халва', 'Нават 0.5']);
       expect(
-        names(await http().get('/api/products').query({ category: 'sweets', inStock: 'true' }))
+        names(
+          await http()
+            .get('/api/products')
+            .query({ locale: 'ru', category: 'sweets', inStock: 'true' })
+        )
       ).toEqual(['Нават 0.5']);
-      expect(names(await http().get('/api/products').query({ sort: 'price_desc' }))[0]).toBe(
-        'Кымыз'
-      );
       expect(
-        (await http().get('/api/products').query({ category: 'missing' })).body.meta.total
+        names(await http().get('/api/products').query({ locale: 'ru', sort: 'price_desc' }))[0]
+      ).toBe('Кымыз');
+      expect(
+        (await http().get('/api/products').query({ locale: 'ru', category: 'missing' })).body.meta
+          .total
       ).toBe(0);
-      await http().get('/api/products').query({ sort: 'random' }).expect(422);
-      await http().get('/api/products').query({ limit: 1000 }).expect(422);
+      await http().get('/api/products').query({ locale: 'ru', sort: 'random' }).expect(422);
+      await http().get('/api/products').query({ locale: 'ru', limit: 1000 }).expect(422);
 
       const tree = (await http().get('/api/categories').expect(200)).body;
       const sweetsNode = tree.find((c: { slug: string }) => c.slug === 'sweets');
@@ -154,7 +165,7 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
         })
       ).toBe(1);
 
-      const publicDetail = (await http().get('/api/products/sary-mai').expect(200)).body;
+      const publicDetail = (await http().get('/api/products/sary-mai?locale=ru').expect(200)).body;
       expect(publicDetail.characteristics).toEqual([{ name: 'Вес', value: '500 г' }]);
     });
 

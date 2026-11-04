@@ -6,7 +6,7 @@
 // - Tables and columns: snake_case via @@map / @map.
 // - Primary keys and foreign keys: UUID.
 // - Money: integer amounts in tyiyn (1 som = 100 tyiyn), currency code next to it.
-// - Locales: 'ru' | 'ky' (enforced by CHECK constraints in the migration).
+// - Locales: 'ky' (default) | 'ru' (enforced by CHECK constraints in the migration).
 // - Orders, order items, payments and payment events are never deleted
 //   physically, so their relations use onDelete: Restrict.
 // - CHECK constraints and partial unique indexes that Prisma cannot express
@@ -101,8 +101,8 @@ model User {
   phone           String?
   passwordHash    String    @map("password_hash")
   role            UserRole  @default(USER)
-  /// Preferred interface language: 'ru' | 'ky'. Also used for notifications.
-  locale          String    @default("ru") @db.VarChar(5)
+  /// Preferred interface language: 'ky' | 'ru'. Also used for notifications.
+  locale          String    @default("ky") @db.VarChar(5)
   emailVerifiedAt DateTime? @map("email_verified_at")
   isActive        Boolean   @default(true) @map("is_active")
   deletedAt       DateTime? @map("deleted_at")
@@ -437,7 +437,7 @@ model Order {
   totalAmount           Int         @map("total_amount")
   currency              String      @default("KGS") @db.Char(3)
   /// Locale the order was placed in; used for notifications about it.
-  locale                String      @default("ru") @db.VarChar(5)
+  locale                String      @default("ky") @db.VarChar(5)
   customerName          String      @map("customer_name")
   customerPhone         String      @map("customer_phone")
   customerEmail         String?     @map("customer_email")
@@ -589,7 +589,7 @@ model Notification {
   id             String           @id @default(uuid()) @db.Uuid
   userId         String           @map("user_id") @db.Uuid
   type           NotificationType @default(GENERAL)
-  locale         String           @default("ru") @db.VarChar(5)
+  locale         String           @default("ky") @db.VarChar(5)
   title          String
   message        String
   isRead         Boolean          @default(false) @map("is_read")

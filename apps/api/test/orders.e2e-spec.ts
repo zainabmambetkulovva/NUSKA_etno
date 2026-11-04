@@ -402,7 +402,11 @@ describe('Cart, checkout and orders (e2e)', () => {
 
   it('shows order statistics on the admin dashboard', async () => {
     const pickup = await createPickupLocation(ctx.prisma);
-    const product = await createProduct(ctx.prisma, { name: 'Бал', priceAmount: 23500 });
+    const product = await createProduct(ctx.prisma, {
+      name: 'Бал',
+      nameKy: 'Бал',
+      priceAmount: 23500,
+    });
     const { agent } = await customerWithCart([{ productId: product.id, quantity: 2 }]);
     const order = (await agent.post('/api/orders').send(orderBody(pickup.id)).expect(201)).body;
     await ctx.prisma.order.update({

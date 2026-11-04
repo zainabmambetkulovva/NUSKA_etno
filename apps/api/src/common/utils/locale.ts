@@ -1,6 +1,7 @@
-export const LOCALES = ['ru', 'ky'] as const;
+/** Kyrgyz is the primary language of the site; Russian is the second one. */
+export const LOCALES = ['ky', 'ru'] as const;
 export type Locale = (typeof LOCALES)[number];
-export const DEFAULT_LOCALE: Locale = 'ru';
+export const DEFAULT_LOCALE: Locale = 'ky';
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
