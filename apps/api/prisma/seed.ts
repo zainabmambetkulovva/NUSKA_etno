@@ -1,327 +1,462 @@
-import { PrismaClient } from '@prisma/client';
+/**
+ * NUSKA_etno — development / demo seed.
+ *
+ * Rules (TZ §6.2, §26, DATABASE.md §20):
+ * - Prices come from the company's initial price list.
+ * - Nothing the company has not provided is invented: no weights, volumes,
+ *   ingredients, storage conditions, descriptions, stock levels, addresses,
+ *   phone numbers or opening hours. Such fields stay empty.
+ * - The pickup location is explicitly marked as DEMO.
+ * - Demo account passwords come from env or are generated randomly.
+ * - Kyrgyz category names must be reviewed by an editor before production.
+ *
+ * The seed is idempotent: running it again does not create duplicates.
+ */
+import { randomBytes } from 'node:crypto';
+
+import {
+  OrderStatus,
+  Prisma,
+  PrismaClient,
+  ProductStatus,
+  ProductType,
+  UserRole,
+} from '@prisma/client';
 import { hash } from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-const BCRYPT_ROUNDS = 10;
+const SOM = 100; // prices are stored in tyiyn
+const DEMO_MARK = '[DEMO]';
 
-async function main() {
-  console.log('🌱 Starting database seed...');
+type Locale = 'ru' | 'ky';
+type LocalizedName = Record<Locale, string>;
 
-  // Create test categories
-  const categories = [
-    {
-      slug: 'national-sweets',
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      slug: 'dairy-products',
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      slug: 'traditional-dishes',
-      sortOrder: 3,
-      isActive: true,
-    },
-    {
-      slug: 'meat-products',
-      sortOrder: 4,
-      isActive: true,
-    },
-    {
-      slug: 'natural-honey',
-      sortOrder: 5,
-      isActive: true,
-    },
-  ];
+// ---------------------------------------------------------------------------
+// Categories (TZ §6.1)
+// ---------------------------------------------------------------------------
 
-  for (const cat of categories) {
-    await prisma.category.upsert({
-      where: { slug: cat.slug },
+const categories: { slug: string; sortOrder: number; name: LocalizedName }[] = [
+  {
+    slug: 'national-sweets',
+    sortOrder: 1,
+    name: { ru: 'Национальные сладости', ky: 'Улуттук таттуулар' },
+  },
+  {
+    slug: 'dairy-products',
+    sortOrder: 2,
+    name: { ru: 'Молочные продукты', ky: 'Сүт азыктары' },
+  },
+  {
+    slug: 'traditional-dishes',
+    sortOrder: 3,
+    name: { ru: 'Традиционные блюда', ky: 'Салттуу тамактар' },
+  },
+  {
+    slug: 'meat-products',
+    sortOrder: 4,
+    name: { ru: 'Мясные продукты', ky: 'Эт азыктары' },
+  },
+  {
+    slug: 'natural-honey',
+    sortOrder: 5,
+    name: { ru: 'Натуральный мёд', ky: 'Табигый бал' },
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Products: initial price list (TZ §6.2). Names are used exactly as in the
+// price list for both locales until the company provides translations.
+// Category links are a starting point and must be confirmed by the company;
+// "Керемет шыпаа" is left without a category until its kind is known.
+// ---------------------------------------------------------------------------
+
+const products: {
+  sku: string;
+  slug: string;
+  name: string;
+  priceSom: number;
+  type: ProductType;
+  categorySlugs: string[];
+}[] = [
+  {
+    sku: 'NAVAT-0.5',
+    slug: 'navat-0-5',
+    name: 'Нават 0.5',
+    priceSom: 100,
+    type: ProductType.FOOD,
+    categorySlugs: ['national-sweets'],
+  },
+  {
+    sku: 'NAVAT-0.6',
+    slug: 'navat-0-6',
+    name: 'Нават 0.6',
+    priceSom: 115,
+    type: ProductType.FOOD,
+    categorySlugs: ['national-sweets'],
+  },
+  {
+    sku: 'NAVAT-0.7',
+    slug: 'navat-0-7',
+    name: 'Нават 0.7',
+    priceSom: 145,
+    type: ProductType.FOOD,
+    categorySlugs: ['national-sweets'],
+  },
+  {
+    sku: 'BESH-BARMAK',
+    slug: 'besh-barmak',
+    name: 'Беш бармак',
+    priceSom: 97,
+    type: ProductType.FOOD,
+    categorySlugs: ['traditional-dishes'],
+  },
+  {
+    sku: 'KATTAMA',
+    slug: 'kattama',
+    name: 'Каттама',
+    priceSom: 170,
+    type: ProductType.FOOD,
+    categorySlugs: ['traditional-dishes'],
+  },
+  {
+    sku: 'KEREMET-SHYPAA-CLASSIC',
+    slug: 'keremet-shypaa-klassika',
+    name: 'Керемет шыпаа — классика',
+    priceSom: 65,
+    type: ProductType.FOOD,
+    categorySlugs: [],
+  },
+  {
+    sku: 'KEREMET-SHYPAA-CHYCHYRKANAK',
+    slug: 'keremet-shypaa-chychyrkanak',
+    name: 'Керемет шыпаа — чычырканак менен',
+    priceSom: 85,
+    type: ProductType.FOOD,
+    categorySlugs: [],
+  },
+  {
+    sku: 'KHOLODETS',
+    slug: 'kholodets',
+    name: 'Холодец',
+    priceSom: 110,
+    type: ProductType.FOOD,
+    categorySlugs: ['meat-products'],
+  },
+  {
+    sku: 'KYMYZ',
+    slug: 'kymyz',
+    name: 'Кымыз',
+    priceSom: 300,
+    type: ProductType.BEVERAGE,
+    categorySlugs: ['dairy-products'],
+  },
+  {
+    sku: 'ZHUPKA',
+    slug: 'zhupka',
+    name: 'Жупка',
+    priceSom: 85,
+    type: ProductType.FOOD,
+    categorySlugs: ['traditional-dishes'],
+  },
+  {
+    sku: 'SARY-MAI',
+    slug: 'sary-mai',
+    name: 'Сары май',
+    priceSom: 235,
+    type: ProductType.FOOD,
+    categorySlugs: ['dairy-products'],
+  },
+  {
+    sku: 'BAL',
+    slug: 'bal',
+    name: 'Бал',
+    priceSom: 235,
+    type: ProductType.FOOD,
+    categorySlugs: ['natural-honey'],
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function generatePassword(): string {
+  return randomBytes(12).toString('base64url');
+}
+
+async function seedCategories() {
+  const ids = new Map<string, string>();
+
+  for (const category of categories) {
+    const record = await prisma.category.upsert({
+      where: { slug: category.slug },
       update: {},
-      create: {
-        slug: cat.slug,
-        sortOrder: cat.sortOrder,
-        isActive: cat.isActive,
-        translations: {
-          create: [
-            {
-              locale: 'ru',
-              name: cat.slug.replace('-', ' '),
-              description: `Категория ${cat.slug.replace('-', ' ')}`,
-            },
-            {
-              locale: 'ky',
-              name: cat.slug.replace('-', ''),
-              description: `${cat.slug.replace('-', '')} тоби`,
-            },
-          ],
-        },
-      },
+      create: { slug: category.slug, sortOrder: category.sortOrder, isActive: true },
     });
+
+    for (const locale of ['ru', 'ky'] as const) {
+      await prisma.categoryTranslation.upsert({
+        where: { categoryId_locale: { categoryId: record.id, locale } },
+        update: {},
+        create: { categoryId: record.id, locale, name: category.name[locale] },
+      });
+    }
+
+    ids.set(category.slug, record.id);
   }
 
-  console.log('✅ Categories seeded');
+  console.log(`✅ Categories: ${ids.size}`);
+  return ids;
+}
 
-  // Create test products with prices from TZ
-  const products = [
-    {
-      sku: 'NAVAT-05',
-      slug: 'navat-0-5',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 10000, // 100 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 100,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 1,
-    },
-    {
-      sku: 'NAVAT-06',
-      slug: 'navat-0-6',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 11500, // 115 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 80,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 2,
-    },
-    {
-      sku: 'NAVAT-07',
-      slug: 'navat-0-7',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 14500, // 145 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 60,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 3,
-    },
-    {
-      sku: 'BESH-BARMAC',
-      slug: 'besh-barmac',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 9700, // 97 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 50,
-      trackInventory: true,
-      isFeatured: false,
-      sortOrder: 4,
-    },
-    {
-      sku: 'KATTAMA',
-      slug: 'kattama',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 17000, // 170 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 40,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 5,
-    },
-    {
-      sku: 'KEREMET-SHYPAA-CLASSIC',
-      slug: 'keremet-shypaa-classic',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 6500, // 65 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 70,
-      trackInventory: true,
-      isFeatured: false,
-      sortOrder: 6,
-    },
-    {
-      sku: 'KEREMET-SHYPAA-CHYCHYRKANAK',
-      slug: 'keremet-shypaa-chychyrkanak',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 8500, // 85 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 60,
-      trackInventory: true,
-      isFeatured: false,
-      sortOrder: 7,
-    },
-    {
-      sku: 'HOLADETS',
-      slug: 'holadets',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 11000, // 110 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 30,
-      trackInventory: true,
-      isFeatured: false,
-      sortOrder: 8,
-    },
-    {
-      sku: 'KYMYZ',
-      slug: 'kymyz',
-      type: 'BEVERAGE',
-      status: 'ACTIVE',
-      priceAmount: 30000, // 300 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 20,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 9,
-    },
-    {
-      sku: 'ZHUPKA',
-      slug: 'zhupka',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 8500, // 85 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 45,
-      trackInventory: true,
-      isFeatured: false,
-      sortOrder: 10,
-    },
-    {
-      sku: 'SARY-MAY',
-      slug: 'sary-may',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 23500, // 235 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 35,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 11,
-    },
-    {
-      sku: 'BAL',
-      slug: 'bal',
-      type: 'FOOD',
-      status: 'ACTIVE',
-      priceAmount: 23500, // 235 som in tiyn
-      currency: 'KGS',
-      stockQuantity: 25,
-      trackInventory: true,
-      isFeatured: true,
-      sortOrder: 12,
-    },
-  ];
+async function seedProducts(categoryIds: Map<string, string>) {
+  const records = new Map<string, { id: string; sku: string; name: string; priceAmount: number }>();
 
-  for (const product of products) {
-    const createdProduct = await prisma.product.upsert({
+  for (const [index, product] of products.entries()) {
+    const record = await prisma.product.upsert({
       where: { sku: product.sku },
       update: {},
       create: {
-        ...product,
-        translations: {
-          create: [
-            {
-              locale: 'ru',
-              name: product.slug.replace(/-/g, ' '),
-              shortDescription: `Натуральный кыргызский продукт ${product.slug.replace(/-/g, ' ')}`,
-              description: `Премиальный натуральный кыргызский продукт ${product.slug.replace(/-/g, '')}.\n\nИзготовлен по традиционным рецептам с использованием натуральных ингредиентов.\n\nКачество, которое вы чувствуете в каждом bite.`,
-              ingredients: 'Натуральные ингредиенты',
-              storageInstructions: 'Хранить при температуре не выше +25°C и относительной влажности не более 75%',
-            },
-            {
-              locale: 'ky',
-              name: product.slug.replace(/-/g, ' '),
-              shortDescription: `Кыргыздин натуралдык продукту ${product.slug.replace(/-/g, ' ')}`,
-              description: `Premium天然的 кыргыз продукту ${product.slug.replace(/-/g, '')}.\n\nАнанын традициялары боюнча жасалган, натуралдык заттардан даярдалган.\n\nАр бир biteде сезип көрө турган сапат.`,
-              ingredients: 'Натуралдык заттар',
-              storageInstructions: 'Температура +25°C жогору эмес жана суюктук 75% чактыгында сактоо',
-            },
-          ],
-        },
-        units: {
-          create: [
-            {
-              unitName: 'Штука',
-              quantityValue: 1,
-              quantityUnit: 'шт',
-            },
-          ],
-        },
+        sku: product.sku,
+        slug: product.slug,
+        type: product.type,
+        status: ProductStatus.ACTIVE,
+        priceAmount: product.priceSom * SOM,
+        currency: 'KGS',
+        // Real stock levels are not known yet (TZ §26). Inventory tracking is
+        // switched on per product in the admin panel once stock is entered.
+        stockQuantity: 0,
+        trackInventory: false,
+        isFeatured: false,
+        sortOrder: index + 1,
       },
     });
 
-    console.log(`✅ Product created: ${createdProduct.sku}`);
+    for (const locale of ['ru', 'ky'] as const) {
+      await prisma.productTranslation.upsert({
+        where: { productId_locale: { productId: record.id, locale } },
+        update: {},
+        create: { productId: record.id, locale, name: product.name },
+      });
+    }
+
+    for (const slug of product.categorySlugs) {
+      const categoryId = categoryIds.get(slug);
+      if (!categoryId) throw new Error(`Unknown category slug: ${slug}`);
+      await prisma.productCategory.upsert({
+        where: { productId_categoryId: { productId: record.id, categoryId } },
+        update: {},
+        create: { productId: record.id, categoryId },
+      });
+    }
+
+    records.set(product.sku, {
+      id: record.id,
+      sku: record.sku,
+      name: product.name,
+      priceAmount: record.priceAmount,
+    });
   }
 
-  console.log('✅ Products seeded');
+  console.log(`✅ Products: ${records.size}`);
+  return records;
+}
 
-  // Create pickup locations
-  const pickupLocations = [
-    {
-      name: 'NUSKA_etno — Главная точка',
-      address: 'г. Бишкек, ул. Алиева, 123',
-      description: 'Основная точка самовывоза. Работаем с 9:00 до 20:00.',
-      phone: '+996 555 123 456',
+async function seedPickupLocation() {
+  const name = `${DEMO_MARK} Точка самовывоза`;
+  const existing = await prisma.pickupLocation.findFirst({ where: { name } });
+  if (existing) return existing;
+
+  const location = await prisma.pickupLocation.create({
+    data: {
+      name,
+      address: `${DEMO_MARK} Адрес будет предоставлен компанией`,
+      description: 'Демонстрационные данные для разработки. Заменить реальными перед запуском.',
       isActive: true,
+      sortOrder: 1,
+    },
+  });
+  console.log('✅ Pickup location (demo) created');
+  return location;
+}
+
+async function seedUser(params: {
+  email: string;
+  password: string | undefined;
+  role: UserRole;
+  firstName: string;
+  lastName: string;
+}) {
+  const email = params.email.trim().toLowerCase();
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    console.log(`ℹ️  User exists, left unchanged: ${email}`);
+    return existing;
+  }
+
+  const password = params.password || generatePassword();
+  const rounds = Number(process.env.BCRYPT_ROUNDS) || 12;
+  const user = await prisma.user.create({
+    data: {
+      email,
+      passwordHash: await hash(password, rounds),
+      role: params.role,
+      firstName: params.firstName,
+      lastName: params.lastName,
+      emailVerifiedAt: new Date(),
+    },
+  });
+
+  if (params.password) {
+    console.log(`✅ ${params.role} created: ${email} (password from env)`);
+  } else {
+    console.log(`✅ ${params.role} created: ${email} / generated password: ${password}`);
+    console.log('   Save it now — it is not stored anywhere in plain text.');
+  }
+  return user;
+}
+
+async function seedDemoOrders(
+  customer: { id: string; firstName: string | null; lastName: string | null; email: string },
+  pickup: { id: string; name: string; address: string },
+  catalog: Map<string, { id: string; sku: string; name: string; priceAmount: number }>
+) {
+  const existing = await prisma.order.count({ where: { userId: customer.id } });
+  if (existing > 0) {
+    console.log('ℹ️  Demo orders already exist, skipped');
+    return;
+  }
+
+  const day = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  const demoOrders: {
+    items: { sku: string; quantity: number }[];
+    path: OrderStatus[];
+    createdAt: Date;
+    comment?: string;
+  }[] = [
+    {
+      items: [
+        { sku: 'NAVAT-0.5', quantity: 2 },
+        { sku: 'KYMYZ', quantity: 1 },
+      ],
+      path: [
+        OrderStatus.PENDING,
+        OrderStatus.CONFIRMED,
+        OrderStatus.PREPARING,
+        OrderStatus.READY_FOR_PICKUP,
+        OrderStatus.COMPLETED,
+      ],
+      createdAt: new Date(now - 7 * day),
+    },
+    {
+      items: [{ sku: 'SARY-MAI', quantity: 1 }],
+      path: [OrderStatus.PENDING, OrderStatus.CANCELLED],
+      createdAt: new Date(now - 3 * day),
+      comment: `${DEMO_MARK} Отменён покупателем`,
+    },
+    {
+      items: [
+        { sku: 'BAL', quantity: 1 },
+        { sku: 'KATTAMA', quantity: 2 },
+      ],
+      path: [OrderStatus.PENDING],
+      createdAt: new Date(now - 1 * day),
     },
   ];
 
-  for (const loc of pickupLocations) {
-    await prisma.pickupLocation.upsert({
-      where: { name: loc.name },
-      update: {},
-      create: {
-        ...loc,
+  const customerName =
+    [customer.firstName, customer.lastName].filter(Boolean).join(' ') || customer.email;
+
+  for (const demo of demoOrders) {
+    const items = demo.items.map(({ sku, quantity }) => {
+      const product = catalog.get(sku);
+      if (!product) throw new Error(`Unknown SKU in demo order: ${sku}`);
+      return {
+        productId: product.id,
+        productName: product.name,
+        productSku: product.sku,
+        quantity,
+        unitPriceAmount: product.priceAmount,
+        totalPriceAmount: product.priceAmount * quantity,
+      };
+    });
+    const subtotal = items.reduce((sum, item) => sum + item.totalPriceAmount, 0);
+    const finalStatus = demo.path[demo.path.length - 1];
+    const stepTime = (step: number) => new Date(demo.createdAt.getTime() + step * 60 * 60 * 1000);
+
+    const history: Prisma.OrderStatusHistoryCreateWithoutOrderInput[] = demo.path.map(
+      (status, step) => ({
+        oldStatus: step === 0 ? null : demo.path[step - 1],
+        newStatus: status,
+        createdAt: stepTime(step),
+      })
+    );
+
+    await prisma.order.create({
+      data: {
+        userId: customer.id,
+        status: finalStatus,
+        subtotalAmount: subtotal,
+        totalAmount: subtotal,
+        currency: 'KGS',
+        locale: 'ru',
+        customerName,
+        customerPhone: '+996000000001', // fictitious demo number
+        customerEmail: customer.email,
+        pickupLocationId: pickup.id,
+        pickupLocationName: pickup.name,
+        pickupLocationAddress: pickup.address,
+        customerComment: demo.comment,
+        createdAt: demo.createdAt,
+        confirmedAt: demo.path.includes(OrderStatus.CONFIRMED) ? stepTime(1) : null,
+        completedAt: finalStatus === OrderStatus.COMPLETED ? stepTime(demo.path.length - 1) : null,
+        cancelledAt: finalStatus === OrderStatus.CANCELLED ? stepTime(demo.path.length - 1) : null,
+        items: { create: items },
+        statusHistory: { create: history },
       },
     });
   }
 
-  console.log('✅ Pickup locations seeded');
+  console.log(`✅ Demo orders: ${demoOrders.length}`);
+}
 
-  // Create test user (admin)
-  const passwordHash = await hash('Admin123!', BCRYPT_ROUNDS);
-  const user = await prisma.user.upsert({
-    where: { email: 'admin@nuska.kg' },
-    update: {},
-    create: {
-      firstName: 'Admin',
-      lastName: 'Adminov',
-      email: 'admin@nuska.kg',
-      phone: '+996555000000',
-      passwordHash,
-      role: 'ADMIN',
-      isActive: true,
-    },
+// ---------------------------------------------------------------------------
+
+async function main() {
+  console.log('🌱 Seeding database...');
+
+  const categoryIds = await seedCategories();
+  const catalog = await seedProducts(categoryIds);
+  const pickup = await seedPickupLocation();
+
+  await seedUser({
+    email: process.env.SEED_ADMIN_EMAIL || 'admin@example.com',
+    password: process.env.SEED_ADMIN_PASSWORD,
+    role: UserRole.ADMIN,
+    firstName: 'Demo',
+    lastName: 'Admin',
   });
 
-  console.log('✅ Admin user created:', user.email);
-
-  // Create test user (customer)
-  const customerPasswordHash = await hash('Customer123!', BCRYPT_ROUNDS);
-  const customer = await prisma.user.upsert({
-    where: { email: 'customer@nuska.kg' },
-    update: {},
-    create: {
-      firstName: 'Test',
-      lastName: 'Customer',
-      email: 'customer@nuska.kg',
-      phone: '+996555111111',
-      passwordHash: customerPasswordHash,
-      role: 'USER',
-      isActive: true,
-    },
+  const customer = await seedUser({
+    email: process.env.SEED_CUSTOMER_EMAIL || 'customer@example.com',
+    password: process.env.SEED_CUSTOMER_PASSWORD,
+    role: UserRole.USER,
+    firstName: 'Demo',
+    lastName: 'Customer',
   });
 
-  console.log('✅ Customer user created:', customer.email);
+  await seedDemoOrders(customer, pickup, catalog);
 
-  console.log('🌱 Database seed completed successfully!');
+  console.log('🌱 Seed completed');
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
-    process.exit(1);
+  .catch((error) => {
+    console.error('❌ Seed failed:', error);
+    process.exitCode = 1;
   })
   .finally(async () => {
     await prisma.$disconnect();
