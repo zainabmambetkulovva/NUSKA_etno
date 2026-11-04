@@ -2,28 +2,11 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
-    ],
-  },
-  experimental: {
-    optimizePackageImports: true,
-  },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-      };
-    }
-    return config;
-  },
+  // Product images will be served from S3-compatible storage / CDN.
+  // Add its exact hostname to images.remotePatterns once it is chosen.
+  transpilePackages: ['@nuska/types'],
+  // Linting runs from the monorepo root (`pnpm lint`).
+  eslint: { ignoreDuringBuilds: true },
 };
 
 export default nextConfig;

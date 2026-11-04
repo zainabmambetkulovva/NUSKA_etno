@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { PaymentStatus } from '@prisma/client';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -30,7 +32,7 @@ export class PaymentsService {
     return { message: 'Payment created' };
   }
 
-  async updatePaymentStatus(paymentId: string, status: string) {
+  async updatePaymentStatus(paymentId: string, status: PaymentStatus) {
     return this.prisma.payment.update({
       where: { id: paymentId },
       data: { status },

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+
 import '../styles/globals.css';
 import { i18n } from '@/i18n/config';
 
@@ -14,9 +15,7 @@ export const metadata = {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang={i18n.defaultLanguage}>
-      <body className="antialiased bg-background text-text">
-        {children}
-      </body>
+      <body className="antialiased bg-background text-text">{children}</body>
     </html>
   );
 }

@@ -44,7 +44,6 @@ const config: Config = {
         DEFAULT: '8px',
         lg: '12px',
         xl: '16px',
-        full: '50%',
       },
       spacing: {
         '18': '4.5rem',

@@ -16,7 +16,7 @@ export const idSchema = z.string().uuid();
 
 export const nameSchema = z.string().min(1).max(255);
 
-export const descriptionSchema = z.string().optional().max(10000);
+export const descriptionSchema = z.string().max(10000).optional();
 
 export const emailSchema = z.string().email();
 
@@ -41,8 +41,8 @@ export const userLoginSchema = z.object({
 // Order validators
 export const orderCreateSchema = z.object({
   pickupLocationId: z.string().uuid(),
-  pickupTime: z.date().optional(),
-  customerComment: z.string().optional().max(500),
+  pickupTime: z.coerce.date().optional(),
+  customerComment: z.string().max(500).optional(),
 });
 
 // Product validators

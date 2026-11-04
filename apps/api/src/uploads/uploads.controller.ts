@@ -1,9 +1,10 @@
 import { Controller, Post, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserRole } from '@prisma/client';
+
+import { Role } from '../auth/decorators/role.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Role } from '../auth/decorators/role.decorator';
-import { UserRole } from '@prisma/client';
 
 @Controller('uploads')
 @UseGuards(JwtAuthGuard, RolesGuard)

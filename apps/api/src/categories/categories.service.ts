@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -13,10 +14,14 @@ export class CategoriesService {
           where: { locale: 'ru' },
         },
         products: {
-          where: { deletedAt: null },
+          where: { product: { deletedAt: null, status: 'ACTIVE' } },
           include: {
-            translations: {
-              where: { locale: 'ru' },
+            product: {
+              include: {
+                translations: {
+                  where: { locale: 'ru' },
+                },
+              },
             },
           },
         },
@@ -34,7 +39,7 @@ export class CategoriesService {
           where: { locale: 'ru' },
         },
         products: {
-          where: { deletedAt: null },
+          where: { product: { deletedAt: null, status: 'ACTIVE' } },
         },
       },
     });
@@ -48,7 +53,7 @@ export class CategoriesService {
           where: { locale: 'ru' },
         },
         products: {
-          where: { deletedAt: null },
+          where: { product: { deletedAt: null, status: 'ACTIVE' } },
         },
       },
     });

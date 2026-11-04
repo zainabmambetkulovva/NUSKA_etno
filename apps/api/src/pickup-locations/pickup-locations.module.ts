@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+
 import { PickupLocationsController } from './pickup-locations.controller';
 import { PickupLocationsService } from './pickup-locations.service';
 

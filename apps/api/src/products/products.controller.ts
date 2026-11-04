@@ -1,17 +1,30 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { UserRole } from '@prisma/client';
+
+import { Role } from '../auth/decorators/role.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Role } from '../auth/decorators/role.decorator';
-import { UserRole } from '@prisma/client';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
+
+import { ProductsService } from './products.service';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @Get()
-  findAll(@Query('limit') limit?: number, @Query('offset') offset?: number) {
-    return this.productsService.findAll(limit, offset);
+  findAll(@Query() query: PaginationQueryDto) {
+    return this.productsService.findAll(query.limit, query.offset);
   }
 
   @Get(':id')

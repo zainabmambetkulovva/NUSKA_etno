@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -6,12 +7,7 @@ export class AdminService {
   constructor(private prisma: PrismaService) {}
 
   async getDashboardStats() {
-    const [
-      totalUsers,
-      totalOrders,
-      totalProducts,
-      totalRevenue,
-    ] = await Promise.all([
+    const [totalUsers, totalOrders, totalProducts, totalRevenue] = await Promise.all([
       this.prisma.user.count({ where: { deletedAt: null } }),
       this.prisma.order.count(),
       this.prisma.product.count({ where: { deletedAt: null } }),

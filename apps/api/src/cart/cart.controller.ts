@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Body, Delete, Param, Patch, UseGuards } from '@nestjs/common';
-import { CartService } from './cart.service';
+
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+
+import { CartService } from './cart.service';
 
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
@@ -26,10 +28,7 @@ export class CartController {
   }
 
   @Patch('items/:itemId')
-  updateItem(
-    @Param('itemId') itemId: string,
-    @Body() updateItemDto: { quantity: number },
-  ) {
+  updateItem(@Param('itemId') itemId: string, @Body() updateItemDto: { quantity: number }) {
     // TODO: Update item quantity in cart for authenticated user
     return { message: 'Update item - to be implemented' };
   }

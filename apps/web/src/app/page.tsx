@@ -10,7 +10,6 @@ export default function HomePage() {
           </h1>
           <p className="text-xl text-neutral mb-8 max-w-2xl">
             Премиальный интернет-магазин натуральных и традиционных кыргызских продуктов.
-            Качество, которое вы чувствуете в каждом bite.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="lg" className="bg-brand hover:bg-brand-dark text-white">

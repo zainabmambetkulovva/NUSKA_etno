@@ -1,8 +1,9 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,7 +16,7 @@ async function bootstrap() {
       whitelist: true,
       transform: true,
       errorHttpStatusCode: 422,
-    }),
+    })
   );
 
   // Swagger configuration
@@ -30,7 +31,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   // CORS
-  const allowedOrigins = configService.get<string>('CORS_ORIGINS', 'http://localhost:3000').split(',');
+  const allowedOrigins = configService
+    .get<string>('CORS_ORIGINS', 'http://localhost:3000')
+    .split(',');
   app.enableCors({
     origin: allowedOrigins,
     credentials: true,
