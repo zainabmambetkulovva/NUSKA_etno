@@ -4,13 +4,18 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 import { AdminModule } from './admin/admin.module';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guard';
 import { CartModule } from './cart/cart.module';
 import { CategoriesModule } from './categories/categories.module';
+import { validateEnv } from './config/env.validation';
+import { ContentModule } from './content/content.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { HealthModule } from './health/health.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { MailModule } from './mail/mail.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -23,33 +28,37 @@ import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env', validate: validateEnv }),
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60_000, limit: 100 }],
+      // Only the e2e test suite may switch rate limiting off.
+      skipIf: () => process.env.NODE_ENV === 'test' && process.env.THROTTLE_DISABLED === 'true',
     }),
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 100,
-      },
-    ]),
     PrismaModule,
+    MailModule,
+    AuditModule,
+    InventoryModule,
+    UploadsModule,
+    NotificationsModule,
     AuthModule,
     UsersModule,
-    ProductsModule,
     CategoriesModule,
+    ProductsModule,
     CartModule,
     FavoritesModule,
     OrdersModule,
     PaymentsModule,
     PickupLocationsModule,
     ReviewsModule,
-    NotificationsModule,
+    ContentModule,
     AdminModule,
-    UploadsModule,
     HealthModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    // Order matters: rate limit → authentication (deny by default) → roles.
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
+  ],
 })
 export class AppModule {}

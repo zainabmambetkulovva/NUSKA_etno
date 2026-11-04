@@ -1,29 +1,32 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { PaymentMethod, PaymentStatus, UserRole } from '@prisma/client';
+import { IsEnum, IsOptional } from 'class-validator';
 
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 
 import { PaymentsService } from './payments.service';
 
-@Controller('payments')
-@UseGuards(JwtAuthGuard)
-export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+class AdminPaymentsQueryDto extends PaginationQueryDto {
+  @IsOptional()
+  @IsEnum(PaymentStatus)
+  status?: PaymentStatus;
+
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  method?: PaymentMethod;
+}
+
+/** Customers see their payments inside GET /orders/:id. */
+@ApiTags('admin')
+@Roles(UserRole.ADMIN)
+@Controller('admin/payments')
+export class AdminPaymentsController {
+  constructor(private readonly payments: PaymentsService) {}
 
   @Get()
-  getPayments() {
-    // TODO: Get payments for authenticated user
-    return { message: 'Get payments - to be implemented' };
-  }
-
-  @Get(':id')
-  getPaymentById(@Param('id') id: string) {
-    // TODO: Get single payment by id
-    return { message: 'Get payment by id - to be implemented' };
-  }
-
-  @Post('create')
-  createPayment(@Body() createPaymentDto: any) {
-    // TODO: Create payment for order
-    return { message: 'Create payment - to be implemented' };
+  list(@Query() query: AdminPaymentsQueryDto) {
+    return this.payments.adminList(query);
   }
 }

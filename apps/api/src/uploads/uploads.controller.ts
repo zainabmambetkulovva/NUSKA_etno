@@ -1,19 +1,33 @@
-import { Controller, Post, UploadedFile, UseInterceptors, UseGuards } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { Controller, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
+import { IsIn } from 'class-validator';
 
-import { Role } from '../auth/decorators/role.decorator';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
 
-@Controller('uploads')
-@UseGuards(JwtAuthGuard, RolesGuard)
+import { ImageUploadInterceptor } from './image-upload.interceptor';
+import { UploadFolder, UploadsService } from './uploads.service';
+
+class UploadQueryDto {
+  @IsIn(['categories', 'banners', 'content'])
+  folder!: Exclude<UploadFolder, 'products'>;
+}
+
+/** Generic image upload for categories, banners and site content. Product images use /admin/products/:id/images. */
+@ApiTags('admin')
+@Roles(UserRole.ADMIN)
+@Controller('admin/uploads')
 export class UploadsController {
+  constructor(private readonly uploads: UploadsService) {}
+
   @Post('image')
-  @UseInterceptors(FileInterceptor('file'))
-  @Role(UserRole.ADMIN)
-  uploadImage(@UploadedFile() file: Express.Multer.File) {
-    // TODO: Implement image upload with S3-compatible storage
-    return { message: 'Upload image - to be implemented', filename: file?.originalname };
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } } },
+  })
+  @UseInterceptors(ImageUploadInterceptor)
+  async upload(@Query() query: UploadQueryDto, @UploadedFile() file: Express.Multer.File) {
+    const stored = await this.uploads.uploadImage(file, query.folder);
+    return { url: stored.url, key: stored.key };
   }
 }

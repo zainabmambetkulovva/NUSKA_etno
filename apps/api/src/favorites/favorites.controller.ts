@@ -1,29 +1,53 @@
-import { Controller, Get, Post, Delete, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Put,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { RequestLocale } from '../common/decorators/request-locale.decorator';
+import { AuthenticatedUser } from '../common/types/authenticated-user';
+import { Locale } from '../common/utils/locale';
 
 import { FavoritesService } from './favorites.service';
 
+@ApiTags('favorites')
 @Controller('favorites')
-@UseGuards(JwtAuthGuard)
 export class FavoritesController {
-  constructor(private readonly favoritesService: FavoritesService) {}
+  constructor(private readonly favorites: FavoritesService) {}
 
   @Get()
-  getFavorites() {
-    // TODO: Get favorites for authenticated user
-    return { message: 'Get favorites - to be implemented' };
+  list(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale) {
+    return this.favorites.list(user.id, locale);
   }
 
-  @Post(':productId')
-  addToFavorites(@Param('productId') productId: string) {
-    // TODO: Add product to favorites for authenticated user
-    return { message: 'Add to favorites - to be implemented' };
+  /** Product ids only — lets the catalog mark hearts without loading full cards. */
+  @Get('ids')
+  ids(@CurrentUser() user: AuthenticatedUser) {
+    return this.favorites.ids(user.id);
+  }
+
+  @Put(':productId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async add(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', ParseUUIDPipe) productId: string
+  ) {
+    await this.favorites.add(user.id, productId);
   }
 
   @Delete(':productId')
-  removeFromFavorites(@Param('productId') productId: string) {
-    // TODO: Remove product from favorites for authenticated user
-    return { message: 'Remove from favorites - to be implemented' };
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', ParseUUIDPipe) productId: string
+  ) {
+    await this.favorites.remove(user.id, productId);
   }
 }

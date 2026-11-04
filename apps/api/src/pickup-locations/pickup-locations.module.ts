@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 
-import { PickupLocationsController } from './pickup-locations.controller';
+import {
+  AdminPickupLocationsController,
+  PickupLocationsController,
+} from './pickup-locations.controller';
 import { PickupLocationsService } from './pickup-locations.service';
 
 @Module({
-  controllers: [PickupLocationsController],
+  controllers: [PickupLocationsController, AdminPickupLocationsController],
   providers: [PickupLocationsService],
-  exports: [PickupLocationsService],
 })
 export class PickupLocationsModule {}
