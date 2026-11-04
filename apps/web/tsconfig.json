@@ -1,0 +1,25 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@nuska/types": ["../../packages/types/src/index.ts"],
+      "@nuska/web/*": ["./src/*"],
+      "@nuska/api/*": ["../api/src/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

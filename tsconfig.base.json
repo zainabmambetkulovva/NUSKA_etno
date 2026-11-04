@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@nuska/types": ["./packages/types/src/index.ts"],
+      "@nuska/validators": ["./packages/validators/src/index.ts"],
+      "@nuska/config": ["./packages/config/src/index.ts"],
+      "@nuska/web/*": ["./apps/web/*"],
+      "@nuska/api/*": ["./apps/api/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+  "exclude": ["node_modules", "dist", "build", ".next", "out"]
+}

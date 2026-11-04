@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #355b3e;
+  --brand-dark: #2a4732;
+  --brand-light: #4d7a55;
+  --cream: #f4e9b9;
+  --cream-dark: #e5d8a6;
+  --cream-light: #fff9e6;
+  --text: #1a1a1a;
+  --text-muted: #666666;
+  --background: #f9f8f4;
+  --card: #ffffff;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text);
+}

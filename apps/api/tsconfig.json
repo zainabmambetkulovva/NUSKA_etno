@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "@nuska/types": ["../../packages/types/src/index.ts"],
+      "@nuska/validators": ["../../packages/validators/src/index.ts"],
+      "@nuska/config": ["../../packages/config/src/index.ts"],
+      "@api/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "prisma/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.test.ts"]
+}
