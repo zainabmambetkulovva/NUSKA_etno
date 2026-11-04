@@ -51,7 +51,6 @@ NUSKA_etno — современный интернет-магазин, объе�
 
 ### DevOps
 - pnpm Workspaces
-- Docker
 
 ## 📁 Структура проекта
 
@@ -64,9 +63,9 @@ NUSKA_etno/
 │   ├── types/        # Общие TypeScript-типы
 │   ├── validators/   # Общие Zod-схемы валидации
 │   └── config/       # Общие конфигурации
-├── docker/           # Docker конфигурация
 ├── docs/             # Документация
-├── .env.example      # Пример переменных окружения
+├── TZ.md             # Техническое задание
+├── DATABASE.md       # Спецификация базы данных
 └── package.json
 ```
 
@@ -75,8 +74,8 @@ NUSKA_etno/
 ### Требования
 
 - Node.js >= 20.0.0
-- pnpm >= 8.0.0
-- PostgreSQL (Neon)
+- pnpm >= 9 (`corepack enable` — версия берётся из `packageManager`)
+- PostgreSQL 16+ (Neon)
 
 ### Шаги установки
 
@@ -89,20 +88,22 @@ pnpm install
 3. Настройте переменные окружения:
 ```bash
 cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-4. Настройте DATABASE_URL в файле `apps/api/.env`
+4. Заполните в `apps/api/.env` как минимум `DATABASE_URL`, `DIRECT_URL` и `JWT_SECRET`.
 
-5. Запустите миграции:
+5. Примените миграции:
 ```bash
-pnpm db:generate
-pnpm db:migrate
+pnpm db:deploy
 ```
 
 6. Заполните базу тестовыми данными:
 ```bash
 pnpm db:seed
 ```
+Если `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD` не заданы, seed сгенерирует
+пароли и выведет их один раз.
 
 ## 📜 Команды
 
@@ -134,7 +135,8 @@ pnpm format:check     # Проверка форматирования
 ### Database
 ```bash
 pnpm db:generate      # Сгенерировать Prisma Client
-pnpm db:migrate       # Применить миграции
+pnpm db:migrate       # Создать новую миграцию из изменений схемы (dev)
+pnpm db:deploy        # Применить существующие миграции (Neon / production)
 pnpm db:studio        # Открыть Prisma Studio
 pnpm db:seed          # Заполнить базу тестовыми данными
 ```
@@ -151,21 +153,25 @@ PORT=4000
 # CORS
 CORS_ORIGINS=http://localhost:3000
 
-# Database (Neon PostgreSQL)
-DATABASE_URL="postgresql://username:password@ep-xxx-xxx.aws.region.neon.tech/dbname?sslmode=require"
+# Database (Neon PostgreSQL): pooled URL for the app, direct URL for migrations
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx-pooler.REGION.aws.neon.tech/DBNAME?sslmode=require"
+DIRECT_URL="postgresql://USER:PASSWORD@ep-xxxx.REGION.aws.neon.tech/DBNAME?sslmode=require"
 
-# JWT
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-JWT_EXPIRES_IN=7d
+# JWT (openssl rand -base64 48)
+JWT_SECRET=
+JWT_EXPIRES_IN=15m
 
-# Encryption
-BCRYPT_ROUNDS=10
+# Password hashing
+BCRYPT_ROUNDS=12
 ```
+
+Полный список — в `apps/api/.env.example` и [docs/environment-variables.md](docs/environment-variables.md).
 
 ## 📚 Документация
 
-- [Technical Specification](docs/technical-specification.md)
-- [Database Specification](docs/database-specification.md)
+- [Техническое задание](TZ.md)
+- [Спецификация базы данных](DATABASE.md)
+- [Решения по реализации БД](docs/database-notes.md)
 - [Project Structure](docs/project-structure.md)
 - [Installation Guide](docs/installation.md)
 - [Environment Variables](docs/environment-variables.md)

@@ -3,8 +3,8 @@
 ## Requirements
 
 - Node.js >= 20.0.0
-- pnpm >= 8.0.0
-- PostgreSQL (Neon)
+- pnpm >= 9 (`corepack enable`)
+- PostgreSQL 16+ (Neon)
 - Git
 
 ## Installation Steps
@@ -24,31 +24,13 @@ pnpm install
 
 ### 3. Environment Setup
 
-Create `.env` file for backend:
-
 ```bash
 cp apps/api/.env.example apps/api/.env
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-Edit `apps/api/.env` and configure:
-
-```env
-NODE_ENV=development
-PORT=4000
-
-# CORS
-CORS_ORIGINS=http://localhost:3000
-
-# Database (Neon PostgreSQL)
-DATABASE_URL="postgresql://username:password@ep-xxx-xxx.aws.region.neon.tech/dbname?sslmode=require"
-
-# JWT
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
-JWT_EXPIRES_IN=7d
-
-# Encryption
-BCRYPT_ROUNDS=10
-```
+Fill in at least `DATABASE_URL`, `DIRECT_URL` and `JWT_SECRET` in `apps/api/.env`
+(see [environment-variables.md](environment-variables.md)).
 
 ### 4. Database Setup
 
@@ -58,17 +40,23 @@ Generate Prisma Client:
 pnpm db:generate
 ```
 
-Run migrations:
+Apply migrations (works for Neon and local PostgreSQL):
 
 ```bash
-pnpm db:migrate
+pnpm db:deploy
 ```
 
-Seed database with test data:
+When you change `schema.prisma`, create a new migration with `pnpm db:migrate`
+(needs a database where Prisma can create a shadow database).
+
+Seed database with test data (idempotent):
 
 ```bash
 pnpm db:seed
 ```
+
+Demo account passwords come from `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD`;
+if they are empty, random passwords are generated and printed once.
 
 ### 5. Run Development Servers
 
@@ -149,11 +137,11 @@ pnpm build
 
 2. Set NODE_ENV=production
 
-3. Run migrations:
+3. Apply migrations:
 
 ```bash
 pnpm db:generate
-pnpm db:migrate
+pnpm db:deploy
 ```
 
 4. Start production server:

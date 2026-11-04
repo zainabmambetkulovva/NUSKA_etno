@@ -31,6 +31,7 @@ NUSKA_etno/
 │   │   └── tsconfig.json
 │   │
 │   └── api/                 # NestJS Backend
+│       ├── .env.example     # Environment variables template
 │       ├── src/
 │       │   ├── app.module.ts
 │       │   ├── main.ts
@@ -48,6 +49,7 @@ NUSKA_etno/
 │       │   ├── admin/       # Admin module
 │       │   ├── uploads/     # File uploads
 │       │   ├── health/      # Health check
+│       │   ├── common/      # Shared DTOs / helpers
 │       │   └── prisma/      # Prisma Service
 │       ├── prisma/
 │       │   ├── schema.prisma
@@ -63,9 +65,9 @@ NUSKA_etno/
 │   ├── validators/          # Zod validation schemas
 │   └── config/              # Shared configurations
 │
-├── docker/                  # Docker configuration
 ├── docs/                    # Documentation
-├── .env.example             # Environment variables template
+├── TZ.md                    # Technical specification
+├── DATABASE.md              # Database specification
 ├── package.json
 ├── pnpm-workspace.yaml
 ├── pnpm-lock.yaml

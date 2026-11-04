@@ -19,31 +19,36 @@
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | - | PostgreSQL connection string (required) |
+| `DATABASE_URL` | - | PostgreSQL connection string used by the app (required). On Neon use the **pooled** URL |
+| `DIRECT_URL` | - | Direct (non-pooled) connection string used by Prisma Migrate (required) |
 
 **Neon PostgreSQL example:**
 ```
-postgresql://username:password@ep-xxx-xxx.aws.region.neon.tech/dbname?sslmode=require
+DATABASE_URL=postgresql://USER:PASSWORD@ep-xxxx-pooler.REGION.aws.neon.tech/DBNAME?sslmode=require
+DIRECT_URL=postgresql://USER:PASSWORD@ep-xxxx.REGION.aws.neon.tech/DBNAME?sslmode=require
 ```
 
 ### JWT Authentication
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `JWT_SECRET` | - | Secret key for JWT signing (required) |
-| `JWT_EXPIRES_IN` | `7d` | Token expiration time |
+| `JWT_SECRET` | - | Secret key for JWT signing (required, no default) |
+| `JWT_EXPIRES_IN` | `15m` | Access token lifetime |
 
 ### Encryption
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BCRYPT_ROUNDS` | `10` | Number of bcrypt rounds |
+| `BCRYPT_ROUNDS` | `12` | Number of bcrypt rounds |
 
-### Feature Flags
+### Seed (development only)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ENABLE_THROTTLING` | `true` | Enable rate limiting |
+| `SEED_ADMIN_EMAIL` | `admin@example.com` | Demo admin e-mail |
+| `SEED_ADMIN_PASSWORD` | random | Demo admin password; generated and printed once if empty |
+| `SEED_CUSTOMER_EMAIL` | `customer@example.com` | Demo customer e-mail |
+| `SEED_CUSTOMER_PASSWORD` | random | Demo customer password; generated and printed once if empty |
 
 ## Frontend (.env.local)
 
@@ -52,12 +57,6 @@ postgresql://username:password@ep-xxx-xxx.aws.region.neon.tech/dbname?sslmode=re
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NEXT_PUBLIC_API_URL` | `http://localhost:4000` | Backend API URL |
-
-### Feature Flags
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NEXT_PUBLIC_ENABLE_THROTTLING` | `true` | Enable client-side throttling |
 
 ## Security Guidelines
 
@@ -78,11 +77,12 @@ PORT=4000
 CORS_ORIGINS=https://yourdomain.com
 
 # Database
-DATABASE_URL="postgresql://username:password@ep-xxx-xxx.aws.region.neon.tech/dbname?sslmode=require"
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx-pooler.REGION.aws.neon.tech/DBNAME?sslmode=require"
+DIRECT_URL="postgresql://USER:PASSWORD@ep-xxxx.REGION.aws.neon.tech/DBNAME?sslmode=require"
 
 # JWT
-JWT_SECRET=super-secret-random-key-at-least-32-chars
-JWT_EXPIRES_IN=7d
+JWT_SECRET=<openssl rand -base64 48>
+JWT_EXPIRES_IN=15m
 
 # Encryption
 BCRYPT_ROUNDS=12
