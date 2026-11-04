@@ -34,28 +34,34 @@ NUSKA_etno/
 │       ├── .env.example     # Environment variables template
 │       ├── src/
 │       │   ├── app.module.ts
+│       │   ├── app.setup.ts  # Shared app config (prefix /api, pipes, cookies, helmet, CORS, Swagger)
 │       │   ├── main.ts
-│       │   ├── auth/        # Authentication module
-│       │   ├── users/       # Users module
-│       │   ├── products/    # Products module
-│       │   ├── categories/  # Categories module
-│       │   ├── cart/        # Cart module
-│       │   ├── favorites/   # Favorites module
-│       │   ├── orders/      # Orders module
-│       │   ├── payments/    # Payments module
+│       │   ├── config/      # Environment validation
+│       │   ├── common/      # Decorators (@Public, @Roles, @CurrentUser, @RequestLocale), DTOs, errors, utils
+│       │   ├── prisma/      # Prisma Service
+│       │   ├── auth/        # Register, login, refresh, logout, password reset, e-mail verification
+│       │   ├── users/       # Profile (/users/me) and admin user management
+│       │   ├── categories/  # Public tree + admin CRUD
+│       │   ├── products/    # Public catalog + admin CRUD, stock, images
+│       │   ├── inventory/   # The only place that changes stock
+│       │   ├── cart/        # Server cart, guest cart merge
+│       │   ├── orders/      # Checkout, status machine, admin orders
+│       │   ├── payments/    # Payment records, idempotent provider events
+│       │   ├── favorites/
+│       │   ├── reviews/     # Post-purchase reviews with moderation
+│       │   ├── notifications/ # In-app notifications (RU/KY)
 │       │   ├── pickup-locations/
-│       │   ├── reviews/     # Reviews module
-│       │   ├── notifications/
-│       │   ├── admin/       # Admin module
-│       │   ├── uploads/     # File uploads
-│       │   ├── health/      # Health check
-│       │   ├── common/      # Shared DTOs / helpers
-│       │   └── prisma/      # Prisma Service
+│       │   ├── content/     # Banners and editable text blocks
+│       │   ├── admin/       # Dashboard
+│       │   ├── audit/       # Audit log of admin actions
+│       │   ├── uploads/     # S3-compatible image storage
+│       │   ├── mail/        # SMTP e-mail
+│       │   └── health/      # Health check
 │       ├── prisma/
 │       │   ├── schema.prisma
 │       │   ├── seed.ts
 │       │   └── migrations/
-│       ├── test/
+│       ├── test/            # E2E tests (real PostgreSQL)
 │       ├── package.json
 │       ├── nest-cli.json
 │       └── tsconfig.json

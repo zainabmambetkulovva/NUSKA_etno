@@ -111,7 +111,7 @@ pnpm db:seed
 ```bash
 pnpm dev              # Запустить все приложения
 pnpm dev:web          # Запустить Frontend (порт 3000)
-pnpm dev:api          # Запустить Backend (порт 4000)
+pnpm dev:api          # Запустить Backend (порт 4000, маршруты /api, Swagger /api/docs)
 ```
 
 ### Production
@@ -131,6 +131,13 @@ pnpm typecheck:api    # Проверка TypeScript Backend
 pnpm format           # Форматирование кода
 pnpm format:check     # Проверка форматирования
 ```
+
+### Tests
+```bash
+pnpm --filter @nuska/api test       # Unit-тесты
+TEST_DATABASE_URL=postgresql://postgres@localhost:5432/nuska_test pnpm --filter @nuska/api test:e2e
+```
+E2E-тесты очищают базу `TEST_DATABASE_URL` — используйте отдельную базу с `test` в названии.
 
 ### Database
 ```bash
@@ -172,6 +179,7 @@ BCRYPT_ROUNDS=12
 - [Техническое задание](TZ.md)
 - [Спецификация базы данных](DATABASE.md)
 - [Решения по реализации БД](docs/database-notes.md)
+- [Обзор API](docs/api.md)
 - [Project Structure](docs/project-structure.md)
 - [Installation Guide](docs/installation.md)
 - [Environment Variables](docs/environment-variables.md)

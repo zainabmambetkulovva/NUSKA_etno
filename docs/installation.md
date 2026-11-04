@@ -80,12 +80,27 @@ pnpm dev:api  # Backend on port 4000
 - Verify page loads
 
 ### Backend
-- Open http://localhost:4000/health
+- Open http://localhost:4000/api/health
 - Verify health check response
 
 ### Swagger
-- Open http://localhost:4000/api/docs
+- Open http://localhost:4000/api/docs (development only)
 - Verify API documentation
+
+## Tests
+
+```bash
+pnpm --filter @nuska/api test        # unit tests
+```
+
+E2E tests run the whole API against a real PostgreSQL database. Use a **separate**
+database whose name contains `test` — every test wipes it:
+
+```bash
+TEST_DATABASE_URL=postgresql://postgres@localhost:5432/nuska_test pnpm --filter @nuska/api test:e2e
+```
+
+Migrations are applied to it automatically.
 
 ## Troubleshooting
 
