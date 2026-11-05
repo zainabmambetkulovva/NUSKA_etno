@@ -16,6 +16,7 @@ Template: `apps/api/.env.example`.
 | `WEB_URL` | `http://localhost:3000` | Frontend URL used in e-mail links |
 | `TRUST_PROXY` | `false` | `true` behind a reverse proxy, so rate limiting sees the real client IP |
 | `SWAGGER_ENABLED` | `true` (dev), `false` (prod) | Swagger UI at `/api/docs` |
+| `MIGRATE_ON_START` | `false` | `true`: the Docker image applies pending migrations before starting (Render free plan); if they fail the API does not start |
 | `PROXY_SECRET` | – | ≥ 32 chars, **required in production**. Requests without the matching `X-Proxy-Secret` header are refused (except `/api/health`); the visitor IP comes from the website proxy |
 
 ### Database
@@ -56,12 +57,12 @@ Without these, image upload endpoints answer `503 STORAGE_NOT_CONFIGURED`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `S3_ENDPOINT` | – | Custom endpoint for R2 / MinIO (empty for AWS) |
+| `S3_ENDPOINT` | – | Custom endpoint for Supabase Storage / R2 / MinIO (empty for AWS) |
 | `S3_REGION` | `auto` | Region |
 | `S3_BUCKET` | – | Bucket name |
 | `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | – | Credentials |
 | `S3_PUBLIC_URL` | – | Public base URL of the bucket / CDN; stored image URLs start with it |
-| `S3_FORCE_PATH_STYLE` | `false` | `true` for MinIO |
+| `S3_FORCE_PATH_STYLE` | `false` | `true` for Supabase Storage and MinIO |
 
 ### Seed (development only)
 

@@ -181,7 +181,7 @@ BCRYPT_ROUNDS=12
 - [Решения по реализации БД](docs/database-notes.md)
 - [Обзор API](docs/api.md)
 - [Frontend](docs/frontend.md)
-- [Запуск в интернет (Vercel + Fly.io + Neon + R2)](docs/deployment.md)
+- [Запуск в интернет — бесплатные сервисы (Vercel, Render, Neon, Supabase, Brevo)](docs/deployment.md)
 - [Project Structure](docs/project-structure.md)
 - [Installation Guide](docs/installation.md)
 - [Environment Variables](docs/environment-variables.md)

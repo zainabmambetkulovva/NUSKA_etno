@@ -37,6 +37,7 @@ COPY --from=build --chown=nonroot:nonroot /out/package.json ./package.json
 COPY --from=build --chown=nonroot:nonroot /out/prisma ./prisma
 COPY --from=build --chown=nonroot:nonroot /repo/apps/api/dist ./dist
 EXPOSE 4000
-# The image entrypoint is `node`.
-# Migrations: run `node_modules/prisma/build/index.js migrate deploy` (Fly.io release_command).
-CMD ["dist/main.js"]
+# The image entrypoint is `node`. dist/start.js applies migrations first when MIGRATE_ON_START=true
+# (Render free plan has no separate release step), then starts the API.
+# Migrations only: `node_modules/prisma/build/index.js migrate deploy`.
+CMD ["dist/start.js"]
