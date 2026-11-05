@@ -1,162 +1,159 @@
-# Запуск в интернет (production)
+# Запуск в интернет — только бесплатные сервисы
 
-Схема:
+| Что | Где | Бесплатный тариф |
+|---|---|---|
+| Сайт (`apps/web`) | **Vercel** Hobby | бесплатно; см. примечание о коммерческом использовании ниже |
+| API (`apps/api`) | **Render** Free | бесплатно, без карты; засыпает через 15 минут без запросов |
+| База данных | **Neon** Free | 0.5 ГБ |
+| Фото товаров | **Supabase** Storage | 1 ГБ, без карты |
+| Письма | **Brevo** Free | 300 писем в день |
+| «Будильник» для API | **cron-job.org** | бесплатно |
 
 ```text
-Покупатель ──HTTPS──▶ Vercel (сайт Next.js, регион fra1)
-                         │  /api/*  → прокси добавляет X-Proxy-Secret и IP покупателя
-                         ▼
-                    Fly.io (API NestJS, регион fra, Docker)
-                         │
-                         ├──▶ Neon PostgreSQL (eu-central-1, Франкфурт)
-                         ├──▶ Cloudflare R2 (фото товаров)
-                         └──▶ SMTP (Resend или Brevo: письма)
+Покупатель ──▶ Vercel (сайт) ──/api/* + секретный ключ──▶ Render (API) ──▶ Neon (база)
+                                                              ├──▶ Supabase Storage (фото)
+                                                              └──▶ Brevo (письма)
 ```
 
-- Браузер ходит **только на сайт**. API напрямую из интернета закрыт: без секретного
-  заголовка он отвечает `403` (открыт только `/api/health` для проверок Fly).
-- Секреты вводятся **только в панелях Vercel / Fly / Neon**, никогда не в git и не в чат.
-- Миграции БД применяются автоматически при каждом деплое API (`release_command` в `apps/api/fly.toml`);
-  при ошибке миграции новая версия не запускается.
+- Покупатель открывает только сайт. API напрямую из интернета закрыт: без секретного ключа
+  отвечает `403`; открыт только `/api/health`.
+- Секреты вписываются **только в панелях сервисов** — не в git и не в чат.
+- Миграции базы API применяет сам при каждом запуске (`MIGRATE_ON_START=true`);
+  если миграция не прошла, новая версия не запускается.
 
-Порядок: Neon → секреты → Fly.io (API) → наполнение БД → Vercel (сайт) → R2 → почта → домен.
+> **Vercel Hobby** по условиям Vercel предназначен для некоммерческих проектов. Для
+> тестового запуска этого достаточно. Когда магазин начнёт продавать через сайт, нужен
+> либо Vercel Pro (платный), либо перенос сайта на другой бесплатный хостинг (например,
+> Netlify) — код для этого менять почти не придётся.
 
 ---
 
-## 1. Neon (база данных)
+## Шаг 1. Neon — две строки подключения
 
-1. https://neon.tech → **New project**, регион **AWS Europe Central 1 (Frankfurt)**, PostgreSQL 16+.
-2. **Connection details** → скопируйте две строки:
-   - **Pooled** (в адресе есть `-pooler`) → это `DATABASE_URL`. Допишите в конец `&pgbouncer=true&connect_timeout=15`.
-   - **Direct** (без `-pooler`) → это `DIRECT_URL` (для миграций).
-   Обе строки должны содержать `sslmode=require`.
+1. https://console.neon.tech → ваш проект → кнопка **Connect**.
+2. Включите **Connection pooling** → скопируйте строку → это **Строка А**.
+   Допишите в конец: `&pgbouncer=true&connect_timeout=15`
+3. Выключите **Connection pooling** → скопируйте строку → это **Строка Б**.
 
-## 2. Секреты
+Сохраните обе строки в заметках. Никому не отправляйте.
 
-Сгенерируйте два случайных ключа (каждый — отдельной командой):
+## Шаг 2. Адрес сайта на Vercel
 
-```bash
-openssl rand -base64 48
-```
+Vercel → ваш проект → вверху раздел **Domains**: адрес вида `https://….vercel.app`.
+Это **Адрес сайта**.
 
-- первый → `JWT_SECRET` (только для API);
-- второй → `PROXY_SECRET` в API **и такой же** `API_PROXY_SECRET` в Vercel.
+## Шаг 3. Render — запустить API
 
-## 3. Fly.io (API)
+1. https://render.com → **Get Started** → войдите через **GitHub**.
+2. **New +** → **Blueprint** → выберите репозиторий `NUSKA_etno` → ветка `main`.
+3. Render прочитает файл `render.yaml` и попросит заполнить три поля:
 
-1. Установите flyctl: https://fly.io/docs/flyctl/install/ и войдите:
-
-```bash
-fly auth login
-```
-
-2. Создайте приложение (если имя `nuska-api` занято — выберите другое и поменяйте `app` в `apps/api/fly.toml`):
-
-```bash
-fly apps create nuska-api
-```
-
-3. Задайте секреты (подставьте свои значения; адрес сайта можно сначала указать адрес Vercel, потом заменить на домен):
-
-```bash
-fly secrets set -a nuska-api DATABASE_URL='…pooled…' DIRECT_URL='…direct…' JWT_SECRET='…' PROXY_SECRET='…' WEB_URL='https://<адрес сайта>'
-```
-
-4. Деплой из корня репозитория:
-
-```bash
-fly deploy --config apps/api/fly.toml --dockerfile apps/api/Dockerfile .
-```
-
-5. Проверка: `https://nuska-api.fly.dev/api/health` → `{"status":"healthy","database":"up"}`,
-   а `https://nuska-api.fly.dev/api/products` → `403` (так и должно быть).
-
-## 4. Наполнение базы (один раз, со своего компьютера)
-
-Каталог из прайса, категории, контакты и список магазинов — **без** демо-заказов,
-демо-пользователей и демо-точки самовывоза:
-
-```bash
-DATABASE_URL='…direct…' SEED_DEMO=false pnpm db:seed
-```
-
-Первый администратор (пароль 12–72 символа, буквы и цифры):
-
-```bash
-DATABASE_URL='…direct…' ADMIN_EMAIL='owner@…' ADMIN_PASSWORD='…' ADMIN_FIRST_NAME='…' pnpm --filter @nuska/api admin:create
-```
-
-После этого очистите историю терминала (пароль попал в неё).
-
-## 5. Vercel (сайт)
-
-1. https://vercel.com → **Add New → Project** → импорт репозитория из GitHub.
-2. **Root Directory:** `apps/web` (Framework определится как Next.js, pnpm — автоматически).
-3. **Environment Variables** (Production):
-
-| Переменная | Значение |
+| Поле | Что вставить |
 |---|---|
-| `API_INTERNAL_URL` | `https://nuska-api.fly.dev` |
-| `API_PROXY_SECRET` | тот же ключ, что `PROXY_SECRET` в Fly |
-| `NEXT_PUBLIC_SITE_URL` | адрес сайта, например `https://<проект>.vercel.app` (потом — домен) |
-| `NEXT_PUBLIC_IMAGES_HOST` | хост R2 (шаг 6), можно добавить позже |
+| `DATABASE_URL` | Строка А |
+| `DIRECT_URL` | Строка Б |
+| `WEB_URL` | Адрес сайта |
 
-4. **Deploy**. Откройте сайт → `/ky`, войдите администратором → `/ky/admin`.
-5. Если адрес сайта отличается от `WEB_URL` в Fly — обновите:
+4. **Apply**. Сборка идёт 5–10 минут.
+5. Когда сервис `nuska-etno-api` станет **Live**, вверху будет его адрес вида
+   `https://nuska-etno-api.onrender.com` — это **Адрес API**.
+   Откройте `Адрес API/api/health` → должно быть `"status":"healthy"`.
+6. В сервисе → **Environment** → найдите `PROXY_SECRET` (Render создал его сам) →
+   скопируйте значение — это **Ключ сайта** (нужен на шаге 6).
 
-```bash
-fly secrets set -a nuska-api WEB_URL='https://<адрес сайта>'
-```
+## Шаг 4. «Будильник», чтобы API не засыпал
 
-## 6. Cloudflare R2 (фото товаров)
+1. https://cron-job.org → бесплатная регистрация → **Create cronjob**.
+2. URL: `Адрес API/api/health`, расписание: **каждые 10 минут** → **Create**.
 
-1. Cloudflare → **R2** → **Create bucket** (например `nuska-images`), регион Eastern Europe (EEUR) или Automatic.
-2. Публичный доступ: **Settings → Public access** → подключите свой поддомен
-   (например `img.<домен>`) или включите `r2.dev` (для тестов).
-3. **Manage R2 API Tokens** → токен с правами **Object Read & Write** на этот бакет.
-4. Секреты API:
+Без этого первый покупатель после перерыва ждёт около минуты.
+Бесплатных часов Render (750 в месяц) хватает на работу без перерывов.
 
-```bash
-fly secrets set -a nuska-api S3_ENDPOINT='https://<ACCOUNT_ID>.r2.cloudflarestorage.com' S3_REGION=auto S3_BUCKET='nuska-images' S3_ACCESS_KEY_ID='…' S3_SECRET_ACCESS_KEY='…' S3_PUBLIC_URL='https://img.<домен>'
-```
+## Шаг 5. Наполнить базу (каталог, контакты, магазины, ваш аккаунт админа)
 
-5. В Vercel: `NEXT_PUBLIC_IMAGES_HOST=img.<домен>` (только хост, без `https://`) → **Redeploy**.
+1. GitHub → репозиторий → **Settings** → **Secrets and variables** → **Actions** →
+   **New repository secret** — три секрета:
 
-Лимит одного фото — 4 МБ (ограничение тела запроса Vercel — 4.5 МБ). Форматы: JPEG, PNG, WebP.
+| Name | Secret |
+|---|---|
+| `PRODUCTION_DATABASE_URL` | Строка Б |
+| `ADMIN_EMAIL` | ваша почта для входа в админку |
+| `ADMIN_PASSWORD` | пароль для админки: 12+ символов, буквы и цифры |
 
-## 7. Почта (подтверждение email, восстановление пароля)
+2. Вкладка **Actions** (верхнее меню репозитория) → слева **Initialize database** →
+   справа **Run workflow** → зелёная кнопка **Run workflow**. Через 2–3 минуты — зелёная галочка.
 
-**Resend** (https://resend.com): добавьте домен и DNS-записи, которые он покажет, создайте API-ключ.
+Кнопку можно нажимать повторно: ничего не дублируется, правки из админки сохраняются.
 
-```bash
-fly secrets set -a nuska-api SMTP_HOST=smtp.resend.com SMTP_PORT=465 SMTP_SECURE=true SMTP_USER=resend SMTP_PASSWORD='re_…' MAIL_FROM='NUSKA_etno <no-reply@<домен>>'
-```
+## Шаг 6. Vercel — настроить сайт
 
-**Brevo** (альтернатива): `SMTP_HOST=smtp-relay.brevo.com SMTP_PORT=587 SMTP_SECURE=false`,
-логин и SMTP-ключ из раздела *SMTP & API*.
+1. Vercel → проект → **Settings** → **General** → **Root Directory**: `apps/web` → **Save**.
+2. **Settings** → **Environment Variables**:
 
-## 8. Домен
+| Name | Value |
+|---|---|
+| `API_INTERNAL_URL` | Адрес API (без `/api` в конце) |
+| `API_PROXY_SECRET` | Ключ сайта (шаг 3.6) |
+| `NEXT_PUBLIC_SITE_URL` | Адрес сайта |
 
-1. Vercel → **Settings → Domains** → добавьте домен, пропишите DNS-записи у регистратора.
-2. Обновите `NEXT_PUBLIC_SITE_URL` в Vercel (Redeploy) и `WEB_URL` в Fly.
+3. **Deployments** → у верхней строки **⋯** → **Redeploy**.
 
-## 9. Автоматический деплой
+## Шаг 7. Проверить
 
-- **Vercel** пересобирает сайт при каждом push в `main` (и делает preview для pull request).
-- **GitHub Actions:** `.github/workflows/ci.yml` — линтер, типы, unit- и e2e-тесты на PostgreSQL,
-  сборки и Docker-образ API. `.github/workflows/deploy-api.yml` после зелёного CI на `main`
-  деплоит API на Fly.io. Для этого добавьте в GitHub → **Settings → Secrets → Actions**
-  секрет `FLY_API_TOKEN`:
+1. Откройте Адрес сайта → главная на кыргызском с 3D-дасторконом и товарами.
+2. **Кирүү** → почта и пароль из шага 5.
+3. **Башкаруу** (админка) → **Алып кетүү жайлары** → добавьте реальную точку самовывоза
+   (без неё заказ оформить нельзя).
+4. Оформите тестовый заказ с другого аккаунта → подтвердите его в админке.
 
-```bash
-fly tokens create deploy -a nuska-api
-```
+---
 
-## 10. После запуска — чек-лист
+## Потом: фото товаров (Supabase Storage)
 
-- [ ] Админка → **Точки самовывоза**: добавить реальную точку (адрес, часы, телефон).
-- [ ] Админка → **Контент**: тексты `about`, `pickup`; проверить `contacts` и `stores`.
-- [ ] Админка → **Товары**: фото, описания, состав, остатки (включить «Учитывать остаток»).
-- [ ] Тестовый заказ от обычного пользователя → подтверждение в админке → уведомление.
-- [ ] Восстановление пароля приходит на почту.
-- [ ] `/sitemap.xml` и `/robots.txt` открываются с правильным доменом.
+1. https://supabase.com → **New project** (регион Frankfurt) — он нужен только для хранения фото.
+2. **Storage** → **New bucket** → имя `nuska-images` → включите **Public bucket**.
+3. **Storage** → **Settings** → **S3 Connection** → **New access key**.
+4. Render → сервис API → **Environment** → добавьте:
+
+| Key | Value |
+|---|---|
+| `S3_ENDPOINT` | `https://<ref>.supabase.co/storage/v1/s3` (показан в S3 Connection) |
+| `S3_REGION` | регион из S3 Connection, например `eu-central-1` |
+| `S3_BUCKET` | `nuska-images` |
+| `S3_ACCESS_KEY_ID` | Access key ID |
+| `S3_SECRET_ACCESS_KEY` | Secret access key |
+| `S3_FORCE_PATH_STYLE` | `true` |
+| `S3_PUBLIC_URL` | `https://<ref>.supabase.co/storage/v1/object/public/nuska-images` |
+
+5. Vercel → `NEXT_PUBLIC_IMAGES_HOST` = `<ref>.supabase.co` → **Redeploy**.
+
+Фото до 4 МБ, форматы JPEG, PNG, WebP. Загрузка — в админке на странице товара.
+
+## Потом: письма (Brevo)
+
+Нужны для подтверждения почты и восстановления пароля.
+
+1. https://www.brevo.com → регистрация → **Senders, Domains & Dedicated IPs** → добавьте и
+   подтвердите адрес отправителя (можно обычную почту).
+2. **SMTP & API** → **SMTP** → создайте SMTP-ключ.
+3. Render → **Environment**:
+
+| Key | Value |
+|---|---|
+| `SMTP_HOST` | `smtp-relay.brevo.com` |
+| `SMTP_PORT` | `587` |
+| `SMTP_SECURE` | `false` |
+| `SMTP_USER` | логин со страницы SMTP |
+| `SMTP_PASSWORD` | SMTP-ключ |
+| `MAIL_FROM` | `NUSKA_etno <подтверждённый адрес>` |
+
+## Потом: свой домен
+
+Vercel → **Settings → Domains** → добавьте домен и DNS-записи у регистратора.
+Затем обновите `NEXT_PUBLIC_SITE_URL` в Vercel и `WEB_URL` в Render.
+
+## Как обновляется сайт
+
+- Изменения попадают в `main` → **Vercel** пересобирает сайт, **Render** — API (сам применяет миграции).
+- **GitHub Actions** (`.github/workflows/ci.yml`) на каждом pull request проверяет код:
+  линтер, типы, тесты на PostgreSQL, сборки, Docker-образ API.

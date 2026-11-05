@@ -1,0 +1,55 @@
+name: Initialize database
+
+# Manual button (Actions → Initialize database → Run workflow).
+# Applies migrations, loads the catalog from the price list, site content
+# (contacts, shops) and creates the first administrator. Safe to run again:
+# existing data and admin-panel edits are kept, no demo data is created.
+#
+# Repository secrets (Settings → Secrets and variables → Actions):
+#   PRODUCTION_DATABASE_URL — Neon DIRECT connection string (without -pooler)
+#   ADMIN_EMAIL, ADMIN_PASSWORD — first administrator (password: 12–72 chars, letters and digits)
+on:
+  workflow_dispatch:
+    inputs:
+      create_admin:
+        description: Create the administrator from ADMIN_EMAIL / ADMIN_PASSWORD
+        type: boolean
+        default: true
+
+concurrency:
+  group: init-database
+  cancel-in-progress: false
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+      DIRECT_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Add the repository secret PRODUCTION_DATABASE_URL (Neon direct connection string)"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @nuska/api...
+      - run: pnpm db:generate
+      - name: Apply migrations
+        run: pnpm --filter @nuska/api exec prisma migrate deploy
+      - name: Load catalog and site content (no demo data)
+        run: pnpm db:seed
+        env:
+          SEED_DEMO: 'false'
+      - name: Create administrator
+        if: ${{ inputs.create_admin }}
+        run: pnpm --filter @nuska/api admin:create
+        env:
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
