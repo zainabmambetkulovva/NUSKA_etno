@@ -1,7 +1,7 @@
 name: Deploy API
 
 # Deploys apps/api to Fly.io after CI passes on main.
-# Requires the repository secret FLY_API_TOKEN (fly tokens create deploy -a nuska-api).
+# Requires the repository secret FLY_API_TOKEN (fly tokens create deploy -a nuska-etno).
 on:
   workflow_run:
     workflows: [CI]

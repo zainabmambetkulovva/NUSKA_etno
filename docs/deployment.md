@@ -50,16 +50,16 @@ openssl rand -base64 48
 fly auth login
 ```
 
-2. Создайте приложение (если имя `nuska-api` занято — выберите другое и поменяйте `app` в `apps/api/fly.toml`):
+2. Создайте приложение (если имя `nuska-etno` занято — выберите другое и поменяйте `app` в `apps/api/fly.toml`):
 
 ```bash
-fly apps create nuska-api
+fly apps create nuska-etno
 ```
 
 3. Задайте секреты (подставьте свои значения; адрес сайта можно сначала указать адрес Vercel, потом заменить на домен):
 
 ```bash
-fly secrets set -a nuska-api DATABASE_URL='…pooled…' DIRECT_URL='…direct…' JWT_SECRET='…' PROXY_SECRET='…' WEB_URL='https://<адрес сайта>'
+fly secrets set -a nuska-etno DATABASE_URL='…pooled…' DIRECT_URL='…direct…' JWT_SECRET='…' PROXY_SECRET='…' WEB_URL='https://<адрес сайта>'
 ```
 
 4. Деплой из корня репозитория:
@@ -68,8 +68,8 @@ fly secrets set -a nuska-api DATABASE_URL='…pooled…' DIRECT_URL='…direct�
 fly deploy --config apps/api/fly.toml --dockerfile apps/api/Dockerfile .
 ```
 
-5. Проверка: `https://nuska-api.fly.dev/api/health` → `{"status":"healthy","database":"up"}`,
-   а `https://nuska-api.fly.dev/api/products` → `403` (так и должно быть).
+5. Проверка: `https://nuska-etno.fly.dev/api/health` → `{"status":"healthy","database":"up"}`,
+   а `https://nuska-etno.fly.dev/api/products` → `403` (так и должно быть).
 
 ## 4. Наполнение базы (один раз, со своего компьютера)
 
@@ -96,7 +96,7 @@ DATABASE_URL='…direct…' ADMIN_EMAIL='owner@…' ADMIN_PASSWORD='…' ADMIN_F
 
 | Переменная | Значение |
 |---|---|
-| `API_INTERNAL_URL` | `https://nuska-api.fly.dev` |
+| `API_INTERNAL_URL` | `https://nuska-etno.fly.dev` |
 | `API_PROXY_SECRET` | тот же ключ, что `PROXY_SECRET` в Fly |
 | `NEXT_PUBLIC_SITE_URL` | адрес сайта, например `https://<проект>.vercel.app` (потом — домен) |
 | `NEXT_PUBLIC_IMAGES_HOST` | хост R2 (шаг 6), можно добавить позже |
@@ -105,7 +105,7 @@ DATABASE_URL='…direct…' ADMIN_EMAIL='owner@…' ADMIN_PASSWORD='…' ADMIN_F
 5. Если адрес сайта отличается от `WEB_URL` в Fly — обновите:
 
 ```bash
-fly secrets set -a nuska-api WEB_URL='https://<адрес сайта>'
+fly secrets set -a nuska-etno WEB_URL='https://<адрес сайта>'
 ```
 
 ## 6. Cloudflare R2 (фото товаров)
@@ -117,7 +117,7 @@ fly secrets set -a nuska-api WEB_URL='https://<адрес сайта>'
 4. Секреты API:
 
 ```bash
-fly secrets set -a nuska-api S3_ENDPOINT='https://<ACCOUNT_ID>.r2.cloudflarestorage.com' S3_REGION=auto S3_BUCKET='nuska-images' S3_ACCESS_KEY_ID='…' S3_SECRET_ACCESS_KEY='…' S3_PUBLIC_URL='https://img.<домен>'
+fly secrets set -a nuska-etno S3_ENDPOINT='https://<ACCOUNT_ID>.r2.cloudflarestorage.com' S3_REGION=auto S3_BUCKET='nuska-images' S3_ACCESS_KEY_ID='…' S3_SECRET_ACCESS_KEY='…' S3_PUBLIC_URL='https://img.<домен>'
 ```
 
 5. В Vercel: `NEXT_PUBLIC_IMAGES_HOST=img.<домен>` (только хост, без `https://`) → **Redeploy**.
@@ -129,7 +129,7 @@ fly secrets set -a nuska-api S3_ENDPOINT='https://<ACCOUNT_ID>.r2.cloudflarestor
 **Resend** (https://resend.com): добавьте домен и DNS-записи, которые он покажет, создайте API-ключ.
 
 ```bash
-fly secrets set -a nuska-api SMTP_HOST=smtp.resend.com SMTP_PORT=465 SMTP_SECURE=true SMTP_USER=resend SMTP_PASSWORD='re_…' MAIL_FROM='NUSKA_etno <no-reply@<домен>>'
+fly secrets set -a nuska-etno SMTP_HOST=smtp.resend.com SMTP_PORT=465 SMTP_SECURE=true SMTP_USER=resend SMTP_PASSWORD='re_…' MAIL_FROM='NUSKA_etno <no-reply@<домен>>'
 ```
 
 **Brevo** (альтернатива): `SMTP_HOST=smtp-relay.brevo.com SMTP_PORT=587 SMTP_SECURE=false`,
@@ -149,7 +149,7 @@ fly secrets set -a nuska-api SMTP_HOST=smtp.resend.com SMTP_PORT=465 SMTP_SECURE
   секрет `FLY_API_TOKEN`:
 
 ```bash
-fly tokens create deploy -a nuska-api
+fly tokens create deploy -a nuska-etno
 ```
 
 ## 10. После запуска — чек-лист

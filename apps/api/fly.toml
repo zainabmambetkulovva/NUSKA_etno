@@ -4,7 +4,7 @@
 # Secrets (fly secrets set ...): DATABASE_URL, DIRECT_URL, JWT_SECRET, PROXY_SECRET,
 # WEB_URL (the site address, used in e-mail links), SMTP_*, MAIL_FROM, S3_* — see docs/deployment.md.
 
-app = "nuska-api"
+app = "nuska-etno"
 primary_region = "fra" # Frankfurt: next to Neon eu-central-1 and Vercel fra1
 
 [build]
