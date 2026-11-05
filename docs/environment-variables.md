@@ -16,6 +16,7 @@ Template: `apps/api/.env.example`.
 | `WEB_URL` | `http://localhost:3000` | Frontend URL used in e-mail links |
 | `TRUST_PROXY` | `false` | `true` behind a reverse proxy, so rate limiting sees the real client IP |
 | `SWAGGER_ENABLED` | `true` (dev), `false` (prod) | Swagger UI at `/api/docs` |
+| `PROXY_SECRET` | – | ≥ 32 chars, **required in production**. Requests without the matching `X-Proxy-Secret` header are refused (except `/api/health`); the visitor IP comes from the website proxy |
 
 ### Database
 
@@ -66,6 +67,7 @@ Without these, image upload endpoints answer `503 STORAGE_NOT_CONFIGURED`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
+| `SEED_DEMO` | `true` (`false` if `NODE_ENV=production`) | `false`: only catalog and site content, no demo pickup point, users or orders |
 | `SEED_ADMIN_EMAIL` | `admin@example.com` | Demo admin e-mail |
 | `SEED_ADMIN_PASSWORD` | random | Demo admin password; generated and printed once if empty |
 | `SEED_CUSTOMER_EMAIL` | `customer@example.com` | Demo customer e-mail |
@@ -85,12 +87,14 @@ The browser never calls the API directly: Next.js proxies `/api/*` to the API
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `API_INTERNAL_URL` | `http://localhost:4000` | Where the Next.js server reaches the API (proxy and server rendering) |
+| `API_PROXY_SECRET` | – | Same value as `PROXY_SECRET` of the API; required in production |
 | `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Public site URL for canonical links, hreflang, sitemap |
 | `NEXT_PUBLIC_IMAGES_HOST` | – | Exact host of the S3/CDN bucket with product images (enables image optimisation) |
 
-> Because requests reach the API through the Next.js proxy, set `TRUST_PROXY=true` on
-> the API and do not expose the API publicly — otherwise rate limiting sees only the
-> proxy's IP, or clients could spoof `X-Forwarded-For`.
+> The browser calls `/api/*` on the website; `src/app/api/[...path]/route.ts` forwards the
+> request to the API with `X-Proxy-Secret` and `X-Client-IP` (the visitor IP from
+> `X-Forwarded-For`, which Vercel sets). Rate limits therefore apply per visitor, and the API
+> is not usable directly. See [deployment.md](deployment.md).
 
 ## Security guidelines
 

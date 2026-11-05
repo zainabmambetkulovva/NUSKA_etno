@@ -20,7 +20,7 @@ import {
 const STRICT_LIMIT = { default: { limit: 5, ttl: 60_000 } };
 
 function clientMeta(request: Request): ClientMeta {
-  return { userAgent: request.header('user-agent'), ipAddress: request.ip };
+  return { userAgent: request.header('user-agent'), ipAddress: request.clientIp ?? request.ip };
 }
 
 function refreshCookie(request: Request): string | undefined {

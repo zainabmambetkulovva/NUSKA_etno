@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AdminModule } from './admin/admin.module';
 import { AuditModule } from './audit/audit.module';
@@ -10,6 +10,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { CartModule } from './cart/cart.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ClientIpThrottlerGuard } from './common/proxy/client-ip-throttler.guard';
 import { validateEnv } from './config/env.validation';
 import { ContentModule } from './content/content.module';
 import { FavoritesModule } from './favorites/favorites.module';
@@ -56,7 +57,7 @@ import { UsersModule } from './users/users.module';
   ],
   providers: [
     // Order matters: rate limit → authentication (deny by default) → roles.
-    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: ClientIpThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],

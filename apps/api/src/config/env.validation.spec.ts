@@ -19,8 +19,15 @@ describe('validateEnv', () => {
   });
 
   it('uses secure cookies and disables Swagger in production by default', () => {
-    const env = validateEnv({ ...base, NODE_ENV: 'production' });
+    const env = validateEnv({ ...base, NODE_ENV: 'production', PROXY_SECRET: 'p'.repeat(32) });
     expect(env).toMatchObject({ COOKIE_SECURE: true, SWAGGER_ENABLED: false });
+  });
+
+  it('requires a strong proxy secret in production', () => {
+    expect(() => validateEnv({ ...base, NODE_ENV: 'production' })).toThrow(
+      /PROXY_SECRET is required/
+    );
+    expect(() => validateEnv({ ...base, PROXY_SECRET: 'short' })).toThrow(/at least 32/);
   });
 
   it('rejects SameSite=None without Secure', () => {

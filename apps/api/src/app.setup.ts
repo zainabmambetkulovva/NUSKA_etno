@@ -11,6 +11,7 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 
 import { PrismaExceptionFilter } from './common/filters/prisma-exception.filter';
+import { clientIpMiddleware } from './common/proxy/client-ip';
 
 export const API_PREFIX = 'api';
 
@@ -35,6 +36,7 @@ export function configureApp(app: INestApplication) {
   express.disable('x-powered-by');
 
   app.setGlobalPrefix(API_PREFIX);
+  app.use(clientIpMiddleware(config.get<string>('PROXY_SECRET')));
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({

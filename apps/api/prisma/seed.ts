@@ -557,30 +557,35 @@ async function seedSiteContent() {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  // Production: SEED_DEMO=false loads only the catalog and site content.
+  // No demo pickup point, users or orders are created (create the admin with `pnpm admin:create`).
+  const demo =
+    (process.env.SEED_DEMO ?? (process.env.NODE_ENV === 'production' ? 'false' : 'true')) ===
+    'true';
+  console.log(`🌱 Seeding database (${demo ? 'with demo data' : 'catalog and content only'})...`);
 
   const categoryIds = await seedCategories();
   const catalog = await seedProducts(categoryIds);
-  const pickup = await seedPickupLocation();
-
-  await seedUser({
-    email: process.env.SEED_ADMIN_EMAIL || 'admin@example.com',
-    password: process.env.SEED_ADMIN_PASSWORD,
-    role: UserRole.ADMIN,
-    firstName: 'Demo',
-    lastName: 'Admin',
-  });
-
-  const customer = await seedUser({
-    email: process.env.SEED_CUSTOMER_EMAIL || 'customer@example.com',
-    password: process.env.SEED_CUSTOMER_PASSWORD,
-    role: UserRole.USER,
-    firstName: 'Demo',
-    lastName: 'Customer',
-  });
-
-  await seedDemoOrders(customer, pickup, catalog);
   await seedSiteContent();
+
+  if (demo) {
+    const pickup = await seedPickupLocation();
+    await seedUser({
+      email: process.env.SEED_ADMIN_EMAIL || 'admin@example.com',
+      password: process.env.SEED_ADMIN_PASSWORD,
+      role: UserRole.ADMIN,
+      firstName: 'Demo',
+      lastName: 'Admin',
+    });
+    const customer = await seedUser({
+      email: process.env.SEED_CUSTOMER_EMAIL || 'customer@example.com',
+      password: process.env.SEED_CUSTOMER_PASSWORD,
+      role: UserRole.USER,
+      firstName: 'Demo',
+      lastName: 'Customer',
+    });
+    await seedDemoOrders(customer, pickup, catalog);
+  }
 
   console.log('🌱 Seed completed');
 }

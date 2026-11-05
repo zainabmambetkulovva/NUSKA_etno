@@ -17,6 +17,7 @@ export interface AppEnv {
   COOKIE_DOMAIN?: string;
   TRUST_PROXY: boolean;
   SWAGGER_ENABLED: boolean;
+  PROXY_SECRET?: string;
 }
 
 function bool(value: unknown, fallback: boolean): boolean {
@@ -55,6 +56,12 @@ export function validateEnv(raw: Record<string, unknown>): Record<string, unknow
   if (sameSite === 'none' && !cookieSecure)
     errors.push('COOKIE_SAMESITE=none requires COOKIE_SECURE=true');
 
+  const proxySecret = (raw.PROXY_SECRET as string) || undefined;
+  if (proxySecret && proxySecret.length < 32)
+    errors.push('PROXY_SECRET must be at least 32 characters');
+  // In production the API must only be reachable through the website's proxy (real client IPs, no direct access).
+  if (isProduction && !proxySecret) errors.push('PROXY_SECRET is required in production');
+
   let env: AppEnv | undefined;
   try {
     env = {
@@ -75,6 +82,7 @@ export function validateEnv(raw: Record<string, unknown>): Record<string, unknow
       COOKIE_DOMAIN: (raw.COOKIE_DOMAIN as string) || undefined,
       TRUST_PROXY: bool(raw.TRUST_PROXY, false),
       SWAGGER_ENABLED: bool(raw.SWAGGER_ENABLED, !isProduction),
+      PROXY_SECRET: proxySecret,
     };
   } catch (error) {
     errors.push((error as Error).message);

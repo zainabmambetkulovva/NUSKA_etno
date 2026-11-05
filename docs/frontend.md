@@ -28,7 +28,8 @@ React Hook Form + Zod, Framer Motion.
 - Public pages are server-rendered on request; API responses are cached for 60 s
   (`src/lib/api/server.ts`). The build does not need a running API.
 - Client components call the API through `src/lib/api/client.ts` (same-origin `/api`,
-  httpOnly cookies, one automatic session refresh on 401).
+  httpOnly cookies, one automatic session refresh on 401). `/api/*` is served by the proxy
+  route `src/app/api/[...path]/route.ts`, which adds the shared secret and the visitor IP.
 - API errors carry a `code`; messages come from `t.errors[code]`.
 
 ## Design system

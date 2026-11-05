@@ -255,7 +255,7 @@ const ru: Dictionary = {
     CANNOT_MODIFY_SELF: 'Нельзя менять свою роль или блокировать себя.',
     STORAGE_NOT_CONFIGURED: 'Хранилище файлов ещё не подключено.',
     UNSUPPORTED_FILE_TYPE: 'Только изображения JPEG, PNG или WebP.',
-    FILE_TOO_LARGE: 'Размер файла не должен превышать 5 МБ.',
+    FILE_TOO_LARGE: 'Размер файла не должен превышать 4 МБ.',
     UNIQUE_CONSTRAINT: 'Такое значение уже существует (SKU или slug).',
     VALIDATION_FAILED: 'Проверьте поля формы.',
     UNAUTHORIZED: 'Войдите в аккаунт.',

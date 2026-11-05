@@ -22,7 +22,8 @@ const SIGNATURES: { mime: string; ext: string; test: (b: Buffer) => boolean }[] 
   },
 ];
 
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+/** 4 MB: requests pass through a Vercel function, whose body limit is 4.5 MB. */
+export const MAX_IMAGE_BYTES = 4 * 1024 * 1024;
 
 export function detectImageType(buffer: Buffer): { mime: string; ext: string } | null {
   const match = SIGNATURES.find((signature) => signature.test(buffer));

@@ -53,7 +53,7 @@ export class UploadsService {
   ): Promise<StoredFile> {
     if (!file?.buffer) throw AppError.badRequest('FILE_REQUIRED', 'A file is required');
     if (file.size > MAX_IMAGE_BYTES)
-      throw AppError.badRequest('FILE_TOO_LARGE', 'Maximum file size is 5 MB');
+      throw AppError.badRequest('FILE_TOO_LARGE', 'Maximum file size is 4 MB');
 
     const type = detectImageType(file.buffer);
     if (!type)

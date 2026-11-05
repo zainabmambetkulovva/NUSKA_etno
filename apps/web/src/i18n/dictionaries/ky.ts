@@ -255,7 +255,7 @@ const ky = {
     CANNOT_MODIFY_SELF: 'Өзүңүздүн ролуңузду өзгөртүүгө же өзүңүздү бөгөттөөгө болбойт.',
     STORAGE_NOT_CONFIGURED: 'Файл сактагыч туташтырыла элек.',
     UNSUPPORTED_FILE_TYPE: 'JPEG, PNG же WebP сүрөттөрү гана.',
-    FILE_TOO_LARGE: 'Файлдын көлөмү 5 МБдан ашпашы керек.',
+    FILE_TOO_LARGE: 'Файлдын көлөмү 4 МБдан ашпашы керек.',
     UNIQUE_CONSTRAINT: 'Мындай маани мурунтан бар (SKU же slug).',
     VALIDATION_FAILED: 'Талааларды текшериңиз.',
     UNAUTHORIZED: 'Кириңиз.',

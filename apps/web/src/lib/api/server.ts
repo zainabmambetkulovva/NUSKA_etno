@@ -11,7 +11,10 @@ const API_URL = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replac
 export async function serverApi<T>(path: string, locale: string, revalidate = 60): Promise<T> {
   const separator = path.includes('?') ? '&' : '?';
   const response = await fetch(`${API_URL}/api${path}${separator}locale=${locale}`, {
-    headers: { Accept: 'application/json' },
+    headers: {
+      Accept: 'application/json',
+      ...(process.env.API_PROXY_SECRET ? { 'x-proxy-secret': process.env.API_PROXY_SECRET } : {}),
+    },
     next: { revalidate, tags: ['catalog'] },
   });
   if (!response.ok) throw await toApiError(response);
