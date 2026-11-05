@@ -1,4 +1,4 @@
-import { HeroVisual } from './hero-visual';
+import { HeroScene } from './hero-scene';
 
 import { ButtonLink } from '@/components/ui/button';
 import type { Locale } from '@/i18n/config';
@@ -26,7 +26,7 @@ export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
             </ButtonLink>
           </div>
         </div>
-        <HeroVisual />
+        <HeroScene />
       </div>
     </section>
   );
