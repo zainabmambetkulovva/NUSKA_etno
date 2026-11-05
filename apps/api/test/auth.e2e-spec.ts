@@ -254,4 +254,36 @@ describe('Auth & users (e2e)', () => {
     await current.get('/api/users/me').expect(200);
     await other.get('/api/users/me').expect(401);
   });
+
+  it('reports the session without errors and renews it from the refresh cookie', async () => {
+    expect((await http().get('/api/auth/session').expect(200)).body).toEqual({ user: null });
+
+    const user = await createUser(ctx.prisma);
+    const login = await http()
+      .post('/api/auth/login')
+      .send({ email: user.email, password: PASSWORD })
+      .expect(200);
+    const access = cookieValue(login.headers['set-cookie'], 'nuska_access');
+    const refresh = cookieValue(login.headers['set-cookie'], 'nuska_refresh');
+
+    const withAccess = await http()
+      .get('/api/auth/session')
+      .set('Cookie', `nuska_access=${access}`)
+      .expect(200);
+    expect(withAccess.body.user.email).toBe(user.email);
+
+    // Access token missing/expired: the refresh cookie renews the session in the same request.
+    const renewed = await http()
+      .get('/api/auth/session')
+      .set('Cookie', `nuska_refresh=${refresh}`)
+      .expect(200);
+    expect(renewed.body.user.email).toBe(user.email);
+    expect(cookieValue(renewed.headers['set-cookie'], 'nuska_access')).toBeDefined();
+
+    const stale = await http()
+      .get('/api/auth/session')
+      .set('Cookie', `nuska_refresh=${refresh}`)
+      .expect(200);
+    expect(stale.body).toEqual({ user: null });
+  });
 });

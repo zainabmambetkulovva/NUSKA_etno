@@ -141,6 +141,29 @@ export class AuthService {
     };
   }
 
+  /** User of a valid access token with a live session, or null. Never throws. */
+  async userFromAccessToken(accessToken: string) {
+    try {
+      const payload = this.jwt.verify<JwtPayload>(accessToken, { algorithms: ['HS256'] });
+      const session = await this.prisma.session.findUnique({
+        where: { id: payload.sid },
+        include: { user: true },
+      });
+      if (
+        !session ||
+        session.userId !== payload.sub ||
+        session.expiresAt <= new Date() ||
+        !session.user.isActive ||
+        session.user.deletedAt
+      ) {
+        return null;
+      }
+      return toPublicUser(session.user);
+    } catch {
+      return null;
+    }
+  }
+
   /** Ends the session identified by the refresh token (works even if the access token expired). */
   async logout(refreshToken: string | undefined) {
     if (!refreshToken) return;

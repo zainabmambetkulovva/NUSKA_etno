@@ -4,11 +4,18 @@ import { UserRole } from '@prisma/client';
 
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
+import { RequestLocale } from '../common/decorators/request-locale.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { AuthenticatedUser } from '../common/types/authenticated-user';
+import { Locale } from '../common/utils/locale';
 
-import { AdminReviewsQueryDto, CreateReviewDto, ModerateReviewDto } from './dto/reviews.dto';
+import {
+  AdminReviewsQueryDto,
+  CreateReviewDto,
+  LatestReviewsQueryDto,
+  ModerateReviewDto,
+} from './dto/reviews.dto';
 import { ReviewsService } from './reviews.service';
 
 @ApiTags('reviews')
@@ -20,6 +27,12 @@ export class ReviewsController {
   @Get('products/:slug/reviews')
   listForProduct(@Param('slug') slug: string, @Query() query: PaginationQueryDto) {
     return this.reviews.listForProduct(slug, query.limit, query.offset);
+  }
+
+  @Public()
+  @Get('reviews/latest')
+  latest(@Query() query: LatestReviewsQueryDto, @RequestLocale() locale: Locale) {
+    return this.reviews.latest(query.limit, locale);
   }
 
   @Post('reviews')

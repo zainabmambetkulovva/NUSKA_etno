@@ -3,11 +3,17 @@ import { OrderStatus, Prisma, ReviewStatus } from '@prisma/client';
 
 import { AuditService } from '../audit/audit.service';
 import { AppError } from '../common/errors';
+import { Locale, pickTranslation } from '../common/utils/locale';
 import { paginate } from '../common/utils/pagination';
 import { PrismaService } from '../prisma/prisma.service';
 import { PUBLIC_PRODUCT_WHERE } from '../products/products.service';
 
 import { AdminReviewsQueryDto, CreateReviewDto, ModerateReviewDto } from './dto/reviews.dto';
+
+/** First name and the initial of the last name. */
+function authorName(user: { firstName: string | null; lastName: string | null }) {
+  return [user.firstName, user.lastName ? `${user.lastName[0]}.` : null].filter(Boolean).join(' ');
+}
 
 @Injectable()
 export class ReviewsService {
@@ -40,14 +46,36 @@ export class ReviewsService {
         rating: r.rating,
         comment: r.comment,
         createdAt: r.createdAt,
-        author: [r.user.firstName, r.user.lastName ? `${r.user.lastName[0]}.` : null]
-          .filter(Boolean)
-          .join(' '),
+        author: authorName(r.user),
       })),
       total,
       limit,
       offset
     );
+  }
+
+  /** Latest approved reviews across the catalog, for the home page. */
+  async latest(limit: number, locale: Locale) {
+    const reviews = await this.prisma.review.findMany({
+      where: { status: ReviewStatus.APPROVED, product: PUBLIC_PRODUCT_WHERE },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      include: {
+        user: { select: { firstName: true, lastName: true } },
+        product: { select: { slug: true, translations: true } },
+      },
+    });
+    return reviews.map((r) => ({
+      id: r.id,
+      rating: r.rating,
+      comment: r.comment,
+      createdAt: r.createdAt,
+      author: authorName(r.user),
+      product: {
+        slug: r.product.slug,
+        name: pickTranslation(r.product.translations, locale)?.name ?? r.product.slug,
+      },
+    }));
   }
 
   /** A review is allowed for an item of the user's own completed order, once per item. */

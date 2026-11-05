@@ -1,13 +1,13 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 import { AuthenticatedUser } from '../common/types/authenticated-user';
 
-import { AuthCookies, REFRESH_COOKIE } from './auth.cookies';
+import { ACCESS_COOKIE, AuthCookies, REFRESH_COOKIE } from './auth.cookies';
 import { AuthService, ClientMeta } from './auth.service';
 import {
   ForgotPasswordDto,
@@ -75,6 +75,32 @@ export class AuthController {
     } catch (error) {
       this.cookies.clear(res);
       throw error;
+    }
+  }
+
+  /**
+   * Current user for the frontend, always 200: { user } or { user: null }.
+   * If the access token expired but the refresh token is valid, the session is
+   * rotated here, so pages need one request instead of 401 → refresh → retry.
+   */
+  @Public()
+  @SkipThrottle()
+  @Get('session')
+  async session(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const access = req.cookies?.[ACCESS_COOKIE];
+    if (typeof access === 'string' && access) {
+      const user = await this.auth.userFromAccessToken(access);
+      if (user) return { user };
+    }
+    const refresh = refreshCookie(req);
+    if (!refresh) return { user: null };
+    try {
+      const { user, tokens } = await this.auth.refresh(refresh, clientMeta(req));
+      this.cookies.set(res, tokens);
+      return { user };
+    } catch {
+      this.cookies.clear(res);
+      return { user: null };
     }
   }
 
