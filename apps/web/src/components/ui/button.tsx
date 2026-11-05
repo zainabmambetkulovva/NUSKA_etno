@@ -1,53 +1,79 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
-type ButtonSize = 'sm' | 'md' | 'lg';
+import Link from 'next/link';
 
-interface ButtonProps extends ComponentProps<'button'> {
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  isLoading?: boolean;
+import { cn } from '@/lib/cn';
+
+type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
+type Size = 'sm' | 'md' | 'lg';
+
+const base =
+  'inline-flex items-center justify-center gap-2 rounded-full font-medium transition duration-200 ' +
+  'disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]';
+
+const variants: Record<Variant, string> = {
+  primary: 'bg-brand text-cream-light shadow-card hover:bg-brand-dark hover:shadow-lift',
+  secondary: 'bg-cream text-brand-dark hover:bg-cream-dark',
+  outline: 'border border-brand/60 text-brand hover:bg-brand hover:text-cream-light',
+  ghost: 'text-ink hover:bg-cream-50 hover:text-brand',
+  danger: 'border border-danger/50 text-danger hover:bg-danger hover:text-white',
+};
+
+const sizes: Record<Size, string> = {
+  sm: 'h-9 px-4 text-sm',
+  md: 'h-11 px-6 text-[15px]',
+  lg: 'h-12 px-8 text-base',
+};
+
+export function buttonClass(variant: Variant = 'primary', size: Size = 'md', className?: string) {
+  return cn(base, variants[variant], sizes[size], className);
 }
 
-export function Button({ 
-  variant = 'primary', 
-  size = 'md', 
-  isLoading,
-  className = '',
+function Spinner() {
+  return (
+    <span
+      className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+      aria-hidden
+    />
+  );
+}
+
+interface ButtonProps extends ComponentProps<'button'> {
+  variant?: Variant;
+  size?: Size;
+  loading?: boolean;
+}
+
+export function Button({
+  variant,
+  size,
+  loading,
+  className,
   disabled,
   children,
-  ...props 
+  type = 'button',
+  ...props
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-  
-  const variants = {
-    primary: 'bg-brand hover:bg-brand-dark text-white focus:ring-brand shadow-3d',
-    secondary: 'bg-cream hover:bg-cream-dark text-text focus:ring-cream',
-    outline: 'border-2 border-brand text-brand hover:bg-cream focus:ring-brand',
-    ghost: 'text-text hover:bg-neutral/10',
-  };
-
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-5 py-2.5 text-base',
-    lg: 'px-8 py-4 text-lg',
-  };
-
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-      disabled={disabled || isLoading}
+      type={type}
+      className={buttonClass(variant, size, className)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
     >
-      {isLoading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      )}
+      {loading && <Spinner />}
       {children}
     </button>
   );
 }
 
-export default Button;
+interface ButtonLinkProps extends ComponentProps<typeof Link> {
+  variant?: Variant;
+  size?: Size;
+  children: ReactNode;
+}
+
+export function ButtonLink({ variant, size, className, ...props }: ButtonLinkProps) {
+  return <Link className={buttonClass(variant, size, className)} {...props} />;
+}

@@ -1,47 +1,40 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common';
-import { ProductsService } from './products.service';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Role } from '../auth/decorators/role.decorator';
-import { UserRole } from '@prisma/client';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
+import { Public } from '../common/decorators/public.decorator';
+import { RequestLocale } from '../common/decorators/request-locale.decorator';
+import { LocaleQueryDto } from '../common/dto/locale-query.dto';
+import { Locale } from '../common/utils/locale';
+
+import { ProductsQueryDto } from './dto/products.dto';
+import { ProductsService } from './products.service';
+
+@ApiTags('catalog')
+@Public()
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly products: ProductsService) {}
 
   @Get()
-  findAll(@Query('limit') limit?: number, @Query('offset') offset?: number) {
-    return this.productsService.findAll(limit, offset);
+  list(@Query() query: ProductsQueryDto, @RequestLocale() locale: Locale) {
+    return this.products.list(query, locale);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productsService.findOne(id);
+  @Get(':slug')
+  get(
+    @Param('slug') slug: string,
+    @Query() _query: LocaleQueryDto,
+    @RequestLocale() locale: Locale
+  ) {
+    return this.products.getBySlug(slug, locale);
   }
 
-  @Get('slug/:slug')
-  findBySlug(@Param('slug') slug: string) {
-    return this.productsService.findBySlug(slug);
-  }
-
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Role(UserRole.ADMIN)
-  create(@Body() createProductDto: any) {
-    return this.productsService.create(createProductDto);
-  }
-
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Role(UserRole.ADMIN)
-  update(@Param('id') id: string, @Body() updateProductDto: any) {
-    return this.productsService.update(id, updateProductDto);
-  }
-
-  @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Role(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(id);
+  @Get(':slug/related')
+  related(
+    @Param('slug') slug: string,
+    @Query() _query: LocaleQueryDto,
+    @RequestLocale() locale: Locale
+  ) {
+    return this.products.related(slug, locale);
   }
 }

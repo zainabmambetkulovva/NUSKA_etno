@@ -1,37 +1,49 @@
-// Prisma Schema for NUSKA_etno
-// Database: Neon PostgreSQL
-// ORM: Prisma
-// Version: 1.0
+// NUSKA_etno — Prisma schema
+// Database: Neon PostgreSQL. Specification: DATABASE.md
+//
+// Conventions
+// - Models / enums: PascalCase, enum values: UPPER_SNAKE_CASE, fields: camelCase.
+// - Tables and columns: snake_case via @@map / @map.
+// - Primary keys and foreign keys: UUID.
+// - Money: integer amounts in tyiyn (1 som = 100 tyiyn), currency code next to it.
+// - Locales: 'ky' (default) | 'ru' (enforced by CHECK constraints in the migration).
+// - Orders, order items, payments and payment events are never deleted
+//   physically, so their relations use onDelete: Restrict.
+// - CHECK constraints and partial unique indexes that Prisma cannot express
+//   are added in prisma/migrations/*_init/migration.sql (see the end of that file).
 
 generator client {
   provider = "prisma-client-js"
+  // "native" for local development; debian-openssl-3.0.x for the production image (distroless Debian 12).
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-// Enum: User Role
+// ============================================================================
+// Enums
+// ============================================================================
+
 enum UserRole {
   USER
   ADMIN
 }
 
-// Enum: Product Type
 enum ProductType {
   FOOD
   BEVERAGE
 }
 
-// Enum: Product Status
 enum ProductStatus {
   DRAFT
   ACTIVE
   ARCHIVED
 }
 
-// Enum: Order Status
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -41,7 +53,6 @@ enum OrderStatus {
   CANCELLED
 }
 
-// Enum: Payment Status
 enum PaymentStatus {
   PENDING
   PROCESSING
@@ -51,13 +62,11 @@ enum PaymentStatus {
   CANCELLED
 }
 
-// Enum: Payment Method
 enum PaymentMethod {
   CASH
   ONLINE
 }
 
-// Enum: Stock Movement Type
 enum StockMovementType {
   IN
   OUT
@@ -65,7 +74,6 @@ enum StockMovementType {
   RETURN
 }
 
-// Enum: Notification Type
 enum NotificationType {
   ORDER_CREATED
   ORDER_CONFIRMED
@@ -75,269 +83,293 @@ enum NotificationType {
   GENERAL
 }
 
-// Enum: Review Status
 enum ReviewStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
-// Model: User
+// ============================================================================
+// Users and authentication
+// ============================================================================
+
 model User {
-  id               String     @id @default(uuid()) @db.Uuid
-  firstName        String?
-  lastName         String?
-  email            String     @unique @map("email")
-  phone            String?    @unique @map("phone")
-  passwordHash     String     @map("password_hash")
-  role             UserRole   @default(USER)
-  emailVerifiedAt  DateTime?  @map("email_verified_at")
-  isActive         Boolean    @default(true) @map("is_active")
-  deletedAt        DateTime?  @map("deleted_at")
-  createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime   @updatedAt @map("updated_at")
+  id              String    @id @default(uuid()) @db.Uuid
+  firstName       String?   @map("first_name")
+  lastName        String?   @map("last_name")
+  /// Stored lower-cased (normalised in the application layer).
+  email           String    @unique
+  /// Stored in E.164 format, e.g. +996XXXXXXXXX.
+  phone           String?
+  passwordHash    String    @map("password_hash")
+  role            UserRole  @default(USER)
+  /// Preferred interface language: 'ky' | 'ru'. Also used for notifications.
+  locale          String    @default("ky") @db.VarChar(5)
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  isActive        Boolean   @default(true) @map("is_active")
+  deletedAt       DateTime? @map("deleted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
 
-  sessions              Session[]
-  passwordResetTokens   PasswordResetToken[]
+  sessions                Session[]
+  passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
-  cart                  Cart?
-  favorites             Favorite[]
-  orders                Order[]
-  reviews               Review[]
-  notifications         Notification[]
-  stockMovements        StockMovement[]
-  auditLogs             AuditLog[]
+  cart                    Cart?
+  favorites               Favorite[]
+  orders                  Order[]
+  orderStatusChanges      OrderStatusHistory[]
+  reviews                 Review[]
+  notifications           Notification[]
+  stockMovements          StockMovement[]
+  auditLogs               AuditLog[]
 
+  @@index([phone])
+  @@index([deletedAt])
   @@map("users")
 }
 
-// Model: Session
+/// Refresh-token sessions. Only a hash of the token is stored.
 model Session {
-  id         String    @id @default(uuid()) @db.Uuid
-  userId     String    @map("user_id")
-  tokenHash  String    @map("token_hash")
-  expiresAt  DateTime  @map("expires_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  tokenHash String   @unique @map("token_hash")
+  userAgent String?  @map("user_agent")
+  ipAddress String?  @map("ip_address")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("sessions")
   @@index([userId])
-  @@index([tokenHash])
   @@index([expiresAt])
+  @@map("sessions")
 }
 
-// Model: PasswordResetToken
 model PasswordResetToken {
   id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id")
-  tokenHash String    @map("token_hash")
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
   expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
   createdAt DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("password_reset_tokens")
   @@index([userId])
-  @@index([tokenHash])
   @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
-// Model: EmailVerificationToken
 model EmailVerificationToken {
   id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @map("user_id")
-  tokenHash String    @map("token_hash")
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash")
   expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
   createdAt DateTime  @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("email_verification_tokens")
   @@index([userId])
-  @@index([tokenHash])
   @@index([expiresAt])
+  @@map("email_verification_tokens")
 }
 
-// Model: Category
-model Category {
-  id          String      @id @default(uuid()) @db.Uuid
-  parentId    String?     @map("parent_id")
-  slug        String      @unique @db.Text
-  imageUrl    String?     @map("image_url")
-  sortOrder   Int         @default(0) @map("sort_order")
-  isActive    Boolean     @default(true) @map("is_active")
-  deletedAt   DateTime?   @map("deleted_at")
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+// ============================================================================
+// Catalog
+// ============================================================================
 
+model Category {
+  id        String    @id @default(uuid()) @db.Uuid
+  parentId  String?   @map("parent_id") @db.Uuid
+  slug      String    @unique
+  imageUrl  String?   @map("image_url")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  deletedAt DateTime? @map("deleted_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  parent       Category?             @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children     Category[]            @relation("CategoryTree")
   translations CategoryTranslation[]
   products     ProductCategory[]
 
-  @@map("categories")
   @@index([parentId])
-  @@index([slug])
-  @@index([isActive])
+  @@index([isActive, deletedAt, sortOrder])
+  @@map("categories")
 }
 
-// Model: CategoryTranslation
 model CategoryTranslation {
-  id          String   @id @default(uuid()) @db.Uuid
-  categoryId  String   @map("category_id")
-  locale      String   @db.Text
-  name        String   @db.Text
-  description String?  @db.Text
+  id          String  @id @default(uuid()) @db.Uuid
+  categoryId  String  @map("category_id") @db.Uuid
+  locale      String  @db.VarChar(5)
+  name        String
+  description String?
 
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, locale])
-  @@map("category_translations")
-  @@index([categoryId])
   @@index([locale])
+  @@map("category_translations")
 }
 
-// Model: Product
 model Product {
-  id               String         @id @default(uuid()) @db.Uuid
-  sku              String         @unique @db.Text
-  slug             String         @unique @db.Text
-  type             ProductType    @default(FOOD)
-  status           ProductStatus  @default(DRAFT)
-  priceAmount      Int            @map("price_amount")
-  currency         String         @default("KGS") @db.Text
-  stockQuantity    Int            @default(0) @map("stock_quantity")
-  trackInventory   Boolean        @default(true) @map("track_inventory")
-  isFeatured       Boolean        @default(false) @map("is_featured")
-  sortOrder        Int            @default(0) @map("sort_order")
-  deletedAt        DateTime?      @map("deleted_at")
-  createdAt        DateTime       @default(now()) @map("created_at")
-  updatedAt        DateTime       @updatedAt @map("updated_at")
+  id             String        @id @default(uuid()) @db.Uuid
+  sku            String        @unique
+  slug           String        @unique
+  type           ProductType   @default(FOOD)
+  status         ProductStatus @default(DRAFT)
+  /// Price in tyiyn (1 som = 100 tyiyn).
+  priceAmount    Int           @map("price_amount")
+  currency       String        @default("KGS") @db.Char(3)
+  /// Never negative (CHECK constraint). Changed only inside transactions.
+  stockQuantity  Int           @default(0) @map("stock_quantity")
+  /// When false, stock is not checked or deducted for this product.
+  trackInventory Boolean       @default(true) @map("track_inventory")
+  isFeatured     Boolean       @default(false) @map("is_featured")
+  sortOrder      Int           @default(0) @map("sort_order")
+  deletedAt      DateTime?     @map("deleted_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
 
-  translations      ProductTranslation[]
-  categories        ProductCategory[]
-  images            ProductImage[]
-  units             ProductUnit[]
-  stockMovements    StockMovement[]
-  cartItems         CartItem[]
-  favorites         Favorite[]
-  orderItems        OrderItem[]
-  reviews           Review[]
+  translations   ProductTranslation[]
+  categories     ProductCategory[]
+  images         ProductImage[]
+  units          ProductUnit[]
+  stockMovements StockMovement[]
+  cartItems      CartItem[]
+  favorites      Favorite[]
+  orderItems     OrderItem[]
+  reviews        Review[]
 
-  @@map("products")
-  @@index([slug])
-  @@index([sku])
   @@index([status])
   @@index([deletedAt])
   @@index([isFeatured])
+  @@index([status, deletedAt, sortOrder])
+  @@map("products")
 }
 
-// Model: ProductTranslation
 model ProductTranslation {
-  id                 String  @id @default(uuid()) @db.Uuid
-  productId          String  @map("product_id")
-  locale             String  @db.Text
-  name               String  @db.Text
-  shortDescription   String? @map("short_description") @db.Text
-  description        String? @db.Text
-  ingredients        String? @db.Text
-  storageInstructions String? @map("storage_instructions") @db.Text
+  id                  String  @id @default(uuid()) @db.Uuid
+  productId           String  @map("product_id") @db.Uuid
+  locale              String  @db.VarChar(5)
+  name                String
+  shortDescription    String? @map("short_description")
+  description         String?
+  ingredients         String?
+  storageInstructions String? @map("storage_instructions")
+  /// Product characteristics shown on the product page (TZ §6.4):
+  /// an ordered array of { "name": string, "value": string } in this locale.
+  characteristics     Json?
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, locale])
-  @@map("product_translations")
-  @@index([productId])
   @@index([locale])
+  @@map("product_translations")
 }
 
-// Model: ProductCategory (Join table)
 model ProductCategory {
-  productId  String
-  categoryId String
+  productId  String   @map("product_id") @db.Uuid
+  categoryId String   @map("category_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
 
   product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@id([productId, categoryId])
-  @@map("product_categories")
-  @@index([productId])
   @@index([categoryId])
+  @@map("product_categories")
 }
 
-// Model: ProductImage
+/// Files live in S3-compatible storage; only the URL and metadata are stored here.
+/// At most one primary image per product (partial unique index).
 model ProductImage {
-  id        String   @id @default(uuid()) @db.Uuid
-  productId String   @map("product_id")
-  url       String   @db.Text
-  alt       String?  @db.Text
-  sortOrder Int      @default(0) @map("sort_order")
-  isPrimary Boolean  @default(false) @map("is_primary")
-  createdAt DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid()) @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  url        String
+  /// Object key in the storage bucket, needed to delete the file.
+  storageKey String?  @map("storage_key")
+  alt        String?
+  mimeType   String?  @map("mime_type")
+  sizeBytes  Int?     @map("size_bytes")
+  width      Int?
+  height     Int?
+  sortOrder  Int      @default(0) @map("sort_order")
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  @@index([productId, sortOrder])
   @@map("product_images")
-  @@index([productId])
-  @@index([isPrimary])
 }
 
-// Model: ProductUnit
+/// Sale units (piece, pack, kg, l, g). Filled only with data provided by the company.
 model ProductUnit {
   id            String   @id @default(uuid()) @db.Uuid
-  productId     String   @map("product_id")
-  unitName      String   @map("unit_name") @db.Text
-  quantityValue Float    @map("quantity_value")
-  quantityUnit  String   @map("quantity_unit") @db.Text
+  productId     String   @map("product_id") @db.Uuid
+  unitName      String   @map("unit_name")
+  quantityValue Decimal  @map("quantity_value") @db.Decimal(10, 3)
+  quantityUnit  String   @map("quantity_unit")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@map("product_units")
   @@index([productId])
+  @@map("product_units")
 }
 
-// Model: StockMovement
-model StockMovement {
-  id           String             @id @default(uuid()) @db.Uuid
-  productId    String             @map("product_id")
-  type         StockMovementType  @default(OUT)
-  quantity     Int                @default(0)
-  reason       String?            @db.Text
-  referenceId  String?            @map("reference_id") @db.Text
-  createdById  String?            @map("created_by_id")
-  createdAt    DateTime           @default(now()) @map("created_at")
+// ============================================================================
+// Inventory
+// ============================================================================
 
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+/// Stock ledger. `quantity` is a signed delta applied to Product.stockQuantity:
+/// IN / RETURN > 0, OUT < 0, ADJUSTMENT either sign, never 0.
+/// For order-related movements `referenceId` holds the order id.
+model StockMovement {
+  id          String            @id @default(uuid()) @db.Uuid
+  productId   String            @map("product_id") @db.Uuid
+  type        StockMovementType
+  quantity    Int
+  reason      String?
+  referenceId String?           @map("reference_id")
+  createdById String?           @map("created_by_id") @db.Uuid
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
+  @@index([productId, createdAt])
+  @@index([referenceId])
   @@map("stock_movements")
-  @@index([productId])
-  @@index([type])
-  @@index([createdAt])
 }
 
-// Model: Cart
+// ============================================================================
+// Cart and favorites
+// ============================================================================
+
+/// One cart per user. Guests keep the cart in the browser and it is merged on login.
 model Cart {
   id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @unique @map("user_id")
+  userId    String   @unique @map("user_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  items    CartItem[]
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
 
   @@map("carts")
 }
 
-// Model: CartItem
 model CartItem {
   id        String   @id @default(uuid()) @db.Uuid
-  cartId    String   @map("cart_id")
-  productId String   @map("product_id")
+  cartId    String   @map("cart_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
+  /// > 0 (CHECK constraint).
   quantity  Int      @default(1)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -346,214 +378,318 @@ model CartItem {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([cartId, productId])
-  @@map("cart_items")
-  @@index([cartId])
   @@index([productId])
+  @@map("cart_items")
 }
 
-// Model: Favorite
 model Favorite {
   id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id")
-  productId String   @map("product_id")
+  userId    String   @map("user_id") @db.Uuid
+  productId String   @map("product_id") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
 
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+  @@index([productId])
   @@map("favorites")
-  @@index([userId])
-  @@index([productId])
 }
 
-// Model: Order
-model Order {
-  id                 String        @id @default(uuid()) @db.Uuid
-  orderNumber        String        @unique @map("order_number") @db.Text
-  userId             String        @map("user_id")
-  status             OrderStatus   @default(PENDING)
-  subtotalAmount     Int           @map("subtotal_amount")
-  totalAmount        Int           @map("total_amount")
-  currency           String        @default("KGS") @db.Text
-  customerName       String        @map("customer_name") @db.Text
-  customerPhone      String        @map("customer_phone") @db.Text
-  customerEmail      String?       @map("customer_email") @db.Text
-  pickupLocationId   String        @map("pickup_location_id")
-  pickupTime         DateTime?     @map("pickup_time")
-  customerComment    String?       @map("customer_comment") @db.Text
-  confirmedAt        DateTime?     @map("confirmed_at")
-  completedAt        DateTime?     @map("completed_at")
-  cancelledAt        DateTime?     @map("cancelled_at")
-  createdAt          DateTime      @default(now()) @map("created_at")
-  updatedAt          DateTime      @updatedAt @map("updated_at")
+// ============================================================================
+// Pickup
+// ============================================================================
 
-  user             User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
-  items            OrderItem[]
-  statusHistory    OrderStatusHistory[]
-  payment          Payment?
-  pickupLocation   PickupLocation      @relation(fields: [pickupLocationId], references: [id], onDelete: Restrict)
-
-  @@map("orders")
-  @@index([orderNumber])
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-// Model: OrderItem
-model OrderItem {
-  id                 String   @id @default(uuid()) @db.Uuid
-  orderId            String   @map("order_id")
-  productId          String?  @map("product_id")
-  productName        String   @map("product_name") @db.Text
-  productSku         String   @map("product_sku") @db.Text
-  quantity           Int      @default(1)
-  unitPriceAmount    Int      @map("unit_price_amount")
-  totalPriceAmount   Int      @map("total_price_amount")
-  createdAt          DateTime @default(now()) @map("created_at")
-
-  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-
-  @@map("order_items")
-  @@index([orderId])
-  @@index([productId])
-}
-
-// Model: OrderStatusHistory
-model OrderStatusHistory {
-  id          String      @id @default(uuid()) @db.Uuid
-  orderId     String      @map("order_id")
-  oldStatus   OrderStatus @map("old_status")
-  newStatus   OrderStatus @map("new_status")
-  changedById String?     @map("changed_by_id")
-  comment     String?     @db.Text
-  createdAt   DateTime    @default(now()) @map("created_at")
-
-  order     Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  changedBy User? @relation(fields: [changedById], references: [id], onDelete: SetNull)
-
-  @@map("order_status_history")
-  @@index([orderId])
-  @@index([createdAt])
-}
-
-// Model: PickupLocation
+/// Address, coordinates and hours are filled only with data from the company.
 model PickupLocation {
-  id              String    @id @default(uuid()) @db.Uuid
-  name            String    @db.Text
-  address         String    @db.Text
-  description     String?   @db.Text
-  phone           String?   @db.Text
-  latitude        Float?    @db.Decimal
-  longitude       Float?    @db.Decimal
-  openingHours    String?   @map("opening_hours") @db.Text
-  isActive        Boolean   @default(true) @map("is_active")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  address      String
+  description  String?
+  phone        String?
+  latitude     Decimal? @db.Decimal(9, 6)
+  longitude    Decimal? @db.Decimal(9, 6)
+  openingHours String?  @map("opening_hours")
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   orders Order[]
 
+  @@index([isActive, sortOrder])
   @@map("pickup_locations")
 }
 
-// Model: Payment
+// ============================================================================
+// Orders
+// ============================================================================
+
+/// Orders are placed only by registered users (guest checkout is not supported).
+/// Customer contacts and the pickup point are stored as a snapshot.
+/// Stock is deducted when the order is created and returned when it is cancelled.
+model Order {
+  id                    String      @id @default(uuid()) @db.Uuid
+  /// Human-readable sequential number shown to customers.
+  orderNumber           Int         @unique @default(autoincrement()) @map("order_number")
+  userId                String      @map("user_id") @db.Uuid
+  status                OrderStatus @default(PENDING)
+  /// Amounts in tyiyn, >= 0 (CHECK constraint).
+  subtotalAmount        Int         @map("subtotal_amount")
+  totalAmount           Int         @map("total_amount")
+  currency              String      @default("KGS") @db.Char(3)
+  /// Locale the order was placed in; used for notifications about it.
+  locale                String      @default("ky") @db.VarChar(5)
+  customerName          String      @map("customer_name")
+  customerPhone         String      @map("customer_phone")
+  customerEmail         String?     @map("customer_email")
+  pickupLocationId      String      @map("pickup_location_id") @db.Uuid
+  pickupLocationName    String      @map("pickup_location_name")
+  pickupLocationAddress String      @map("pickup_location_address")
+  pickupTime            DateTime?   @map("pickup_time")
+  customerComment       String?     @map("customer_comment")
+  confirmedAt           DateTime?   @map("confirmed_at")
+  completedAt           DateTime?   @map("completed_at")
+  cancelledAt           DateTime?   @map("cancelled_at")
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
+  pickupLocation PickupLocation       @relation(fields: [pickupLocationId], references: [id], onDelete: Restrict)
+  items          OrderItem[]
+  statusHistory  OrderStatusHistory[]
+  payments       Payment[]
+  notifications  Notification[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+  @@index([createdAt])
+  @@index([pickupLocationId])
+  @@map("orders")
+}
+
+/// Snapshot of a product at the moment of ordering. Survives product
+/// archiving, soft-deletion and price changes.
+model OrderItem {
+  id               String   @id @default(uuid()) @db.Uuid
+  orderId          String   @map("order_id") @db.Uuid
+  productId        String?  @map("product_id") @db.Uuid
+  productName      String   @map("product_name")
+  productSku       String   @map("product_sku")
+  /// > 0 (CHECK constraint).
+  quantity         Int
+  unitPriceAmount  Int      @map("unit_price_amount")
+  totalPriceAmount Int      @map("total_price_amount")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  review  Review?
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+/// Every status change is recorded. `oldStatus` is null for the initial record.
+model OrderStatusHistory {
+  id          String       @id @default(uuid()) @db.Uuid
+  orderId     String       @map("order_id") @db.Uuid
+  oldStatus   OrderStatus? @map("old_status")
+  newStatus   OrderStatus  @map("new_status")
+  changedById String?      @map("changed_by_id") @db.Uuid
+  comment     String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  order     Order @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  changedBy User? @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@map("order_status_history")
+}
+
+// ============================================================================
+// Payments
+// ============================================================================
+
+/// An order may have several payment attempts. No card data is stored.
 model Payment {
-  id                  String        @id @default(uuid()) @db.Uuid
-  orderId             String        @map("order_id")
-  method              PaymentMethod @default(CASH)
-  status              PaymentStatus @default(PENDING)
-  amount              Int           @default(0)
-  currency            String        @default("KGS") @db.Text
-  provider            String?       @db.Text
-  providerPaymentId   String?       @map("provider_payment_id") @db.Text
-  paidAt              DateTime?     @map("paid_at")
-  createdAt           DateTime      @default(now()) @map("created_at")
-  updatedAt           DateTime      @updatedAt @map("updated_at")
+  id                String        @id @default(uuid()) @db.Uuid
+  orderId           String        @map("order_id") @db.Uuid
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  /// Amount in tyiyn, >= 0 (CHECK constraint).
+  amount            Int
+  currency          String        @default("KGS") @db.Char(3)
+  provider          String?
+  providerPaymentId String?       @map("provider_payment_id")
+  paidAt            DateTime?     @map("paid_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
 
-  order      Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  events     PaymentEvent[]
+  order  Order          @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  events PaymentEvent[]
 
-  @@map("payments")
+  @@unique([provider, providerPaymentId])
   @@index([orderId])
   @@index([providerPaymentId])
+  @@map("payments")
 }
 
-// Model: PaymentEvent
+/// Webhook / provider events. (provider, externalEventId) is unique, so the
+/// same webhook can never be processed twice.
 model PaymentEvent {
-  id                String   @id @default(uuid()) @db.Uuid
-  paymentId         String   @map("payment_id")
-  provider          String   @db.Text
-  externalEventId   String   @map("external_event_id") @db.Text
-  eventType         String   @map("event_type") @db.Text
-  payload           String?  @db.Text
-  processedAt       DateTime? @map("processed_at")
-  createdAt         DateTime @default(now()) @map("created_at")
+  id              String    @id @default(uuid()) @db.Uuid
+  paymentId       String    @map("payment_id") @db.Uuid
+  provider        String
+  externalEventId String    @map("external_event_id")
+  eventType       String    @map("event_type")
+  payload         Json?
+  processedAt     DateTime? @map("processed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
-  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
 
   @@unique([provider, externalEventId])
-  @@map("payment_events")
   @@index([paymentId])
+  @@map("payment_events")
 }
 
-// Model: Review
+// ============================================================================
+// Reviews
+// ============================================================================
+
+/// A review can be left only for a purchased order item, once per item.
+/// Rating 1..5 (CHECK constraint). Published after moderation.
 model Review {
-  id          String      @id @default(uuid()) @db.Uuid
-  userId      String      @map("user_id")
-  productId   String      @map("product_id")
-  orderItemId String?     @map("order_item_id")
-  rating      Int         @default(5)
-  comment     String?     @db.Text
+  id          String       @id @default(uuid()) @db.Uuid
+  userId      String       @map("user_id") @db.Uuid
+  productId   String       @map("product_id") @db.Uuid
+  orderItemId String       @unique @map("order_item_id") @db.Uuid
+  rating      Int
+  comment     String?
   status      ReviewStatus @default(PENDING)
-  createdAt   DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
 
-  user        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  orderItem   OrderItem?  @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Restrict)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Restrict)
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Restrict)
 
-  @@unique([userId, productId, orderItemId])
-  @@map("reviews")
   @@index([userId])
-  @@index([productId])
+  @@index([productId, status])
   @@index([status])
+  @@map("reviews")
 }
 
-// Model: Notification
+// ============================================================================
+// Notifications
+// ============================================================================
+
+/// Title and message are written in `locale` (the user's language at creation time).
 model Notification {
-  id               String           @id @default(uuid()) @db.Uuid
-  userId           String           @map("user_id")
-  type             NotificationType @default(GENERAL)
-  title            String           @db.Text
-  message          String           @db.Text
-  isRead           Boolean          @default(false) @map("is_read")
-  relatedOrderId   String?          @map("related_order_id") @db.Text
-  createdAt        DateTime         @default(now()) @map("created_at")
+  id             String           @id @default(uuid()) @db.Uuid
+  userId         String           @map("user_id") @db.Uuid
+  type           NotificationType @default(GENERAL)
+  locale         String           @default("ky") @db.VarChar(5)
+  title          String
+  message        String
+  isRead         Boolean          @default(false) @map("is_read")
+  relatedOrderId String?          @map("related_order_id") @db.Uuid
+  createdAt      DateTime         @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  relatedOrder Order? @relation(fields: [relatedOrderId], references: [id], onDelete: SetNull)
 
+  @@index([userId, isRead, createdAt])
+  @@index([relatedOrderId])
   @@map("notifications")
-  @@index([userId])
-  @@index([isRead])
-  @@index([createdAt])
 }
 
-// Model: AuditLog
+// ============================================================================
+// Site content (admin-managed, TZ §14 "Управление контентом")
+// ============================================================================
+
+/// Home page banners.
+model Banner {
+  id        String    @id @default(uuid()) @db.Uuid
+  imageUrl  String?   @map("image_url")
+  linkUrl   String?   @map("link_url")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  startsAt  DateTime? @map("starts_at")
+  endsAt    DateTime? @map("ends_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  translations BannerTranslation[]
+
+  @@index([isActive, sortOrder])
+  @@map("banners")
+}
+
+model BannerTranslation {
+  id          String  @id @default(uuid()) @db.Uuid
+  bannerId    String  @map("banner_id") @db.Uuid
+  locale      String  @db.VarChar(5)
+  title       String
+  subtitle    String?
+  buttonLabel String? @map("button_label")
+
+  banner Banner @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+
+  @@unique([bannerId, locale])
+  @@map("banner_translations")
+}
+
+/// Editable text blocks addressed by a stable key, e.g. "home.hero",
+/// "home.about", "about", "contacts". `data` holds non-translatable values
+/// (phone numbers, e-mail, social links) as JSON.
+model SiteContent {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  data      Json?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  translations SiteContentTranslation[]
+
+  @@map("site_content")
+}
+
+model SiteContentTranslation {
+  id            String  @id @default(uuid()) @db.Uuid
+  siteContentId String  @map("site_content_id") @db.Uuid
+  locale        String  @db.VarChar(5)
+  title         String?
+  body          String?
+
+  siteContent SiteContent @relation(fields: [siteContentId], references: [id], onDelete: Cascade)
+
+  @@unique([siteContentId, locale])
+  @@map("site_content_translations")
+}
+
+// ============================================================================
+// Audit
+// ============================================================================
+
+/// Important admin actions: product create, price / stock change, order and
+/// status changes, user management.
 model AuditLog {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String?  @map("user_id")
-  action      String   @db.Text
-  entityType  String   @map("entity_type") @db.Text
-  entityId    String   @map("entity_id") @db.Text
-  metadata    String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at")
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  @@map("audit_logs")
   @@index([userId])
   @@index([entityType, entityId])
   @@index([createdAt])
+  @@map("audit_logs")
 }
