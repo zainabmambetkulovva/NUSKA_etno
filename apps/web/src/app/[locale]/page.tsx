@@ -10,6 +10,7 @@ import type {
 import Link from 'next/link';
 
 import { KochkorMuyuz, OrnamentDivider } from '@/components/brand/ornament';
+import { StoresList } from '@/components/content/stores-list';
 import { Hero } from '@/components/home/hero';
 import { Stars } from '@/components/home/stars';
 import { ProductCard } from '@/components/product/product-card';
@@ -225,6 +226,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 ))}
               </div>
             )}
+            <StoresList locale={locale} className="mt-12" />
           </Reveal>
         </div>
       </section>

@@ -79,6 +79,10 @@ const products: {
   priceSom: number;
   type: ProductType;
   categorySlugs: string[];
+  /** Name per locale when it differs from the price list (provided by the company). */
+  localizedName?: Partial<Record<Locale, string>>;
+  /** Short descriptions taken from the company's own materials (labels, posts). */
+  shortDescription?: Partial<Record<Locale, string>>;
   /** Volume in litres, confirmed by the company (Нават 0.5 / 0.6 / 0.7 л). */
   volumeLiters?: number;
 }[] = [
@@ -148,6 +152,8 @@ const products: {
     sku: 'KHOLODETS',
     slug: 'kholodets',
     name: 'Холодец',
+    // Kyrgyz name used by the company (Instagram highlight "Килкилдек (холодец)").
+    localizedName: { ky: 'Килкилдек' },
     priceSom: 110,
     type: ProductType.FOOD,
     categorySlugs: ['meat-products'],
@@ -156,6 +162,8 @@ const products: {
     sku: 'KYMYZ',
     slug: 'kymyz',
     name: 'Кымыз',
+    // Company's own text from its Instagram post; no Russian version was provided.
+    shortDescription: { ky: 'Табигый, жеңил сиңүүчү, дарылык касиети бар азык катары бааланат.' },
     priceSom: 300,
     type: ProductType.BEVERAGE,
     categorySlugs: ['dairy-products'],
@@ -172,6 +180,8 @@ const products: {
     sku: 'SARY-MAI',
     slug: 'sary-mai',
     name: 'Сары май',
+    // From the product label: "Сары май — Топлёное масло".
+    shortDescription: { ru: 'Топлёное масло' },
     priceSom: 235,
     type: ProductType.FOOD,
     categorySlugs: ['dairy-products'],
@@ -243,11 +253,25 @@ async function seedProducts(categoryIds: Map<string, string>) {
     });
 
     for (const locale of ['ru', 'ky'] as const) {
-      await prisma.productTranslation.upsert({
+      const name = product.localizedName?.[locale] ?? product.name;
+      const shortDescription = product.shortDescription?.[locale] ?? null;
+      const existing = await prisma.productTranslation.findUnique({
         where: { productId_locale: { productId: record.id, locale } },
-        update: {},
-        create: { productId: record.id, locale, name: product.name },
       });
+      if (!existing) {
+        await prisma.productTranslation.create({
+          data: { productId: record.id, locale, name, shortDescription },
+        });
+      } else {
+        // Re-running the seed fills in company-provided data but never overwrites edits made in the admin panel.
+        await prisma.productTranslation.update({
+          where: { id: existing.id },
+          data: {
+            ...(existing.name === product.name && name !== product.name ? { name } : {}),
+            ...(existing.shortDescription === null && shortDescription ? { shortDescription } : {}),
+          },
+        });
+      }
     }
 
     if (product.volumeLiters) {
@@ -448,6 +472,89 @@ async function seedDemoOrders(
 }
 
 // ---------------------------------------------------------------------------
+// Site content provided by the company (Instagram profile and stories).
+// Created only if missing, so later edits in the admin panel are kept.
+// ---------------------------------------------------------------------------
+
+const SITE_CONTENT: {
+  key: string;
+  data?: Record<string, unknown>;
+  translations: { locale: Locale; title?: string; body?: string }[];
+}[] = [
+  {
+    key: 'contacts',
+    data: {
+      whatsapp: '+996701111024',
+      instagram: 'nuska_etno',
+      telegram: 'nuska_etnokatalog',
+    },
+    translations: [
+      {
+        locale: 'ky',
+        title: 'Байланыш',
+        body: 'NUSKA ETNO — улуттук азыктардын өндүрүүчүсү.\nДүң жана чекене сатуу. Кызматташууга ачыкпыз.',
+      },
+      {
+        // Translation of the company's Kyrgyz profile text; to be reviewed by the company.
+        locale: 'ru',
+        title: 'Контакты',
+        body: 'NUSKA ETNO — производитель национальных продуктов.\nОптовая и розничная продажа. Открыты к сотрудничеству.',
+      },
+    ],
+  },
+  {
+    key: 'stores',
+    data: {
+      city: 'Бишкек',
+      stores: [
+        'Бимар',
+        'Метро',
+        'Шекер',
+        'Элиме',
+        'Реалист',
+        'Кампа',
+        'Магнат',
+        'Босого',
+        'Арча',
+        'Береке',
+        'Арзан сити',
+        'Эконом',
+        'Продуктошка',
+        'Данек',
+        'Венеция',
+        'Асылбаш',
+        'Ак-Орго',
+      ],
+    },
+    translations: [
+      { locale: 'ky', title: 'Биздин азыктарды Бишкек шаарынын дүкөндөрүнөн да табасыз' },
+      { locale: 'ru', title: 'Наши продукты также продаются в магазинах Бишкека' },
+    ],
+  },
+];
+
+async function seedSiteContent() {
+  for (const block of SITE_CONTENT) {
+    const exists = await prisma.siteContent.findUnique({ where: { key: block.key } });
+    if (exists) continue;
+    await prisma.siteContent.create({
+      data: {
+        key: block.key,
+        data: block.data as Prisma.InputJsonValue | undefined,
+        translations: {
+          create: block.translations.map((t) => ({
+            locale: t.locale,
+            title: t.title ?? null,
+            body: t.body ?? null,
+          })),
+        },
+      },
+    });
+  }
+  console.log(`✅ Site content: ${SITE_CONTENT.map((b) => b.key).join(', ')}`);
+}
+
+// ---------------------------------------------------------------------------
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -473,6 +580,7 @@ async function main() {
   });
 
   await seedDemoOrders(customer, pickup, catalog);
+  await seedSiteContent();
 
   console.log('🌱 Seed completed');
 }

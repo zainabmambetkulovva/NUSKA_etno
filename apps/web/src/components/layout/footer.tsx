@@ -1,11 +1,29 @@
+import type { SiteContent } from '@nuska/types';
 import Link from 'next/link';
 
 import { Logo } from '@/components/brand/logo';
 import { OrnamentDivider } from '@/components/brand/ornament';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
+import { serverApiSafe } from '@/lib/api/server';
 
-export function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
+/** Social links from the admin-managed `contacts` block (data: whatsapp, instagram, telegram). */
+const SOCIALS: { key: string; label: string; href: (v: string) => string }[] = [
+  { key: 'whatsapp', label: 'WhatsApp', href: (v) => `https://wa.me/${v.replace(/\D/g, '')}` },
+  {
+    key: 'instagram',
+    label: 'Instagram',
+    href: (v) => `https://instagram.com/${v.replace(/^@/, '')}`,
+  },
+  { key: 'telegram', label: 'Telegram', href: (v) => `https://t.me/${v.replace(/^@/, '')}` },
+];
+
+export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
+  const contacts = await serverApiSafe<SiteContent | null>('/content/contacts', locale, null);
+  const socials = SOCIALS.flatMap((s) => {
+    const value = contacts?.data?.[s.key];
+    return typeof value === 'string' && value ? [{ ...s, url: s.href(value) }] : [];
+  });
   const shop = [
     { href: `/${locale}/catalog`, label: t.nav.catalog },
     { href: `/${locale}/cart`, label: t.nav.cart },
@@ -23,6 +41,22 @@ export function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
         <div className="space-y-3">
           <Logo href={`/${locale}`} className="text-cream [&_span_span]:text-cream-dark" />
           <p className="max-w-xs text-sm text-cream/80">{t.footer.tagline}</p>
+          {socials.length > 0 && (
+            <ul className="flex flex-wrap gap-2 pt-2">
+              {socials.map((s) => (
+                <li key={s.key}>
+                  <a
+                    href={s.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block rounded-full border border-cream/30 px-3 py-1 text-xs text-cream hover:bg-cream hover:text-brand"
+                  >
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
         <nav aria-label={t.footer.shop}>
           <h2 className="mb-3 font-sans text-sm font-semibold uppercase tracking-widest text-cream">

@@ -1,5 +1,7 @@
 import type { PickupLocation, SiteContent } from '@nuska/types';
 
+import { StoresList } from './stores-list';
+
 import { KochkorMuyuz, OrnamentDivider } from '@/components/brand/ornament';
 import { ClockIcon, PinIcon } from '@/components/ui/icons';
 import type { Locale } from '@/i18n/config';
@@ -135,6 +137,7 @@ export async function ContentPage({
               ))}
             </div>
           )}
+          <StoresList locale={locale} className="mt-12" />
         </>
       )}
     </div>
