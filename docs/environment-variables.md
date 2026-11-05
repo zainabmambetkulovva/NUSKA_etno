@@ -79,9 +79,18 @@ Without these, image upload endpoints answer `503 STORAGE_NOT_CONFIGURED`.
 
 ## Frontend (`apps/web/.env.local`)
 
+The browser never calls the API directly: Next.js proxies `/api/*` to the API
+(same origin, first-party httpOnly cookies, no CORS). Template: `apps/web/.env.example`.
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `NEXT_PUBLIC_API_URL` | `http://localhost:4000` | Backend URL (without `/api`) |
+| `API_INTERNAL_URL` | `http://localhost:4000` | Where the Next.js server reaches the API (proxy and server rendering) |
+| `NEXT_PUBLIC_SITE_URL` | `http://localhost:3000` | Public site URL for canonical links, hreflang, sitemap |
+| `NEXT_PUBLIC_IMAGES_HOST` | – | Exact host of the S3/CDN bucket with product images (enables image optimisation) |
+
+> Because requests reach the API through the Next.js proxy, set `TRUST_PROXY=true` on
+> the API and do not expose the API publicly — otherwise rate limiting sees only the
+> proxy's IP, or clients could spoof `X-Forwarded-For`.
 
 ## Security guidelines
 

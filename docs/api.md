@@ -40,6 +40,7 @@ All routes require authentication unless listed as public below. Admin routes re
 | POST | `/auth/password/reset` | public | `{ token, password }`; ends all sessions |
 | POST | `/auth/email/verify` | public | `{ token }` |
 | POST | `/auth/email/resend` | user | |
+| GET | `/auth/session` | public | always `200 { user \| null }`; renews an expired access token from the refresh cookie (used by the frontend instead of `/users/me`) |
 
 Rate limits: 100 requests/min per IP overall; 5/min for login, register and password endpoints.
 
@@ -73,6 +74,7 @@ Rate limits: 100 requests/min per IP overall; 5/min for login, register and pass
 | GET | `/products/:slug` | details, images, characteristics, units, rating |
 | GET | `/products/:slug/related` | |
 | GET | `/products/:slug/reviews` | approved reviews |
+| GET | `/reviews/latest?limit=6` | latest approved reviews across the catalog (home page) |
 | GET | `/categories`, `/categories/:slug` | tree with product counts |
 | GET | `/pickup-locations` | active points |
 | GET | `/content/banners`, `/content/:key` | home page banners and text blocks |

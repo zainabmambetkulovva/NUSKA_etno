@@ -180,6 +180,7 @@ BCRYPT_ROUNDS=12
 - [Спецификация базы данных](DATABASE.md)
 - [Решения по реализации БД](docs/database-notes.md)
 - [Обзор API](docs/api.md)
+- [Frontend](docs/frontend.md)
 - [Project Structure](docs/project-structure.md)
 - [Installation Guide](docs/installation.md)
 - [Environment Variables](docs/environment-variables.md)

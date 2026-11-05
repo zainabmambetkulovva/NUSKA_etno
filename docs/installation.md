@@ -76,8 +76,8 @@ pnpm dev:api  # Backend on port 4000
 ## Verification
 
 ### Frontend
-- Open http://localhost:3000
-- Verify page loads
+- Open http://localhost:3000 — redirects to `/ky` (Kyrgyz is the default language, `/ru` for Russian)
+- The site talks to the API through its own `/api` proxy (`API_INTERNAL_URL`)
 
 ### Backend
 - Open http://localhost:4000/api/health
