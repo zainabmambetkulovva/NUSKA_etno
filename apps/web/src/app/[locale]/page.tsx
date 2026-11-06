@@ -217,6 +217,37 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
+      {/* 08 — Gift set builder preview */}
+      <section className="section container">
+        <Reveal>
+          <div className="grid items-center gap-8 overflow-hidden rounded-3xl border border-cream-dark/60 bg-cream-light p-6 md:grid-cols-[1.1fr_1fr] md:p-10">
+            <div className="space-y-4">
+              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-olive">
+                <KochkorMuyuz className="h-3 w-6 text-gold" /> 3D
+              </span>
+              <h2 className="section-title">{t.gift.title}</h2>
+              <p className="text-ink-muted">{t.gift.previewText}</p>
+              <ButtonLink href={`/${locale}/gift-builder`} size="lg">
+                {t.gift.cta}
+              </ButtonLink>
+            </div>
+            <div className="relative mx-auto aspect-[4/3] w-full max-w-md" aria-hidden>
+              <div className="absolute inset-x-6 bottom-6 top-1/3 rounded-2xl border-[12px] border-[#8A5A33] bg-cream shadow-lift" />
+              <div className="absolute inset-x-6 top-[30%] h-4 bg-brand" />
+              <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 gap-3">
+                {['#FBFBF7', '#F1C84B', '#F39A3D', '#E8C27E'].map((c, i) => (
+                  <span
+                    key={c}
+                    className="block h-14 w-10 rounded-lg shadow-card motion-safe:animate-float"
+                    style={{ background: c, animationDelay: `${i * 0.4}s` }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
       {/* 10 — Pickup */}
       <section className="section bg-cream-50">
         <div className="container">

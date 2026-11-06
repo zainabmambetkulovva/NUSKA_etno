@@ -122,3 +122,12 @@ Rate limits: 100 requests/min per IP overall; 5/min for login, register and pass
 | POST | `/api/admin/newsletter/:id/unsubscribe` | ADMIN | audit log `newsletter.unsubscribe` |
 
 Without SMTP no e-mail is sent: subscribers stay "pending" in the admin panel.
+
+## Gift sets
+
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| POST | `/api/gift-sets/quote` | public | `{ items: [{ productId, quantity }] }` (≤ 30 lines) → lines priced from the catalog, `unavailable`, `total`, `canOrder` |
+| GET | `/api/gift-sets` | user | own saved sets, priced now |
+| POST | `/api/gift-sets` | user | `{ name, items }`, at most 20 sets (`GIFT_SET_LIMIT`) |
+| DELETE | `/api/gift-sets/:id` | user | own sets only |

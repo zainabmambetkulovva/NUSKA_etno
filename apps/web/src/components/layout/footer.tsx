@@ -107,6 +107,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
     { href: l('/catalog'), label: t.nav.catalog },
     { href: l('/about'), label: t.nav.about },
     { href: l('/traditions'), label: t.nav.traditions },
+    { href: l('/gift-builder'), label: t.gift.nav },
     { href: l('/#reviews'), label: t.footer.reviews },
     { href: l('/contacts'), label: t.nav.contacts },
   ];

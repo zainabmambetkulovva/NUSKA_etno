@@ -87,6 +87,20 @@ moderated ones; honest empty state) → FAQ (from the admin panel) → newslette
 - **Fonts:** Cormorant Garamond and Manrope were checked for Kyrgyz letters: Manrope
   falls back for «ң», Cormorant uses a non-standard «л». Lora + Inter are kept.
 
+## Gift set builder (`/gift-builder`, TZ section 08)
+
+`components/gift/gift-builder.tsx` + `components/three/gift-box-scene.tsx`.
+
+- The draft (product ids and quantities only) is kept in this browser
+  (`stores/gift-set.ts`); names, prices, availability and the total come from
+  `POST /api/gift-sets/quote` on every change.
+- The 3D box shows each chosen product as a small model of its packaging (up to 3 copies
+  per product, 15 models); drag to rotate. Without WebGL — a 2D box with labels.
+- "Add the set to the cart": guests — browser cart; signed-in users — `POST /api/cart/merge`
+  (quantities capped by stock; skipped products are reported).
+- "Save the set": signed-in users — in the account (`/api/gift-sets`, up to 20);
+  guests — in this browser.
+
 ## 3D packaging on the product page (TZ §6.4)
 
 `components/three/packaging-viewer.tsx`, shown by `components/product/product-gallery.tsx`.

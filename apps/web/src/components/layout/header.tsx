@@ -281,6 +281,12 @@ export function Header() {
                   {t.nav.favorites}
                 </Link>
                 <Link
+                  href={`/${locale}/gift-builder`}
+                  className="border-b border-cream-dark/50 py-3 font-serif text-lg"
+                >
+                  {t.gift.nav}
+                </Link>
+                <Link
                   href={`/${locale}/faq`}
                   className="border-b border-cream-dark/50 py-3 font-serif text-lg"
                 >
