@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, OmitType, PartialType } from '@nestjs/swagger';
-import { ProductStatus, ProductType, StockMovementType } from '@prisma/client';
+import { PackagingModel, ProductStatus, ProductType, StockMovementType } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -204,6 +204,16 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
+
+  @ApiPropertyOptional({
+    enum: PackagingModel,
+    nullable: true,
+    description: '3D packaging on the product page',
+  })
+  @IsOptional()
+  @ValidateIf((_, value) => value !== null)
+  @IsEnum(PackagingModel)
+  packaging3d?: PackagingModel | null;
 
   @ApiPropertyOptional()
   @IsOptional()

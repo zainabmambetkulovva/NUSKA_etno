@@ -2,7 +2,14 @@
 
 import { useState } from 'react';
 
-import type { AdminCategory, AdminProduct, Locale, ProductStatus, ProductType } from '@nuska/types';
+import type {
+  AdminCategory,
+  AdminProduct,
+  Locale,
+  PackagingModel,
+  ProductStatus,
+  ProductType,
+} from '@nuska/types';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useFieldArray, useForm, type Control, type UseFormRegister } from 'react-hook-form';
 
@@ -36,6 +43,7 @@ export interface ProductFormValues {
   trackInventory: boolean;
   initialStock: number;
   isFeatured: boolean;
+  packaging3d: PackagingModel | '';
   sortOrder: number;
   categoryIds: string[];
   translations: TranslationValues[];
@@ -52,6 +60,7 @@ function toValues(product?: AdminProduct): ProductFormValues {
     trackInventory: product?.trackInventory ?? true,
     initialStock: 0,
     isFeatured: product?.isFeatured ?? false,
+    packaging3d: product?.packaging3d ?? '',
     sortOrder: product?.sortOrder ?? 0,
     categoryIds: product?.categories.map((c) => c.id) ?? [],
     translations: locales.map((locale) => {
@@ -85,6 +94,7 @@ function toPayload(values: ProductFormValues, isNew: boolean) {
     priceAmount: somToTyiyn(Number(values.priceSom)),
     trackInventory: values.trackInventory,
     isFeatured: values.isFeatured,
+    packaging3d: values.packaging3d || null,
     sortOrder: Number(values.sortOrder) || 0,
     categoryIds: values.categoryIds,
     // A language without a name is not sent; publishing requires both (checked by the API).
@@ -248,6 +258,18 @@ export function ProductForm({
               min={0}
               {...form.register('sortOrder', { valueAsNumber: true })}
             />
+          )}
+        </Field>
+        <Field label={t.admin.packaging3d}>
+          {(id) => (
+            <Select id={id} {...form.register('packaging3d')}>
+              <option value="">{t.admin.packagingModels.NONE}</option>
+              {(['BOTTLE', 'JAR', 'BOX', 'PACK'] as const).map((m) => (
+                <option key={m} value={m}>
+                  {t.admin.packagingModels[m]}
+                </option>
+              ))}
+            </Select>
           )}
         </Field>
         <div className="flex flex-col gap-3 md:col-span-2">

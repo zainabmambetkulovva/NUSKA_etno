@@ -51,6 +51,7 @@ function CartLink() {
   return (
     <Link
       href={`/${locale}/cart`}
+      data-cart-target
       className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-cream-50"
       aria-label={`${t.nav.cart}: ${count}`}
     >
@@ -133,7 +134,7 @@ export function Header() {
           >
             <MenuIcon />
           </button>
-          <Logo href={`/${locale}`} />
+          <Logo href={`/${locale}`} animate />
 
           <nav className="ml-6 hidden items-center gap-1 lg:flex" aria-label={t.nav.menu}>
             {links.map((link) => (

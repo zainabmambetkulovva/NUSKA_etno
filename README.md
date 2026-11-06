@@ -137,7 +137,11 @@ pnpm format:check     # Проверка форматирования
 pnpm --filter @nuska/api test       # Unit-тесты
 TEST_DATABASE_URL=postgresql://postgres@localhost:5432/nuska_test pnpm --filter @nuska/api test:e2e
 ```
-E2E-тесты очищают базу `TEST_DATABASE_URL` — используйте отдельную базу с `test` в названии.
+Браузерные тесты сайта (Playwright) — см. [docs/frontend.md](docs/frontend.md#browser-tests-playwright):
+```bash
+pnpm --filter @nuska/web test:e2e
+```
+E2E-тесты API очищают базу `TEST_DATABASE_URL` — используйте отдельную базу с `test` в названии.
 
 ### Database
 ```bash

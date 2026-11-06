@@ -17,6 +17,7 @@ import { randomBytes } from 'node:crypto';
 
 import {
   OrderStatus,
+  PackagingModel,
   Prisma,
   PrismaClient,
   ProductStatus,
@@ -229,6 +230,19 @@ async function seedCategories() {
   return ids;
 }
 
+/**
+ * 3D packaging for the product page, only where the company's photos show the
+ * real package (Instagram): kymyz bottle, navat box, sary may jar, beshbarmak pack.
+ */
+const PACKAGING_3D: Record<string, PackagingModel> = {
+  KYMYZ: PackagingModel.BOTTLE,
+  'NAVAT-0.5': PackagingModel.BOX,
+  'NAVAT-0.6': PackagingModel.BOX,
+  'NAVAT-0.7': PackagingModel.BOX,
+  'SARY-MAI': PackagingModel.JAR,
+  'BESH-BARMAK': PackagingModel.PACK,
+};
+
 async function seedProducts(categoryIds: Map<string, string>) {
   const records = new Map<string, { id: string; sku: string; name: string; priceAmount: number }>();
 
@@ -251,6 +265,12 @@ async function seedProducts(categoryIds: Map<string, string>) {
         sortOrder: index + 1,
       },
     });
+
+    // Filled in once; a choice made later in the admin panel is kept.
+    const packaging = PACKAGING_3D[product.sku];
+    if (packaging && record.packaging3d === null) {
+      await prisma.product.update({ where: { id: record.id }, data: { packaging3d: packaging } });
+    }
 
     for (const locale of ['ru', 'ky'] as const) {
       const name = product.localizedName?.[locale] ?? product.name;

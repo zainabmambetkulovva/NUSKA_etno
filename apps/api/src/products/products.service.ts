@@ -223,6 +223,7 @@ export class ProductsService {
           priceAmount: dto.priceAmount,
           trackInventory: dto.trackInventory ?? true,
           isFeatured: dto.isFeatured ?? false,
+          packaging3d: dto.packaging3d ?? null,
           sortOrder: dto.sortOrder ?? 0,
           translations: {
             create: dto.translations.map((t) => ({ locale: t.locale, ...translationData(t) })),
@@ -309,6 +310,7 @@ export class ProductsService {
           priceAmount: dto.priceAmount,
           trackInventory: dto.trackInventory,
           isFeatured: dto.isFeatured,
+          packaging3d: dto.packaging3d,
           sortOrder: dto.sortOrder,
         },
       });

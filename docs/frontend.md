@@ -62,6 +62,45 @@ React Hook Form + Zod, Framer Motion.
 - **Real models later:** when the company provides GLB/GLTF files (TZ §7.1), each
   procedural object can be swapped for `useGLTF` (compress with Draco/meshopt and KTX2 textures).
 
+## 3D packaging on the product page (TZ §6.4)
+
+`components/three/packaging-viewer.tsx`, shown by `components/product/product-gallery.tsx`.
+
+- The admin chooses a model per product (field "3D packaging"): bottle (kymyz), jar
+  (sary may), box (navat), pack (beshbarmak noodles) or none. Stored in
+  `products.packaging_3d`.
+- The label is drawn in code with the product name in the current language.
+- Drag to rotate; slow auto-rotation unless the user prefers reduced motion.
+- The buttons "Photo / 3D" appear only when a model is chosen and WebGL works; the 3D chunk
+  loads only when the user opens it.
+
+## Animations
+
+- Page transitions: `app/[locale]/template.tsx` (fade + slide, framer-motion).
+- "Fly to cart": `lib/fly-to-cart.ts` — the product image flies to the cart icon
+  (`[data-cart-target]`) after adding.
+- Parallax: `components/ui/parallax.tsx` (hero ornament, dastorkon section).
+- The logo ornament in the header draws itself once on load.
+- All of them are switched off with `prefers-reduced-motion`.
+
+## Browser tests (Playwright)
+
+`apps/web/e2e/*.spec.ts`, config `apps/web/playwright.config.ts`. They run on every PR in
+GitHub Actions (job `e2e-web`) against a real API, website and PostgreSQL with demo data.
+
+Covered: languages and switching, catalog/search/product page, the full order flow
+(guest cart → login → checkout → admin confirms → customer notification), 3D scene and
+packaging viewer with fallback without WebGL, mobile menu and no horizontal scroll.
+
+Run locally (API and website already started, API with `NODE_ENV=test THROTTLE_DISABLED=true`):
+
+```bash
+pnpm --filter @nuska/web exec playwright install chromium
+SEED_CUSTOMER_PASSWORD=... SEED_ADMIN_PASSWORD=... pnpm --filter @nuska/web test:e2e
+```
+
+Without the `SEED_*` passwords the order test is skipped.
+
 ## Not done yet
 
 - Real product photos and the original logo (placeholders are shown).

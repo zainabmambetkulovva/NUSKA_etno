@@ -12,6 +12,7 @@ import { notFound } from 'next/navigation';
 import { OrnamentDivider } from '@/components/brand/ornament';
 import { Stars } from '@/components/home/stars';
 import { ProductCard } from '@/components/product/product-card';
+import { ProductGallery } from '@/components/product/product-gallery';
 import { ProductImage } from '@/components/product/product-image';
 import { ProductPurchase } from '@/components/product/product-purchase';
 import { Badge, SectionHeading } from '@/components/ui/misc';
@@ -124,14 +125,10 @@ export default async function ProductPage({ params }: { params: Params }) {
 
       <div className="grid gap-10 lg:grid-cols-2">
         <div className="space-y-3">
-          <ProductImage
-            url={product.images[0]?.url}
-            alt={product.images[0]?.alt}
+          <ProductGallery
             name={product.name}
-            priority
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            placeholderLabel={t.product.photoSoon}
-            className="aspect-square rounded-2xl shadow-card"
+            image={product.images[0] ?? null}
+            packaging3d={product.packaging3d}
           />
           {product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-3">
