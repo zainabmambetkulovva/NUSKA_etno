@@ -88,5 +88,6 @@ export function toProductDetail(
       quantityUnit: unit.quantityUnit,
     })),
     rating,
+    packaging3d: product.packaging3d,
   };
 }

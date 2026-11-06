@@ -17,6 +17,7 @@ import { ProductCard } from '@/components/product/product-card';
 import { ButtonLink } from '@/components/ui/button';
 import { BagIcon, ChevronRightIcon, ClockIcon, LeafIcon, PinIcon } from '@/components/ui/icons';
 import { SectionHeading } from '@/components/ui/misc';
+import { Parallax } from '@/components/ui/parallax';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
@@ -184,7 +185,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {/* Kyrgyz dastorkon */}
       <section className="section container">
         <Reveal className="grid items-center gap-10 lg:grid-cols-2">
-          <div className="bg-ornament relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-light shadow-card">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-light shadow-card">
+            <Parallax speed={0.4}>
+              <div className="bg-ornament absolute inset-0" />
+            </Parallax>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex aspect-square h-3/4 items-center justify-center rounded-full border-[10px] border-brand/80 bg-cream">
                 <KochkorMuyuz className="h-20 w-40 text-brand" animate />

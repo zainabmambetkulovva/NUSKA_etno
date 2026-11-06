@@ -7,6 +7,7 @@ import { CartIcon } from '@/components/ui/icons';
 import { useCart } from '@/hooks/use-cart';
 import { useI18n } from '@/i18n/i18n-provider';
 import { errorMessage } from '@/lib/api/errors';
+import { flyToCart } from '@/lib/fly-to-cart';
 import { useToast } from '@/stores/toast';
 
 export function AddToCartButton({
@@ -39,18 +40,20 @@ export function AddToCartButton({
       size={size}
       className={className}
       loading={add.isPending}
-      onClick={() =>
+      onClick={(event) => {
+        const button = event.currentTarget;
         add.mutate(
           { product, quantity },
           {
             onSuccess: () => {
+              flyToCart(button, product.image?.url);
               toast(`${t.product.added}: ${product.name}`);
               onAdded?.();
             },
             onError: (error) => toast(errorMessage(error, t.errors), 'error'),
           }
-        )
-      }
+        );
+      }}
     >
       <CartIcon width={18} height={18} />
       {t.product.addToCart}

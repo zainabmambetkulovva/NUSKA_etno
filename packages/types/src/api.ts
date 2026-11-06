@@ -4,6 +4,8 @@
 export type Locale = 'ky' | 'ru';
 export type UserRole = 'USER' | 'ADMIN';
 export type ProductType = 'FOOD' | 'BEVERAGE';
+/** 3D packaging shown on the product page. */
+export type PackagingModel = 'BOTTLE' | 'JAR' | 'BOX' | 'PACK';
 export type ProductStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type OrderStatus =
   'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY_FOR_PICKUP' | 'COMPLETED' | 'CANCELLED';
@@ -96,6 +98,7 @@ export interface ProductDetail extends ProductCard {
   })[];
   units: { id: string; unitName: string; quantityValue: number; quantityUnit: string }[];
   rating: { average: number | null; count: number };
+  packaging3d: PackagingModel | null;
 }
 
 export interface PublicReview {
@@ -249,6 +252,7 @@ export interface AdminProduct {
   stockQuantity: number;
   trackInventory: boolean;
   isFeatured: boolean;
+  packaging3d: PackagingModel | null;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;

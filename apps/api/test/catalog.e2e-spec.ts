@@ -169,6 +169,29 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
       expect(publicDetail.characteristics).toEqual([{ name: 'Вес', value: '500 г' }]);
     });
 
+    it('stores the 3D packaging choice and shows it on the product page', async () => {
+      const { agent } = await adminAgent();
+      const product = await createProduct(ctx.prisma);
+      await agent
+        .patch(`/api/admin/products/${product.id}`)
+        .send({ packaging3d: 'BOTTLE' })
+        .expect(200);
+      expect((await http().get(`/api/products/${product.slug}`).expect(200)).body.packaging3d).toBe(
+        'BOTTLE'
+      );
+      await agent
+        .patch(`/api/admin/products/${product.id}`)
+        .send({ packaging3d: 'SPHERE' })
+        .expect(422);
+      await agent
+        .patch(`/api/admin/products/${product.id}`)
+        .send({ packaging3d: null })
+        .expect(200);
+      expect(
+        (await http().get(`/api/products/${product.slug}`).expect(200)).body.packaging3d
+      ).toBeNull();
+    });
+
     it('refuses to publish a product without both translations and rejects unknown fields', async () => {
       const { agent } = await adminAgent();
       const base = { sku: 'X1', slug: 'x1', priceAmount: 100 };
