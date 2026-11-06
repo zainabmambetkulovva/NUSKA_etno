@@ -382,3 +382,27 @@ export interface AdminNewsletterSubscriber {
   unsubscribedAt: string | null;
   createdAt: string;
 }
+
+// --- Gift set builder -------------------------------------------------------
+
+export interface GiftSetLine {
+  product: ProductCard;
+  quantity: number;
+  lineTotal: Money;
+  issue: 'INSUFFICIENT_STOCK' | null;
+}
+
+export interface GiftSetQuote {
+  items: GiftSetLine[];
+  /** Products that are no longer sold. */
+  unavailable: string[];
+  itemsCount: number;
+  total: Money;
+  canOrder: boolean;
+}
+
+export interface SavedGiftSet extends GiftSetQuote {
+  id: string;
+  name: string;
+  createdAt: string;
+}

@@ -119,14 +119,26 @@ export function CatalogMegaMenu({ active }: { active: boolean }) {
                   </Link>
                 </motion.div>
               ))}
-              <Link
-                href={`/${locale}/catalog`}
-                className="group flex min-h-[140px] flex-col items-center justify-center gap-2 rounded-xl bg-brand p-4 text-center text-cream-light transition hover:bg-brand-dark"
-              >
-                <KochkorMuyuz className="h-6 w-12 text-cream" />
-                <span className="font-serif font-semibold">{t.nav.allCatalog}</span>
-                <ChevronRightIcon className="transition group-hover:translate-x-1" />
-              </Link>
+              <div className="flex flex-col gap-3">
+                <Link
+                  href={`/${locale}/catalog`}
+                  className="group flex flex-1 flex-col items-center justify-center gap-1 rounded-xl bg-brand p-3 text-center text-cream-light transition hover:bg-brand-dark"
+                >
+                  <KochkorMuyuz className="h-5 w-10 text-cream" />
+                  <span className="font-serif font-semibold">{t.nav.allCatalog}</span>
+                </Link>
+                <Link
+                  href={`/${locale}/gift-builder`}
+                  className="group flex flex-1 items-center justify-center gap-1 rounded-xl border border-brand/30 bg-cream-light p-3 text-center text-brand transition hover:bg-brand-50"
+                >
+                  <span className="font-serif text-sm font-semibold">{t.gift.nav}</span>
+                  <ChevronRightIcon
+                    width={16}
+                    height={16}
+                    className="transition group-hover:translate-x-1"
+                  />
+                </Link>
+              </div>
             </div>
           </motion.div>
         )}

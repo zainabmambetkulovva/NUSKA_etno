@@ -131,6 +131,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   cart                    Cart?
   favorites               Favorite[]
+  giftSets                GiftSet[]
   orders                  Order[]
   orderStatusChanges      OrderStatusHistory[]
   reviews                 Review[]
@@ -258,6 +259,7 @@ model Product {
   stockMovements StockMovement[]
   cartItems      CartItem[]
   favorites      Favorite[]
+  giftSetItems   GiftSetItem[]
   orderItems     OrderItem[]
   reviews        Review[]
 
@@ -686,6 +688,41 @@ model SiteContentTranslation {
 
   @@unique([siteContentId, locale])
   @@map("site_content_translations")
+}
+
+// ============================================================================
+// Gift sets ("Build your own dastorkon")
+// ============================================================================
+
+/// A set of products saved by a user in the gift set builder. Prices are not
+/// stored: the set is always priced from the current catalog.
+model GiftSet {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  name      String   @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items GiftSetItem[]
+
+  @@index([userId, createdAt])
+  @@map("gift_sets")
+}
+
+/// quantity 1..99 (CHECK constraint).
+model GiftSetItem {
+  id        String @id @default(uuid()) @db.Uuid
+  giftSetId String @map("gift_set_id") @db.Uuid
+  productId String @map("product_id") @db.Uuid
+  quantity  Int
+
+  giftSet GiftSet @relation(fields: [giftSetId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([giftSetId, productId])
+  @@index([productId])
+  @@map("gift_set_items")
 }
 
 // ============================================================================

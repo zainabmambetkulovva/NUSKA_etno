@@ -15,6 +15,7 @@ import { validateEnv } from './config/env.validation';
 import { ContentModule } from './content/content.module';
 import { FaqModule } from './faq/faq.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { GiftSetsModule } from './gift-sets/gift-sets.module';
 import { HealthModule } from './health/health.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { MailModule } from './mail/mail.module';
@@ -49,6 +50,7 @@ import { UsersModule } from './users/users.module';
     ProductsModule,
     CartModule,
     FavoritesModule,
+    GiftSetsModule,
     OrdersModule,
     PaymentsModule,
     PickupLocationsModule,
