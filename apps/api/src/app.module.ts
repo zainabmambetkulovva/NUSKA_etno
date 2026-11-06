@@ -13,10 +13,12 @@ import { CategoriesModule } from './categories/categories.module';
 import { ClientIpThrottlerGuard } from './common/proxy/client-ip-throttler.guard';
 import { validateEnv } from './config/env.validation';
 import { ContentModule } from './content/content.module';
+import { FaqModule } from './faq/faq.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { HealthModule } from './health/health.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { MailModule } from './mail/mail.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -52,6 +54,8 @@ import { UsersModule } from './users/users.module';
     PickupLocationsModule,
     ReviewsModule,
     ContentModule,
+    FaqModule,
+    NewsletterModule,
     AdminModule,
     HealthModule,
   ],

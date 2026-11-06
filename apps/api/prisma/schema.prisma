@@ -97,6 +97,13 @@ enum ReviewStatus {
   REJECTED
 }
 
+/// PENDING: waiting for the e-mail confirmation (double opt-in).
+enum NewsletterStatus {
+  PENDING
+  ACTIVE
+  UNSUBSCRIBED
+}
+
 // ============================================================================
 // Users and authentication
 // ============================================================================
@@ -679,6 +686,58 @@ model SiteContentTranslation {
 
   @@unique([siteContentId, locale])
   @@map("site_content_translations")
+}
+
+// ============================================================================
+// FAQ and newsletter
+// ============================================================================
+
+/// FAQ entry edited in the admin panel. `category` groups the questions on the
+/// FAQ page (orders, pickup, products, account, other).
+model FaqItem {
+  id        String   @id @default(uuid()) @db.Uuid
+  category  String   @default("other") @db.VarChar(40)
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  translations FaqItemTranslation[]
+
+  @@index([isActive, category, sortOrder])
+  @@map("faq_items")
+}
+
+model FaqItemTranslation {
+  id        String @id @default(uuid()) @db.Uuid
+  faqItemId String @map("faq_item_id") @db.Uuid
+  locale    String @db.VarChar(5)
+  question  String @db.VarChar(300)
+  answer    String
+
+  faqItem FaqItem @relation(fields: [faqItemId], references: [id], onDelete: Cascade)
+
+  @@unique([faqItemId, locale])
+  @@map("faq_item_translations")
+}
+
+/// Newsletter subscriber with explicit consent. The e-mail is stored lower-case.
+/// Tokens are stored only as SHA-256 hashes.
+model NewsletterSubscriber {
+  id               String           @id @default(uuid()) @db.Uuid
+  email            String           @unique @db.VarChar(254)
+  locale           String           @default("ky") @db.VarChar(5)
+  status           NewsletterStatus @default(PENDING)
+  consentAt        DateTime         @map("consent_at")
+  confirmTokenHash String?          @unique @map("confirm_token_hash") @db.VarChar(64)
+  confirmSentAt    DateTime?        @map("confirm_sent_at")
+  confirmedAt      DateTime?        @map("confirmed_at")
+  unsubscribedAt   DateTime?        @map("unsubscribed_at")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("newsletter_subscribers")
 }
 
 // ============================================================================

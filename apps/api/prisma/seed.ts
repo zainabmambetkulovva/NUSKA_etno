@@ -574,6 +574,74 @@ async function seedSiteContent() {
   console.log(`✅ Site content: ${SITE_CONTENT.map((b) => b.key).join(', ')}`);
 }
 
+// FAQ: only how the website works (no payment, return or delivery terms —
+// those are added by the company in the admin panel). Seeded only when empty.
+const FAQ: { category: string; ky: [string, string]; ru: [string, string] }[] = [
+  {
+    category: 'orders',
+    ky: [
+      'Заказды кантип берем?',
+      'Азыктарды себетке салыңыз, аккаунтка кириңиз же катталыңыз, өзүңүз алып кетүүчү жерди тандап, заказды ырастаңыз.',
+    ],
+    ru: [
+      'Как оформить заказ?',
+      'Добавьте товары в корзину, войдите или зарегистрируйтесь, выберите пункт самовывоза и подтвердите заказ.',
+    ],
+  },
+  {
+    category: 'account',
+    ky: [
+      'Заказ берүү үчүн катталуу керекпи?',
+      'Ооба, заказ аккаунтка киргенден кийин гана берилет. Кирүүгө чейин себетке салган азыктарыңыз сакталат.',
+    ],
+    ru: [
+      'Нужна ли регистрация для заказа?',
+      'Да, заказ оформляется после входа в аккаунт. Товары, добавленные в корзину до входа, сохранятся.',
+    ],
+  },
+  {
+    category: 'orders',
+    ky: [
+      'Заказдын абалын кайдан көрөм?',
+      'Жеке кабинеттеги «Менин заказдарым» бөлүмүнөн. Абалы өзгөргөндө билдирүү келет.',
+    ],
+    ru: [
+      'Где посмотреть статус заказа?',
+      'В личном кабинете, в разделе «Мои заказы». При изменении статуса вы получите уведомление.',
+    ],
+  },
+  {
+    category: 'pickup',
+    ky: [
+      'Заказды качан алып кетсем болот?',
+      'Заказдын абалы «Алып кетүүгө даяр» болгондо, тандалган жерге келиңиз.',
+    ],
+    ru: [
+      'Когда можно забрать заказ?',
+      'Когда статус заказа станет «Готов к выдаче», приходите в выбранный пункт самовывоза.',
+    ],
+  },
+];
+
+async function seedFaq() {
+  if ((await prisma.faqItem.count()) > 0) return;
+  for (const [i, item] of FAQ.entries()) {
+    await prisma.faqItem.create({
+      data: {
+        category: item.category,
+        sortOrder: i,
+        translations: {
+          create: [
+            { locale: 'ky', question: item.ky[0], answer: item.ky[1] },
+            { locale: 'ru', question: item.ru[0], answer: item.ru[1] },
+          ],
+        },
+      },
+    });
+  }
+  console.log(`✅ FAQ: ${FAQ.length} questions`);
+}
+
 // ---------------------------------------------------------------------------
 
 async function main() {
@@ -587,6 +655,7 @@ async function main() {
   const categoryIds = await seedCategories();
   const catalog = await seedProducts(categoryIds);
   await seedSiteContent();
+  await seedFaq();
 
   if (demo) {
     const pickup = await seedPickupLocation();

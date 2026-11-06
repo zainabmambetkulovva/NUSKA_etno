@@ -63,16 +63,21 @@ export function Skeleton({ className }: { className?: string }) {
 /** Section heading with the brand's green caption plate (as on the company's Instagram). */
 export function SectionHeading({
   title,
+  subtitle,
   action,
   className,
 }: {
   title: ReactNode;
+  subtitle?: ReactNode;
   action?: ReactNode;
   className?: string;
 }) {
   return (
     <div className={cn('mb-8 flex flex-wrap items-end justify-between gap-4', className)}>
-      <h2 className="section-title">{title}</h2>
+      <div className="space-y-2">
+        <h2 className="section-title">{title}</h2>
+        {subtitle && <p className="max-w-2xl text-ink-muted">{subtitle}</p>}
+      </div>
       {action}
     </div>
   );

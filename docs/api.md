@@ -107,3 +107,18 @@ Rate limits: 100 requests/min per IP overall; 5/min for login, register and pass
 - **Payments**: no provider is connected yet, so there is no online payment and no webhook
   endpoint. `PaymentsService.processProviderEvent` is ready for a provider adapter: it is
   idempotent per `(provider, externalEventId)` and only applies allowed status transitions.
+
+## FAQ and newsletter
+
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| GET | `/api/faq?search=&category=` | public | active questions in the request language |
+| GET/POST | `/api/admin/faq` | ADMIN | list / create (both languages required when active) |
+| PATCH/DELETE | `/api/admin/faq/:id` | ADMIN | audit log `faq.*` |
+| POST | `/api/newsletter/subscribe` | public, 5/min | `{ email, consent: true, locale }`, always `{ ok: true }` (no account enumeration); double opt-in e-mail, resent at most every 10 min |
+| POST | `/api/newsletter/confirm` | public, 5/min | `{ token }` from the e-mail (valid 7 days) |
+| GET | `/api/admin/newsletter?status=` | ADMIN | paginated |
+| GET | `/api/admin/newsletter/export` | ADMIN | CSV of confirmed subscribers |
+| POST | `/api/admin/newsletter/:id/unsubscribe` | ADMIN | audit log `newsletter.unsubscribe` |
+
+Without SMTP no e-mail is sent: subscribers stay "pending" in the admin panel.
