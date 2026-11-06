@@ -350,3 +350,35 @@ export interface Dashboard {
   }[];
   salesByDay: { date: string; orders: number; revenue: number }[];
 }
+
+// --- FAQ and newsletter -----------------------------------------------------
+
+export interface FaqItem {
+  id: string;
+  category: string;
+  question: string;
+  answer: string;
+}
+
+export interface AdminFaqItem {
+  id: string;
+  category: string;
+  sortOrder: number;
+  isActive: boolean;
+  translations: { locale: Locale; question: string; answer: string }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type NewsletterStatus = 'PENDING' | 'ACTIVE' | 'UNSUBSCRIBED';
+
+export interface AdminNewsletterSubscriber {
+  id: string;
+  email: string;
+  locale: Locale;
+  status: NewsletterStatus;
+  consentAt: string;
+  confirmedAt: string | null;
+  unsubscribedAt: string | null;
+  createdAt: string;
+}

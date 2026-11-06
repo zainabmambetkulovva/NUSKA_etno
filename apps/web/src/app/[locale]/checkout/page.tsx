@@ -88,7 +88,7 @@ export default function CheckoutPage() {
       toast(t.checkout.success);
       await queryClient.invalidateQueries({ queryKey: cartKey(locale) });
       await queryClient.invalidateQueries({ queryKey: ['orders'] });
-      router.push(`/${locale}/account/orders/${order.id}`);
+      router.push(`/${locale}/checkout/success?order=${order.id}`);
     },
   });
 

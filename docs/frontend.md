@@ -62,6 +62,31 @@ React Hook Form + Zod, Framer Motion.
 - **Real models later:** when the company provides GLB/GLTF files (TZ §7.1), each
   procedural object can be swapped for `useGLTF` (compress with Draco/meshopt and KTX2 textures).
 
+## Home page sections (master brief)
+
+Order: Hero with the 3D dastorkon → categories → "Our products" → brand story with the
+3D yurt scene (`components/three/yurt-scene.tsx`, loaded only near the viewport) →
+benefits (animated line icons) → pickup (4 steps + points) → reviews (only real,
+moderated ones; honest empty state) → FAQ (from the admin panel) → newsletter.
+
+- **3D dastorkon:** hovering a product shows its name and current price from the API;
+  clicking zooms the camera in and opens a card with "Add to cart" and a product link
+  (Escape or a click outside closes it). Scene items map to catalog SKUs in
+  `components/home/hero-scene.tsx` (`SCENE_SKUS`).
+- **Header:** catalog mega menu (`components/layout/mega-menu.tsx`), favorites and cart
+  counters, header background changes on scroll; full navigation from 1280 px, burger menu
+  below.
+- **Footer:** 5 columns (collapsible on phones), contacts and socials only from the
+  admin `contacts` block (phone, whatsapp, email, address, hours, instagram, telegram,
+  youtube), "back to top".
+- **Pages:** `/faq` (search, categories, FAQPage structured data), `/traditions`, `/search`
+  (suggestions, recent queries kept in this browser), `/checkout/success`,
+  `/newsletter/confirm`, and `/privacy`, `/terms`, `/order-terms`, `/returns` whose text
+  comes from the admin content blocks `page.*` — until then an honest "being prepared"
+  notice is shown.
+- **Fonts:** Cormorant Garamond and Manrope were checked for Kyrgyz letters: Manrope
+  falls back for «ң», Cormorant uses a non-standard «л». Lora + Inter are kept.
+
 ## 3D packaging on the product page (TZ §6.4)
 
 `components/three/packaging-viewer.tsx`, shown by `components/product/product-gallery.tsx`.

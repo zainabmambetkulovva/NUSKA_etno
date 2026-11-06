@@ -39,5 +39,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entry('/about', 0.5),
     entry('/pickup', 0.5),
     entry('/contacts', 0.5),
+    entry('/traditions', 0.5),
+    entry('/faq', 0.5),
+    entry('/privacy', 0.2),
+    entry('/terms', 0.2),
+    entry('/order-terms', 0.2),
   ];
 }

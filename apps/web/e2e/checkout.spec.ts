@@ -23,9 +23,12 @@ test('guest cart → login → checkout → admin confirms → customer sees the
   await expect(shopper.getByText('Каттама').first()).toBeVisible();
   await shopper.getByLabel(ky.checkout.phone).fill('0555 12 34 56');
   await shopper.getByRole('button', { name: ky.checkout.place }).click();
-  await shopper.waitForURL('**/ky/account/orders/**');
+  await shopper.waitForURL('**/ky/checkout/success?order=**');
+  await expect(shopper.getByRole('heading', { name: ky.checkout.successTitle })).toBeVisible();
   await expect(shopper.getByText(ky.orderStatus.PENDING).first()).toBeVisible();
-  const orderId = shopper.url().split('/').pop()!;
+  const orderId = new URL(shopper.url()).searchParams.get('order')!;
+  await shopper.getByRole('link', { name: ky.checkout.viewOrder }).click();
+  await shopper.waitForURL(`**/ky/account/orders/${orderId}`);
 
   const manager = await (await browser.newContext()).newPage();
   await login(manager, admin, '/ky/admin');

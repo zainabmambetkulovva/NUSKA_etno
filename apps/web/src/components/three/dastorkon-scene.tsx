@@ -34,7 +34,29 @@ export interface SceneOptions {
   active: boolean;
   locale: string;
   onError?: () => void;
+  /** Catalog data for the items on the dastorkon (name and price in the current language). */
+  products?: Partial<Record<SceneKey, SceneProduct>>;
+  /** The item the camera zooms in on (its card is shown next to the scene). */
+  selected?: SceneKey | null;
+  onSelect?: (key: SceneKey | null) => void;
 }
+
+export type SceneKey = 'kattama' | 'kymyz' | 'bal' | 'navat' | 'sary-mai' | 'zhupka';
+
+export interface SceneProduct {
+  name: string;
+  price: string;
+}
+
+/** Positions of the products on the dastorkon (also used by the camera to zoom in). */
+const ITEM_POSITIONS: Record<SceneKey, [number, number, number]> = {
+  kattama: [0, 0, 0],
+  kymyz: [-1.75, 0, -0.85],
+  bal: [1.65, 0, -0.95],
+  navat: [-1.7, 0, 1.0],
+  'sary-mai': [1.55, 0, 1.05],
+  zhupka: [0.05, 0, 1.75],
+};
 
 const damp = THREE.MathUtils.damp;
 /** Resting camera position: the whole dastorkon fits a square canvas with a margin. */
@@ -96,16 +118,20 @@ type Materials = ReturnType<typeof useMaterials>;
 
 function Item({
   label,
+  price,
   position,
   delay,
   reducedMotion,
+  selected = false,
   onSelect,
   children,
 }: {
   label?: string;
+  price?: string;
   position: [number, number, number];
   delay: number;
   reducedMotion: boolean;
+  selected?: boolean;
   onSelect?: () => void;
   children: ReactNode;
 }) {
@@ -124,7 +150,7 @@ function Item({
     born.current ??= state.clock.elapsedTime;
     const age = state.clock.elapsedTime - born.current - delay;
     const appear = age <= 0 ? 0 : 1 - Math.pow(1 - Math.min(age / 0.8, 1), 3);
-    const hover = hovered ? 1 : 0;
+    const hover = hovered || selected ? 1 : 0;
     g.scale.setScalar(damp(g.scale.x, appear * (1 + hover * 0.08), 10, delta));
     const breathe = Math.sin(state.clock.elapsedTime * 1.2 + delay * 5) * 0.012;
     g.position.y = damp(g.position.y, hover * 0.18 + breathe, 8, delta);
@@ -155,15 +181,16 @@ function Item({
     <group position={position}>
       <group ref={ref} {...events}>
         {children}
-        {label && hovered && (
+        {label && (hovered || selected) && (
           <Html
             position={[0, 0.95, 0]}
             center
             zIndexRange={[20, 0]}
             style={{ pointerEvents: 'none' }}
           >
-            <span className="whitespace-nowrap rounded-md bg-brand px-3 py-1 font-serif text-sm font-semibold text-cream-light shadow-card">
-              {label}
+            <span className="flex flex-col items-center whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-cream-light shadow-card">
+              <span className="font-serif text-sm font-semibold">{label}</span>
+              {price && <span className="text-xs text-cream/85">{price}</span>}
             </span>
           </Html>
         )}
@@ -380,19 +407,36 @@ function Teapot({ m, seg }: { m: Materials; seg: number }) {
 // Scene
 // ---------------------------------------------------------------------------
 
-function CameraRig({ reducedMotion }: { reducedMotion: boolean }) {
-  const { camera } = useThree();
-  const target = useMemo(() => new THREE.Vector3(0, 0.1, 0.35), []);
+function CameraRig({
+  reducedMotion,
+  selected,
+}: {
+  reducedMotion: boolean;
+  selected: SceneKey | null;
+}) {
+  const { camera, invalidate } = useThree();
+  const rest = useMemo(() => new THREE.Vector3(0, 0.1, 0.35), []);
+  const look = useMemo(() => rest.clone(), [rest]);
   useEffect(() => {
     if (!reducedMotion) camera.position.set(0, 11, 13.5); // start further away, dolly in
   }, [camera, reducedMotion]);
   useFrame((_, delta) => {
-    if (reducedMotion) return;
-    camera.position.x = damp(camera.position.x, 0, 2, delta);
-    camera.position.y = damp(camera.position.y, CAMERA[1], 2, delta);
-    camera.position.z = damp(camera.position.z, CAMERA[2], 2, delta);
-    camera.lookAt(target);
+    // Zoom in on the selected product (TZ: camera approaches the chosen object).
+    const item = selected ? ITEM_POSITIONS[selected] : null;
+    const to = item ? [item[0] * 0.9, 4.6, item[2] + 5.4] : CAMERA;
+    const lookAt = item ? new THREE.Vector3(item[0], 0.25, item[2]) : rest;
+    if (reducedMotion) {
+      camera.position.set(to[0], to[1], to[2]);
+      look.copy(lookAt);
+    } else {
+      camera.position.x = damp(camera.position.x, to[0], 2.4, delta);
+      camera.position.y = damp(camera.position.y, to[1], 2.4, delta);
+      camera.position.z = damp(camera.position.z, to[2], 2.4, delta);
+      look.lerp(lookAt, 1 - Math.exp(-2.4 * delta));
+    }
+    camera.lookAt(look);
   });
+  useEffect(() => invalidate(), [selected, invalidate]);
   return null;
 }
 
@@ -400,13 +444,25 @@ function Composition({
   lite,
   reducedMotion,
   locale,
-}: Pick<SceneOptions, 'lite' | 'reducedMotion' | 'locale'>) {
+  products = {},
+  selected = null,
+  onSelect,
+}: Pick<SceneOptions, 'lite' | 'reducedMotion' | 'locale' | 'products' | 'selected' | 'onSelect'>) {
   const group = useRef<THREE.Group>(null);
   const m = useMaterials(lite);
   const router = useRouter();
   const seg = lite ? 24 : 48;
-  const open = (query: string) => () =>
-    router.push(`/${locale}/catalog?search=${encodeURIComponent(query)}`);
+  // A product from the catalog: zoom in and show its card; otherwise search the catalog.
+  const item = (key: SceneKey, fallbackLabel: string) => ({
+    label: products[key]?.name ?? fallbackLabel,
+    price: products[key]?.price,
+    position: ITEM_POSITIONS[key],
+    selected: selected === key,
+    onSelect: () =>
+      products[key] && onSelect
+        ? onSelect(selected === key ? null : key)
+        : router.push(`/${locale}/catalog?search=${encodeURIComponent(fallbackLabel)}`),
+  });
 
   useEffect(() => () => Object.values(m).forEach((material) => material.dispose()), [m]);
 
@@ -414,59 +470,37 @@ function Composition({
   useFrame((state, delta) => {
     const g = group.current;
     if (!g || reducedMotion) return;
+    // Hold still while a product is selected, so the camera can frame it.
+    const follow = selected ? 0 : 1;
     g.rotation.y = damp(
       g.rotation.y,
-      state.pointer.x * 0.28 + Math.sin(state.clock.elapsedTime * 0.15) * 0.05,
+      follow * (state.pointer.x * 0.28 + Math.sin(state.clock.elapsedTime * 0.15) * 0.05),
       3,
       delta
     );
-    g.rotation.x = damp(g.rotation.x, -state.pointer.y * 0.06, 3, delta);
+    g.rotation.x = damp(g.rotation.x, follow * -state.pointer.y * 0.06, 3, delta);
   });
 
   const props = { reducedMotion };
   return (
     <group ref={group}>
       <Dastorkon m={m} lite={lite} />
-      <Item {...props} label="Каттама" position={[0, 0, 0]} delay={0.2} onSelect={open('Каттама')}>
+      <Item {...props} {...item('kattama', 'Каттама')} delay={0.2}>
         <KattamaBoard m={m} seg={seg} />
       </Item>
-      <Item
-        {...props}
-        label="Кымыз"
-        position={[-1.75, 0, -0.85]}
-        delay={0.35}
-        onSelect={open('Кымыз')}
-      >
+      <Item {...props} {...item('kymyz', 'Кымыз')} delay={0.35}>
         <KymyzBowl m={m} seg={seg} />
       </Item>
-      <Item {...props} label="Бал" position={[1.65, 0, -0.95]} delay={0.5} onSelect={open('Бал')}>
+      <Item {...props} {...item('bal', 'Бал')} delay={0.5}>
         <HoneyJar m={m} seg={seg} />
       </Item>
-      <Item
-        {...props}
-        label="Нават"
-        position={[-1.7, 0, 1.0]}
-        delay={0.65}
-        onSelect={open('Нават')}
-      >
+      <Item {...props} {...item('navat', 'Нават')} delay={0.65}>
         <NavatPlate m={m} seg={seg} lite={lite} />
       </Item>
-      <Item
-        {...props}
-        label="Сары май"
-        position={[1.55, 0, 1.05]}
-        delay={0.8}
-        onSelect={open('Сары май')}
-      >
+      <Item {...props} {...item('sary-mai', 'Сары май')} delay={0.8}>
         <ButterBowl m={m} seg={seg} />
       </Item>
-      <Item
-        {...props}
-        label="Жупка"
-        position={[0.05, 0, 1.75]}
-        delay={0.95}
-        onSelect={open('Жупка')}
-      >
+      <Item {...props} {...item('zhupka', 'Жупка')} delay={0.95}>
         <ZhupkaStack m={m} seg={seg} />
       </Item>
       <Item {...props} position={[0.1, 0, -1.85]} delay={1.1}>
@@ -502,6 +536,9 @@ export default function DastorkonScene({
   active,
   locale,
   onError,
+  products,
+  selected = null,
+  onSelect,
 }: SceneOptions) {
   return (
     <Canvas
@@ -521,6 +558,7 @@ export default function DastorkonScene({
         gl.toneMappingExposure = 1.05;
         gl.domElement.addEventListener('webglcontextlost', () => onError?.(), { once: true });
       }}
+      onPointerMissed={() => onSelect?.(null)}
       aria-hidden
     >
       <hemisphereLight args={['#FFF6DD', '#2A4732', 0.55]} />
@@ -563,8 +601,15 @@ export default function DastorkonScene({
             scale={3}
           />
         </Environment>
-        <CameraRig reducedMotion={reducedMotion} />
-        <Composition lite={lite} reducedMotion={reducedMotion} locale={locale} />
+        <CameraRig reducedMotion={reducedMotion} selected={selected} />
+        <Composition
+          lite={lite}
+          reducedMotion={reducedMotion}
+          locale={locale}
+          products={products}
+          selected={selected}
+          onSelect={onSelect}
+        />
         <ContactShadows
           position={[0, -0.09, 0]}
           opacity={0.45}
