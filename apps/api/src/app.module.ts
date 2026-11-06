@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 import { AdminModule } from './admin/admin.module';
+import { AiModule } from './ai/ai.module';
 import { AuditModule } from './audit/audit.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
@@ -59,6 +60,7 @@ import { UsersModule } from './users/users.module';
     FaqModule,
     NewsletterModule,
     AdminModule,
+    AiModule,
     HealthModule,
   ],
   providers: [

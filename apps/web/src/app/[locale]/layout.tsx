@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next';
 
 import { Inter, Lora } from 'next/font/google';
 
+import { AiWidget } from '@/components/ai/ai-widget';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { getDictionary } from '@/i18n/get-dictionary';
@@ -72,6 +73,7 @@ export default async function LocaleLayout({
             {children}
           </main>
           <Footer locale={locale} t={t} />
+          <AiWidget />
         </AppProviders>
       </body>
     </html>

@@ -131,3 +131,21 @@ Without SMTP no e-mail is sent: subscribers stay "pending" in the admin panel.
 | GET | `/api/gift-sets` | user | own saved sets, priced now |
 | POST | `/api/gift-sets` | user | `{ name, items }`, at most 20 sets (`GIFT_SET_LIMIT`) |
 | DELETE | `/api/gift-sets/:id` | user | own sets only |
+
+## NUSKA AI
+
+| Method | Path | Access | Notes |
+|---|---|---|---|
+| GET | `/api/ai/status` | public | `{ enabled, mode: "ai" \| "catalog" }` |
+| POST | `/api/ai/chat` | public, 10/min | `{ locale, messages: [{ role, content ≤ 1000 }] (≤ 12, last = user), cart? }` → `{ mode, reply, products, proposal, suggestions }` |
+| GET/PUT | `/api/admin/ai/settings` | ADMIN | turn the assistant on/off (audit `ai.settings`); shows whether a key is configured, model, usage |
+
+Module `apps/api/src/ai`: `ai.service.ts` (mode selection, daily cap, fallback),
+`providers/` (`AiProvider` interface, `AnthropicProvider` — Claude with strict catalog tools,
+cached system prompt, `fallbacks: "default"`), `tools/catalog-tools.service.ts` (search, details,
+set building, pricing, pickup — database only), `catalog-assistant.ts` (no-model mode),
+`prompts/system-prompt.ts`.
+
+Rules: facts only from tools; the assistant never changes the cart, orders, payments or
+accounts — `proposal` is shown with an "Add to cart" button the customer presses.
+Conversations are not stored on the server (the browser keeps them for the tab).

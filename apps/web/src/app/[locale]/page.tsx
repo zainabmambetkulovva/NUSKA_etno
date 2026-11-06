@@ -10,6 +10,7 @@ import type {
 } from '@nuska/types';
 import Link from 'next/link';
 
+import { NuskaOrb } from '@/components/ai/nuska-orb';
 import { KochkorMuyuz, OrnamentDivider } from '@/components/brand/ornament';
 import { FaqList } from '@/components/content/faq-list';
 import { StoresList } from '@/components/content/stores-list';
@@ -214,6 +215,33 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* 07 — NUSKA AI */}
+      <section className="section bg-brand-dark text-cream-light">
+        <div className="container grid items-center gap-10 md:grid-cols-[auto_1fr]">
+          <Reveal>
+            <NuskaOrb className="mx-auto h-40 w-40 md:h-56 md:w-56" />
+          </Reveal>
+          <Reveal className="space-y-5" delay={0.1}>
+            <h2 className="section-title text-cream-light">{t.ai.name}</h2>
+            <p className="max-w-2xl text-lg text-cream/80">{t.ai.homeText}</p>
+            <div className="flex flex-wrap gap-2">
+              {t.ai.examples.map((q) => (
+                <Link
+                  key={q}
+                  href={`/${locale}/assistant?q=${encodeURIComponent(q)}`}
+                  className="rounded-full border border-cream/30 px-4 py-2 text-sm text-cream transition hover:bg-cream hover:text-brand"
+                >
+                  {q}
+                </Link>
+              ))}
+            </div>
+            <ButtonLink href={`/${locale}/assistant`} variant="secondary" size="lg">
+              {t.ai.pageCta}
+            </ButtonLink>
+          </Reveal>
         </div>
       </section>
 

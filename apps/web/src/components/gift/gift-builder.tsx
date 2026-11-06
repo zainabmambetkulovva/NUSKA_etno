@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import type { Cart, GiftSetQuote, Page, ProductCard, SavedGiftSet } from '@nuska/types';
+import type { GiftSetQuote, Page, ProductCard, SavedGiftSet } from '@nuska/types';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 
@@ -15,14 +15,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/field';
 import { PlusIcon, TrashIcon } from '@/components/ui/icons';
 import { ErrorBox } from '@/components/ui/misc';
+import { useAddSetToCart } from '@/hooks/use-add-set';
 import { useMe } from '@/hooks/use-auth';
-import { cartKey } from '@/hooks/use-cart';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { formatMoney } from '@/lib/format';
 import { useGiftSet, type GiftDraftItem } from '@/stores/gift-set';
-import { useGuestCart } from '@/stores/guest-cart';
 import { useToast } from '@/stores/toast';
 
 /**
@@ -36,7 +35,6 @@ export function GiftBuilder() {
   const signedIn = Boolean(me.data);
   const queryClient = useQueryClient();
   const toast = useToast((s) => s.show);
-  const guestCart = useGuestCart();
   const draft = useGiftSet();
   const [hydrated, setHydrated] = useState(false);
   const [name, setName] = useState('');
@@ -73,24 +71,15 @@ export function GiftBuilder() {
     [lines]
   );
 
-  const addToCart = useMutation({
-    mutationFn: async () => {
-      if (!quote.data) return { skipped: [] as unknown[] };
-      if (!signedIn) {
-        for (const line of quote.data.items) guestCart.add(line.product, line.quantity);
-        return { skipped: [] as unknown[] };
-      }
-      const result = await api<{ cart: Cart; skipped: unknown[] }>('/cart/merge', {
-        method: 'POST',
-        locale,
-        body: { items },
-      });
-      queryClient.setQueryData(cartKey(locale), result.cart);
-      return result;
-    },
-    onSuccess: (result) =>
-      result.skipped.length > 0 ? toast(t.gift.skipped, 'error') : toast(t.gift.added),
-  });
+  const addSet = useAddSetToCart();
+  const addToCart = {
+    ...addSet,
+    mutate: () =>
+      quote.data &&
+      addSet.mutate(quote.data.items, {
+        onSuccess: (r) => (r.skipped > 0 ? toast(t.gift.skipped, 'error') : toast(t.gift.added)),
+      }),
+  };
 
   const save = useMutation({
     mutationFn: async () => {

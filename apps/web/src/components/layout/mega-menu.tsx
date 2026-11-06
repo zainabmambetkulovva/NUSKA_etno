@@ -38,7 +38,11 @@ export function CatalogMegaMenu({ active }: { active: boolean }) {
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
     if (!open) return;
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      clearTimeout(timer.current);
+      setOpen(false);
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
@@ -53,7 +57,10 @@ export function CatalogMegaMenu({ active }: { active: boolean }) {
     <div onMouseEnter={() => later(true, 120)} onMouseLeave={() => later(false, 180)}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          clearTimeout(timer.current);
+          setOpen((v) => !v);
+        }}
         aria-expanded={open}
         aria-haspopup="true"
         className={cn(
