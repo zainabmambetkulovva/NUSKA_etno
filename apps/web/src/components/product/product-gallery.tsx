@@ -45,6 +45,7 @@ export function ProductGallery({
   const { t } = useI18n();
   const reduce = useReducedMotion() ?? false;
   const [mode, setMode] = useState<'photo' | '3d'>('photo');
+  const [zoom, setZoom] = useState(1);
   const [webgl, setWebgl] = useState(false);
   useEffect(() => setWebgl(supportsWebGL()), []);
   const can3d = Boolean(packaging3d) && webgl;
@@ -53,7 +54,26 @@ export function ProductGallery({
     <div className="relative aspect-square overflow-hidden rounded-2xl bg-cream-light shadow-card">
       {mode === '3d' && packaging3d ? (
         <div className="bg-ornament absolute inset-0" role="img" aria-label={`${name} — 3D`}>
-          <PackagingViewer model={packaging3d} name={name} reducedMotion={reduce} />
+          <PackagingViewer model={packaging3d} name={name} reducedMotion={reduce} zoom={zoom} />
+          <div className="absolute right-3 top-1/2 flex -translate-y-1/2 flex-col gap-2">
+            {(
+              [
+                [t.product.zoomIn, '+', 0.25],
+                [t.product.zoomOut, '−', -0.25],
+              ] as const
+            ).map(([label, sign, step]) => (
+              <button
+                key={sign}
+                type="button"
+                onClick={() => setZoom((z) => Math.min(2, Math.max(0.75, z + step)))}
+                disabled={(step > 0 && zoom >= 2) || (step < 0 && zoom <= 0.75)}
+                aria-label={label}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-xl text-brand shadow-soft transition hover:bg-white disabled:opacity-40"
+              >
+                {sign}
+              </button>
+            ))}
+          </div>
           <span className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/85 px-3 py-1 text-xs text-ink-muted shadow-soft">
             {t.product.rotateHint}
           </span>

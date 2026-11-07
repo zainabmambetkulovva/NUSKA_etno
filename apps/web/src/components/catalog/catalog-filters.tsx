@@ -11,7 +11,7 @@ import { SearchIcon } from '@/components/ui/icons';
 import { useI18n } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/cn';
 
-const SORTS = ['default', 'popular', 'price_asc', 'price_desc', 'newest'] as const;
+const SORTS = ['default', 'popular', 'price_asc', 'price_desc', 'newest', 'name'] as const;
 
 /** Search, sort, stock filter and category list (TZ §16). State lives in the URL. */
 export function CatalogFilters({
@@ -43,6 +43,8 @@ export function CatalogFilters({
   const hasFilters = Boolean(
     params.get('search') ||
     params.get('inStock') ||
+    params.get('minPrice') ||
+    params.get('maxPrice') ||
     (params.get('sort') && params.get('sort') !== 'default') ||
     activeCategory
   );
@@ -123,6 +125,48 @@ export function CatalogFilters({
           ))}
         </Select>
       </div>
+
+      <form
+        className="space-y-2"
+        key={`${params.get('minPrice')}-${params.get('maxPrice')}`}
+        onSubmit={(event) => {
+          event.preventDefault();
+          const data = new FormData(event.currentTarget);
+          const clean = (v: FormDataEntryValue | null) => {
+            const n = Math.round(Number(v));
+            return v && Number.isFinite(n) && n >= 0 ? String(n) : null;
+          };
+          update({ minPrice: clean(data.get('minPrice')), maxPrice: clean(data.get('maxPrice')) });
+        }}
+      >
+        <span className="field-label">{t.catalog.price}</span>
+        <div className="flex items-center gap-2">
+          <input
+            name="minPrice"
+            type="number"
+            min={0}
+            inputMode="numeric"
+            defaultValue={params.get('minPrice') ?? ''}
+            placeholder={t.catalog.priceFrom}
+            aria-label={t.catalog.priceFrom}
+            className="field-input min-w-0"
+          />
+          <span aria-hidden>—</span>
+          <input
+            name="maxPrice"
+            type="number"
+            min={0}
+            inputMode="numeric"
+            defaultValue={params.get('maxPrice') ?? ''}
+            placeholder={t.catalog.priceTo}
+            aria-label={t.catalog.priceTo}
+            className="field-input min-w-0"
+          />
+        </div>
+        <button type="submit" className="text-sm font-medium text-brand hover:underline">
+          {t.catalog.applyPrice}
+        </button>
+      </form>
 
       <Checkbox
         label={t.catalog.inStockOnly}

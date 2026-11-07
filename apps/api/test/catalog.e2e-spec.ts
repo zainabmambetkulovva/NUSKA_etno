@@ -31,6 +31,32 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
   };
 
   describe('public catalog', () => {
+    it('filters by price in som, sorts by name and searches descriptions', async () => {
+      const cheap = await createProduct(ctx.prisma, { name: 'Бал', priceAmount: 10000 });
+      await createProduct(ctx.prisma, { name: 'Айран', priceAmount: 20000 });
+      await createProduct(ctx.prisma, { name: 'Ведро', priceAmount: 30000 });
+      await ctx.prisma.productTranslation.updateMany({
+        where: { productId: cheap.id, locale: 'ru' },
+        data: { shortDescription: 'Горный мёд с разнотравья' },
+      });
+
+      const priced = await http()
+        .get('/api/products?locale=ru&minPrice=150&maxPrice=300')
+        .expect(200);
+      expect(priced.body.data.map((p: { name: string }) => p.name).sort()).toEqual(
+        ['Ведро', 'Айран'].sort()
+      );
+
+      const byName = await http().get('/api/products?locale=ru&sort=name&limit=2').expect(200);
+      expect(byName.body.data.map((p: { name: string }) => p.name)).toEqual(['Айран', 'Бал']);
+      expect(byName.body.meta.total).toBe(3);
+
+      const found = await http().get('/api/products?locale=ru&search=разнотравья').expect(200);
+      expect(found.body.data.map((p: { id: string }) => p.id)).toEqual([cheap.id]);
+
+      await http().get('/api/products?minPrice=-1').expect(422);
+    });
+
     it('shows only active, non-deleted products, localised', async () => {
       await createProduct(ctx.prisma, { name: 'Нават', nameKy: 'Нават (ky)' });
       await createProduct(ctx.prisma, { name: 'Черновик', status: ProductStatus.DRAFT });
