@@ -13,7 +13,7 @@ import type { Dictionary } from '@/i18n/dictionaries/ky';
 import { serverApi, serverApiSafe } from '@/lib/api/server';
 
 export const PAGE_SIZE = 12;
-const SORTS = new Set(['default', 'popular', 'price_asc', 'price_desc', 'newest']);
+const SORTS = new Set(['default', 'popular', 'price_asc', 'price_desc', 'newest', 'name']);
 
 export type CatalogSearchParams = Record<string, string | string[] | undefined>;
 
@@ -43,6 +43,11 @@ export async function CatalogView({
   if (search) query.set('search', search);
   if (sort && SORTS.has(sort)) query.set('sort', sort);
   if (first(searchParams.inStock) === 'true') query.set('inStock', 'true');
+  for (const key of ['minPrice', 'maxPrice'] as const) {
+    const value = Number(first(searchParams[key]));
+    if (first(searchParams[key]) && Number.isInteger(value) && value >= 0 && value <= 10_000_000)
+      query.set(key, String(value));
+  }
   if (category) query.set('category', category.slug);
 
   const [categories, products] = await Promise.all([

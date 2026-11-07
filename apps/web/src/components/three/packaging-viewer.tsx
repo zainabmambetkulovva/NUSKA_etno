@@ -10,7 +10,7 @@ import {
   OrbitControls,
   RoundedBox,
 } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { seeded } from './procedural';
@@ -304,6 +304,18 @@ function Pack({ name }: { name: string }) {
   );
 }
 
+/** Smoothly applies the zoom chosen with the +/- buttons (the mouse wheel keeps scrolling the page). */
+function Zoom({ value }: { value: number }) {
+  useFrame((state, delta) => {
+    const camera = state.camera as THREE.PerspectiveCamera;
+    if (Math.abs(camera.zoom - value) < 0.001) return;
+    camera.zoom = THREE.MathUtils.damp(camera.zoom, value, 8, delta);
+    camera.updateProjectionMatrix();
+    state.invalidate();
+  });
+  return null;
+}
+
 const MODELS: Record<PackagingModel, (props: { name: string }) => ReactElement> = {
   BOTTLE: Bottle,
   JAR: Jar,
@@ -315,10 +327,12 @@ export default function PackagingViewer({
   model,
   name,
   reducedMotion,
+  zoom = 1,
 }: {
   model: PackagingModel;
   name: string;
   reducedMotion: boolean;
+  zoom?: number;
 }) {
   const Model = MODELS[model];
   return (
@@ -368,6 +382,7 @@ export default function PackagingViewer({
           color="#27452F"
         />
       </Suspense>
+      <Zoom value={zoom} />
       <OrbitControls
         enablePan={false}
         enableZoom={false}

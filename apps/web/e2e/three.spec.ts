@@ -17,6 +17,12 @@ test('product page shows the 3D packaging viewer', async ({ page }) => {
   await page.locator('button', { hasText: /^3D$/ }).click();
   await expect(page.locator('main canvas')).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText(ky.product.rotateHint)).toBeVisible();
+  await page.getByRole('button', { name: ky.product.zoomIn }).click();
+  await page.getByRole('button', { name: ky.product.zoomIn }).click();
+  await page.getByRole('button', { name: ky.product.zoomIn }).click();
+  await page.getByRole('button', { name: ky.product.zoomIn }).click();
+  await expect(page.getByRole('button', { name: ky.product.zoomIn })).toBeDisabled();
+  await expect(page.getByRole('button', { name: ky.product.zoomOut })).toBeEnabled();
 });
 
 test('without WebGL the site falls back to the 2D composition', async ({ page }) => {

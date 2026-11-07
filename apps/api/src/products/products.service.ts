@@ -79,10 +79,17 @@ export class ProductsService {
     const and: Prisma.ProductWhereInput[] = [PUBLIC_PRODUCT_WHERE];
 
     if (query.search) {
+      const contains = { contains: query.search, mode: 'insensitive' as const };
       and.push({
-        translations: { some: { name: { contains: query.search, mode: 'insensitive' } } },
+        translations: {
+          some: {
+            OR: [{ name: contains }, { shortDescription: contains }, { description: contains }],
+          },
+        },
       });
     }
+    if (query.minPrice !== undefined) and.push({ priceAmount: { gte: query.minPrice * 100 } });
+    if (query.maxPrice !== undefined) and.push({ priceAmount: { lte: query.maxPrice * 100 } });
     if (query.category) {
       const ids = await this.categories.resolveSubtreeIds(query.category);
       if (ids.length === 0) return paginate([], 0, query.limit, query.offset);
@@ -101,9 +108,26 @@ export class ProductsService {
       price_desc: [{ priceAmount: 'desc' as const }, { sortOrder: 'asc' as const }],
       popular: [{ orderItems: { _count: 'desc' as const } }, { sortOrder: 'asc' as const }],
       newest: [{ createdAt: 'desc' as const }],
+      name: [{ sortOrder: 'asc' as const }],
     }[query.sort];
 
     const where: Prisma.ProductWhereInput = { AND: and };
+
+    // Sorting by the name in the request language is done in memory: names live in
+    // translations, and the catalog of a single shop is small.
+    if (query.sort === 'name') {
+      const all = await this.prisma.product.findMany({ where, include: productCardInclude });
+      const collator = new Intl.Collator(locale === 'ky' ? 'ky' : 'ru');
+      const cards = all
+        .map((p) => toProductCard(p, locale))
+        .sort((a, b) => collator.compare(a.name, b.name));
+      return paginate(
+        cards.slice(query.offset, query.offset + query.limit),
+        cards.length,
+        query.limit,
+        query.offset
+      );
+    }
     const [products, total] = await this.prisma.$transaction([
       this.prisma.product.findMany({
         where,

@@ -41,7 +41,14 @@ function NullableText(max: number): PropertyDecorator {
 
 // --- Public query -----------------------------------------------------------
 
-export const PRODUCT_SORTS = ['default', 'price_asc', 'price_desc', 'popular', 'newest'] as const;
+export const PRODUCT_SORTS = [
+  'default',
+  'price_asc',
+  'price_desc',
+  'popular',
+  'newest',
+  'name',
+] as const;
 export type ProductSort = (typeof PRODUCT_SORTS)[number];
 
 export class ProductsQueryDto extends PaginationQueryDto {
@@ -49,7 +56,7 @@ export class ProductsQueryDto extends PaginationQueryDto {
   @IsIn(LOCALES)
   locale?: Locale;
 
-  @ApiPropertyOptional({ description: 'Search by product name (RU or KY)' })
+  @ApiPropertyOptional({ description: 'Search by product name or description (RU or KY)' })
   @IsOptional()
   @Transform(trim)
   @IsString()
@@ -75,6 +82,22 @@ export class ProductsQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsIn(['true', 'false'])
   featured?: 'true' | 'false';
+
+  @ApiPropertyOptional({ description: 'Minimum price in som' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(10_000_000)
+  minPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum price in som' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(10_000_000)
+  maxPrice?: number;
 }
 
 // --- Admin -------------------------------------------------------------------

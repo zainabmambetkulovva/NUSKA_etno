@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { ky } from './helpers';
+import { ky, ru } from './helpers';
 
 test('catalog search finds a product and opens its page', async ({ page }) => {
   await page.goto('/ky/catalog');
@@ -24,4 +24,23 @@ test('unknown pages and products answer 404', async ({ page }) => {
   expect((await page.goto('/ky/product/does-not-exist'))?.status()).toBe(404);
   await expect(page.getByRole('heading', { name: ky.common.notFoundTitle })).toBeVisible();
   expect((await page.goto('/ky/no-such-page'))?.status()).toBe(404);
+});
+
+test('price filter in som and sorting by name', async ({ page }) => {
+  await page.goto('/ru/catalog');
+  await page.getByLabel(ru.catalog.priceFrom).fill('200');
+  await page.getByLabel(ru.catalog.priceTo).fill('300');
+  await page.getByRole('button', { name: ru.catalog.applyPrice }).click();
+  await page.waitForURL(/minPrice=200&maxPrice=300/);
+  const prices = await page.locator('main article').getByText(/сом/).allTextContents();
+  expect(prices.length).toBeGreaterThan(0);
+  for (const text of prices) {
+    const value = Number(text.replace(/\D/g, ''));
+    expect(value).toBeGreaterThanOrEqual(200);
+    expect(value).toBeLessThanOrEqual(300);
+  }
+
+  await page.goto('/ru/catalog?sort=name');
+  const names = await page.locator('main article h3').allTextContents();
+  expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'ru')));
 });

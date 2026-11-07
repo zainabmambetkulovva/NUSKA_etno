@@ -32,13 +32,12 @@ NUSKA_etno — современный интернет-магазин, объе�
 - React 19
 - TypeScript
 - Tailwind CSS
-- Framer Motion
-- GSAP
-- Three.js + React Three Fiber
+- Framer Motion (все анимации: появление, параллакс, переходы страниц)
+- Three.js + React Three Fiber + drei
 - Zustand
 - TanStack Query
 - React Hook Form + Zod
-- i18next
+- Собственные словари KY/RU (без i18next)
 
 ### Backend
 - Node.js

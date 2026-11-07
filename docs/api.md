@@ -149,3 +149,9 @@ set building, pricing, pickup — database only), `catalog-assistant.ts` (no-mod
 Rules: facts only from tools; the assistant never changes the cart, orders, payments or
 accounts — `proposal` is shown with an "Add to cart" button the customer presses.
 Conversations are not stored on the server (the browser keeps them for the tab).
+
+## Catalog query (update)
+
+`GET /api/products` also accepts `minPrice` / `maxPrice` (whole som), `sort=name`
+(by the name in the request language), and `search` now matches the name, short
+description and description in any language.
