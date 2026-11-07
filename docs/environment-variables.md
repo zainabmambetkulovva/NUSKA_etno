@@ -103,3 +103,16 @@ The browser never calls the API directly: Next.js proxies `/api/*` to the API
 2. Use a random `JWT_SECRET` (`openssl rand -base64 48`); changing it signs everyone out.
 3. Restrict `CORS_ORIGINS` to the production domain.
 4. Use `sslmode=require` for Neon.
+
+### NUSKA AI (optional)
+
+Without `ANTHROPIC_API_KEY` the assistant answers in **catalog mode** (built-in
+keyword assistant over the catalog, no language model) and says so in the chat.
+Add the key in Render → `nuska-etno-api` → Environment (never in Vercel, never in Git).
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | – | Anthropic API key (paid, console.anthropic.com) |
+| `AI_MODEL` | `claude-opus-5-5` | Claude model, e.g. `claude-haiku-5-5` for lower cost |
+| `AI_EFFORT` | `low` | `low` / `medium` / `high` / `xhigh` / `max` |
+| `AI_DAILY_LIMIT` | `300` | Model calls per day per API instance; above it the catalog mode answers |

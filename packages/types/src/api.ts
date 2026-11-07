@@ -406,3 +406,29 @@ export interface SavedGiftSet extends GiftSetQuote {
   name: string;
   createdAt: string;
 }
+
+// --- NUSKA AI ---------------------------------------------------------------
+
+export interface AiStatus {
+  enabled: boolean;
+  /** "ai": a language model is connected; "catalog": built-in catalog assistant. */
+  mode: 'ai' | 'catalog';
+}
+
+export interface AiReply {
+  mode: 'ai' | 'catalog';
+  reply: string;
+  products: ProductCard[];
+  /** A set the customer may add to the cart with a button (never added automatically). */
+  proposal: GiftSetQuote | null;
+  suggestions: string[];
+}
+
+export interface AdminAiSettings {
+  enabled: boolean;
+  providerConfigured: boolean;
+  provider: string | null;
+  model: string | null;
+  dailyLimit: number;
+  usedToday: number;
+}

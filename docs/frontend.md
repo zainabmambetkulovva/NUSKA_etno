@@ -87,6 +87,16 @@ moderated ones; honest empty state) → FAQ (from the admin panel) → newslette
 - **Fonts:** Cormorant Garamond and Manrope were checked for Kyrgyz letters: Manrope
   falls back for «ң», Cormorant uses a non-standard «л». Lora + Inter are kept.
 
+## NUSKA AI (`components/ai`, `/assistant`)
+
+- Floating widget on every page except `/assistant` and the admin panel; full page
+  `/assistant?q=...` with the 3D symbol (`components/three/ai-orb-scene.tsx`, SVG orb fallback).
+- The chat shows the mode honestly ("AI not connected — answering from the catalog").
+- Proposals: "Add to cart" (shared `hooks/use-add-set.ts`) or "Open in the builder".
+- History is kept in `sessionStorage` for the tab; the last 12 messages and the current cart
+  are sent with each question.
+- Admin: `/admin/ai` — on/off, provider status, model, calls today.
+
 ## Gift set builder (`/gift-builder`, TZ section 08)
 
 `components/gift/gift-builder.tsx` + `components/three/gift-box-scene.tsx`.
