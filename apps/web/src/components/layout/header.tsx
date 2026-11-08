@@ -6,12 +6,18 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-import { HeaderMedallion } from './header-ornament';
 import { LanguageSwitcher } from './language-switcher';
 import { CatalogMegaMenu } from './mega-menu';
 
 import { Logo } from '@/components/brand/logo';
-import { CartIcon, CloseIcon, HeartIcon, MenuIcon, UserIcon } from '@/components/ui/icons';
+import {
+  CartIcon,
+  CloseIcon,
+  HeartIcon,
+  MenuIcon,
+  SearchIcon,
+  UserIcon,
+} from '@/components/ui/icons';
 import { useMe } from '@/hooks/use-auth';
 import { useCart } from '@/hooks/use-cart';
 import { useFavoriteIds } from '@/hooks/use-favorites';
@@ -21,9 +27,9 @@ import { cn } from '@/lib/cn';
 function useNavLinks() {
   const { t, locale } = useI18n();
   return [
+    { href: `/${locale}`, label: t.nav.home, exact: true },
     { href: `/${locale}/catalog`, label: t.nav.catalog, mega: true },
     { href: `/${locale}/about`, label: t.nav.about },
-    { href: `/${locale}/traditions`, label: t.nav.traditions },
     { href: `/${locale}/pickup`, label: t.nav.pickup },
     { href: `/${locale}#reviews`, label: t.nav.reviews },
     { href: `/${locale}/contacts`, label: t.nav.contacts },
@@ -35,7 +41,7 @@ function CountBadge({ count, bump }: { count: number; bump?: boolean }) {
   return (
     <span
       className={cn(
-        'absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold text-cream-light ring-2 ring-cream-light',
+        'absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-honey px-1 text-[11px] font-bold text-forest-dark ring-2 ring-forest',
         bump && 'animate-bump'
       )}
     >
@@ -53,7 +59,7 @@ function FavoritesLink({ className }: { className?: string }) {
     <Link
       href={me.data ? `/${locale}/account/favorites` : `/${locale}/login`}
       className={cn(
-        'relative h-10 w-10 items-center justify-center rounded-full text-ink transition hover:text-brand',
+        'relative h-10 w-10 items-center justify-center rounded-full text-cream-light transition hover:text-honey-light',
         className
       )}
       aria-label={`${t.nav.favorites}: ${count}`}
@@ -83,7 +89,7 @@ function CartLink() {
     <Link
       href={`/${locale}/cart`}
       data-cart-target
-      className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:text-brand"
+      className="relative flex h-10 w-10 items-center justify-center rounded-full text-cream-light transition hover:text-honey-light"
       aria-label={`${t.nav.cart}: ${count}`}
     >
       <CartIcon width={24} height={24} />
@@ -93,9 +99,10 @@ function CartLink() {
 }
 
 /**
- * Header after the design reference: a floating cream plate with an ornament
- * medallion on top. Logo · Catalog ▾ · About · Traditions · Pickup · Reviews ·
- * Contacts · KG RU · ♡ · cart · "Personal account". Burger menu below 1280 px.
+ * Header of the design: deep green bar with the gold NUSKA medallion,
+ * Home · Catalog ▾ · About · Pickup · Reviews · Contacts, then search,
+ * favourites, cart and "Sign in / Register". On the home page it lies
+ * transparent over the hero picture until the page is scrolled.
  */
 export function Header() {
   const { t, locale } = useI18n();
@@ -107,7 +114,7 @@ export function Header() {
 
   useEffect(() => setOpen(false), [pathname]);
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -119,38 +126,35 @@ export function Header() {
     };
   }, [open]);
 
-  const isActive = (href: string) => !href.includes('#') && pathname.startsWith(href);
+  const home = `/${locale}`;
+  const overHero = pathname === home && !scrolled;
+  const isActive = (href: string, exact?: boolean) =>
+    !href.includes('#') && (exact ? pathname === href : pathname.startsWith(href));
   const accountHref = me.data ? `/${locale}/account` : `/${locale}/login`;
 
   return (
     <>
-      <header className="sticky top-0 z-40 px-2 pt-2 sm:px-3 sm:pt-3 xl:pt-5">
-        <div
-          className={cn(
-            'relative mx-auto flex h-16 max-w-[1440px] items-center gap-3 rounded-[2rem] border border-gold/30 bg-cream-light/95 px-4 backdrop-blur-md transition-shadow duration-300 sm:px-6 xl:h-[84px] xl:rounded-[2.75rem] xl:px-7 2xl:px-10',
-            scrolled ? 'shadow-lift' : 'shadow-card'
-          )}
-        >
-          <HeaderMedallion className="pointer-events-none absolute -top-[19px] left-1/2 hidden h-10 w-32 -translate-x-1/2 xl:block" />
+      <header
+        className={cn(
+          'sticky top-0 z-40 transition-[background-color,box-shadow] duration-500',
+          overHero
+            ? 'bg-gradient-to-b from-forest-dark/70 to-transparent'
+            : 'bg-forest/95 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.6)] backdrop-blur-md'
+        )}
+      >
+        <div className="mx-auto flex h-[68px] max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:h-[76px] xl:px-10">
           <button
             type="button"
-            className="-ml-1 flex h-10 w-10 items-center justify-center rounded-full xl:hidden"
+            className="-ml-1 flex h-10 w-10 items-center justify-center rounded-full text-cream-light xl:hidden"
             onClick={() => setOpen(true)}
             aria-label={t.nav.menu}
             aria-expanded={open}
           >
             <MenuIcon />
           </button>
-          <Logo
-            href={`/${locale}`}
-            animate
-            className="shrink-0 2xl:[&_span]:text-[28px] 2xl:[&_svg]:h-9 2xl:[&_svg]:w-[72px]"
-          />
+          <Logo href={home} className="shrink-0" />
 
-          <nav
-            className="ml-2 hidden items-center xl:flex 2xl:ml-6 2xl:gap-1"
-            aria-label={t.nav.menu}
-          >
+          <nav className="mx-auto hidden items-center gap-1 xl:flex" aria-label={t.nav.menu}>
             {links.map((link) =>
               link.mega ? (
                 <CatalogMegaMenu key={link.href} active={isActive(link.href)} />
@@ -158,17 +162,21 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  aria-current={isActive(link.href) ? 'page' : undefined}
+                  aria-current={isActive(link.href, link.exact) ? 'page' : undefined}
                   className={cn(
-                    'group relative whitespace-nowrap px-2 py-2 text-sm transition min-[1360px]:px-3 2xl:text-[15px]',
-                    isActive(link.href) ? 'text-brand' : 'text-ink hover:text-brand'
+                    'group relative whitespace-nowrap px-3 py-2 text-sm font-medium transition 2xl:text-[15px]',
+                    isActive(link.href, link.exact)
+                      ? 'text-honey-light'
+                      : 'text-cream-light/90 hover:text-honey-light'
                   )}
                 >
                   {link.label}
                   <span
                     className={cn(
-                      'absolute inset-x-2 bottom-0.5 h-px origin-left bg-brand transition-transform min-[1360px]:inset-x-3',
-                      isActive(link.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                      'absolute inset-x-3 bottom-0.5 h-px origin-left bg-honey transition-transform',
+                      isActive(link.href, link.exact)
+                        ? 'scale-x-100'
+                        : 'scale-x-0 group-hover:scale-x-100'
                     )}
                     aria-hidden
                   />
@@ -177,19 +185,34 @@ export function Header() {
             )}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1 sm:gap-2">
+          <div className="ml-auto flex items-center gap-0.5 sm:gap-1.5 xl:ml-0">
             <Suspense>
-              <LanguageSwitcher variant="plain" className="mr-1 hidden sm:inline-flex" />
+              <LanguageSwitcher variant="dark" className="mr-1 hidden md:inline-flex" />
             </Suspense>
-            <span className="mx-1 hidden h-8 w-px bg-gold/40 sm:block" aria-hidden />
+            <Link
+              href={`/${locale}/search`}
+              className="hidden h-10 w-10 items-center justify-center rounded-full text-cream-light transition hover:text-honey-light sm:flex"
+              aria-label={t.nav.search}
+            >
+              <SearchIcon width={22} height={22} />
+            </Link>
             <FavoritesLink className="hidden sm:flex" />
             <CartLink />
             <Link
               href={accountHref}
-              className="ml-2 hidden items-center gap-2 whitespace-nowrap rounded-full bg-brand px-4 py-3 text-sm font-medium 2xl:px-5 text-cream-light shadow-card transition hover:bg-brand-dark md:inline-flex"
+              className="ml-2 hidden items-center gap-2.5 whitespace-nowrap rounded-full border border-cream-light/50 bg-forest-dark/40 py-1.5 pl-2 pr-4 text-cream-light transition hover:border-honey hover:text-honey-light md:inline-flex"
             >
-              <UserIcon width={18} height={18} />
-              {t.nav.cabinet}
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-cream-light/10">
+                <UserIcon width={18} height={18} />
+              </span>
+              {me.data ? (
+                <span className="max-w-[9rem] truncate text-sm font-medium">{t.nav.cabinet}</span>
+              ) : (
+                <span className="text-left text-xs font-medium leading-tight">
+                  {t.nav.login} /<br />
+                  {t.nav.register}
+                </span>
+              )}
             </Link>
           </div>
         </div>
@@ -215,7 +238,7 @@ export function Header() {
               aria-label={t.nav.menu}
             >
               <div className="flex items-center justify-between">
-                <Logo href={`/${locale}`} />
+                <Logo href={`/${locale}`} tone="dark" />
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
@@ -260,9 +283,10 @@ export function Header() {
               </nav>
               <Link
                 href={accountHref}
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-medium text-cream-light"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-forest px-5 py-3 text-sm font-medium text-cream-light"
               >
-                <UserIcon width={18} height={18} /> {t.nav.cabinet}
+                <UserIcon width={18} height={18} />{' '}
+                {me.data ? t.nav.cabinet : `${t.nav.login} / ${t.nav.register}`}
               </Link>
               <Suspense>
                 <LanguageSwitcher className="self-start" />

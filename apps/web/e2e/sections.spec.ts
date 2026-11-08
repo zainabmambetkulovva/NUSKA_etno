@@ -2,23 +2,21 @@ import { expect, test } from '@playwright/test';
 
 import { expectNoHorizontalScroll, ky, ru } from './helpers';
 
-test('header follows the design: no search field, personal account button', async ({ page }) => {
+test('header follows the design: logo, menu, search, sign in / register', async ({ page }) => {
   await page.goto('/ru');
   const header = page.locator('header');
+  await expect(header.getByRole('link', { name: 'NUSKA_etno' })).toBeVisible();
   await expect(header.getByRole('searchbox')).toHaveCount(0);
-  await expect(header.getByRole('link', { name: ru.nav.cabinet })).toBeVisible();
-  for (const name of [
-    ru.nav.about,
-    ru.nav.traditions,
-    ru.nav.pickup,
-    ru.nav.reviews,
-    ru.nav.contacts,
-  ])
+  await expect(header.getByRole('link', { name: ru.nav.search })).toBeVisible();
+  await expect(
+    header.getByRole('link', { name: new RegExp(`${ru.nav.login}.*${ru.nav.register}`) })
+  ).toHaveAttribute('href', '/ru/login');
+  for (const name of [ru.nav.home, ru.nav.about, ru.nav.pickup, ru.nav.reviews, ru.nav.contacts])
     await expect(header.getByRole('link', { name, exact: true })).toBeVisible();
 });
 
-test('stores are shown as an endless ticker', async ({ page }) => {
-  await page.goto('/ky');
+test('stores are shown as an endless ticker on the pickup page', async ({ page }) => {
+  await page.goto('/ky/pickup');
   const stores = page.locator('section[aria-labelledby="stores-title"]');
   await stores.scrollIntoViewIfNeeded();
   await expect(stores.getByText('Бимар').first()).toBeVisible();
@@ -27,7 +25,7 @@ test('stores are shown as an endless ticker', async ({ page }) => {
 test('catalog mega menu shows the categories', async ({ page }) => {
   await page.goto('/ru');
   await page.getByRole('button', { name: ru.nav.catalog, exact: true }).click();
-  const allCatalog = page.getByRole('link', { name: ru.nav.goToCatalog });
+  const allCatalog = page.locator('header').getByRole('link', { name: ru.nav.goToCatalog });
   await expect(allCatalog).toBeVisible();
   await expect(page.getByRole('link', { name: /Молочные продукты/ }).first()).toBeVisible();
   await expect(page.locator('header').getByRole('link', { name: ru.nav.giftSets })).toBeVisible();
@@ -35,22 +33,32 @@ test('catalog mega menu shows the categories', async ({ page }) => {
   await expect(allCatalog).toBeHidden();
 });
 
-test('home has the brand story, benefits, reviews, FAQ and newsletter sections', async ({
+test('home follows the design: products, why us, story, reviews, gifts and newsletter', async ({
   page,
 }) => {
   await page.goto('/ky');
   for (const title of [
+    ky.home.productsTitle,
+    ky.home.whyTitle,
     ky.home.storyTitle,
-    ky.home.advantagesTitle,
     ky.home.reviewsTitle,
-    ky.home.faqTitle,
+    ky.home.giftTitle,
     ky.newsletter.title,
   ]) {
     await expect(page.getByRole('heading', { name: title })).toBeAttached();
   }
-  // Footer: menu and contacts columns, order links and socials.
+  // The six signature products, each opening the product (or the search for it).
+  const products = page.locator('section[aria-labelledby="products-title"]');
+  for (const name of ['Сары май', 'Жупка', 'Бешбармак', 'Кымыз', 'Нават', 'Курут'])
+    await expect(products.getByRole('link', { name: new RegExp(name) })).toBeVisible();
+  await products.getByRole('link', { name: /Кымыз/ }).click();
+  await expect(page).toHaveURL(/\/ky\/product\/kymyz$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Кымыз' })).toBeVisible();
+  await page.goBack();
+
+  // Footer: navigation and contacts columns, order links and socials.
   const footer = page.locator('footer');
-  for (const title of [ky.footer.menu, ky.footer.contacts]) {
+  for (const title of [ky.footer.navigation, ky.footer.contacts]) {
     await expect(footer.getByRole('heading', { name: title })).toBeVisible();
   }
   await expect(footer.getByRole('link', { name: ky.footer.wholesale })).toHaveAttribute(

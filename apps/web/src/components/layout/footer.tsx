@@ -1,59 +1,31 @@
 import type { ReactNode } from 'react';
 
 import type { SiteContent } from '@nuska/types';
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { CategoryIcon } from './category-icon';
+import { LanguageSwitcher } from './language-switcher';
 import { InstagramIcon, TelegramIcon, WhatsAppIcon, YouTubeIcon } from './social-icons';
 
-import { KochkorMuyuz } from '@/components/brand/ornament';
-import { ChevronRightIcon, PinIcon } from '@/components/ui/icons';
+import { MountainSilhouettes, OrnamentBand, OrnamentCorner } from '@/components/brand/kyrgyz-decor';
+import { Logo } from '@/components/brand/logo';
+import { ChevronRightIcon, MailIcon, PhoneIcon, PinIcon } from '@/components/ui/icons';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
 import { serverApiSafe } from '@/lib/api/server';
-import { cn } from '@/lib/cn';
 
-/** Small diamond used on the dividers (as on the design reference). */
-function Diamond({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 20 20" className={cn('h-5 w-5 text-[#7E9460]', className)} aria-hidden>
-      <path d="M10 1 L13 7 L19 10 L13 13 L10 19 L7 13 L1 10 L7 7 Z" fill="currentColor" />
-      <path d="M10 6 L12 10 L10 14 L8 10 Z" fill="#FDF7E5" />
-    </svg>
-  );
+function Heading({ children }: { children: ReactNode }) {
+  return <h2 className="mb-4 font-sans text-base font-semibold text-cream-light">{children}</h2>;
 }
 
-/** Vertical divider with a diamond in the middle (desktop only). */
-function Divider() {
-  return (
-    <div
-      className="relative hidden w-px shrink-0 self-stretch lg:block"
-      style={{ backgroundColor: 'rgba(126, 148, 96, 0.45)' }}
-      aria-hidden
-    >
-      <Diamond className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#FDF7E5]" />
-    </div>
-  );
-}
-
-function Heading({ icon, children }: { icon: ReactNode; children: ReactNode }) {
-  return (
-    <h2 className="mb-6 flex items-center gap-3 font-sans text-xl font-semibold text-brand-dark">
-      <span className="text-[#7E9460]">{icon}</span>
-      {children}
-    </h2>
-  );
-}
-
-const linkClass = 'group flex items-center gap-4 text-[15px] text-ink transition hover:text-brand';
-const iconClass = 'h-6 w-6 shrink-0 text-[#7E9460] transition group-hover:text-brand';
+const linkClass = 'text-sm text-cream-light/80 transition hover:text-honey-light';
+const contactClass =
+  'group flex items-center gap-3 text-sm text-cream-light/85 transition hover:text-honey-light';
 
 /**
- * Footer after the design reference: cream background with the yurt and the
- * horse in the mountains, ornament corners, the brand, menu and contacts
- * columns separated by ornamental dividers, social icons in green circles.
- * Contacts and links come only from the admin-managed `contacts` block.
+ * Footer of the design: deep green with mountain silhouettes and a band of
+ * ram's horns, the gold medallion, navigation, contacts with the order links,
+ * gold social icons and the language switch. Contacts and links come only
+ * from the admin-managed `contacts` block.
  */
 export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
   const [contacts, returns] = await Promise.all([
@@ -78,29 +50,15 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
   const email = value('email');
   const address = value('address');
 
-  const menu = [
-    { href: l(''), label: t.nav.home, icon: <LeafIcon /> },
-    {
-      href: l('/catalog'),
-      label: t.nav.catalog,
-      icon: <CategoryIcon slug="bag" className={iconClass} />,
-    },
-    {
-      href: l('/gift-builder'),
-      label: t.nav.giftSets,
-      icon: <CategoryIcon slug="gift" className={iconClass} />,
-    },
-    { href: l('/pickup'), label: t.nav.pickup, icon: <PinIcon className={iconClass} /> },
-    {
-      href: l('/traditions'),
-      label: t.nav.traditions,
-      icon: (
-        <span className="flex w-6 shrink-0 justify-center">
-          <KochkorMuyuz className="h-4 w-7 text-[#7E9460]" />
-        </span>
-      ),
-    },
-    { href: l('/about'), label: t.nav.about, icon: <InfoIcon /> },
+  const nav = [
+    { href: l(''), label: t.nav.home },
+    { href: l('/catalog'), label: t.nav.catalog },
+    { href: l('/gift-builder'), label: t.nav.giftSets },
+    { href: l('/about'), label: t.nav.about },
+    { href: l('/traditions'), label: t.nav.traditions },
+    { href: l('/pickup'), label: t.nav.pickup },
+    { href: l('#reviews'), label: t.nav.reviews },
+    { href: l('/contacts'), label: t.nav.contacts },
   ];
   const orders = [
     url('wholesale') && { href: url('wholesale')!, label: t.footer.wholesale },
@@ -114,17 +72,17 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
       href: `https://www.instagram.com/${instagram.replace(/^@/, '')}`,
       icon: <InstagramIcon />,
     },
-    telegram && {
-      key: 'telegram',
-      label: 'Telegram',
-      href: `https://t.me/${telegram.replace(/^@/, '')}`,
-      icon: <TelegramIcon />,
-    },
     whatsapp && {
       key: 'whatsapp',
       label: 'WhatsApp',
       href: `https://wa.me/${whatsapp.replace(/\D/g, '')}`,
       icon: <WhatsAppIcon />,
+    },
+    telegram && {
+      key: 'telegram',
+      label: 'Telegram',
+      href: `https://t.me/${telegram.replace(/^@/, '')}`,
+      icon: <TelegramIcon />,
     },
     youtube && {
       key: 'youtube',
@@ -135,248 +93,153 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
       icon: <YouTubeIcon />,
     },
   ].filter(Boolean) as { key: string; label: string; href: string; icon: ReactNode }[];
+  const hasContacts = Boolean(whatsapp || phone || email || address || orders.length);
 
   return (
-    <footer className="relative mt-16 overflow-hidden border-t border-[#7E9460]/30 bg-[#FDF7E5] text-ink">
-      {/* Ornament corners */}
-      <Image
-        src="/images/footer/corner-left.webp"
-        alt=""
-        width={235}
-        height={225}
-        className="pointer-events-none absolute left-0 top-0 w-28 md:w-44"
-      />
-      <Image
-        src="/images/footer/corner-right.webp"
-        alt=""
-        width={225}
-        height={215}
-        className="pointer-events-none absolute right-0 top-0 w-28 md:w-44"
-      />
-      {/* Yurt and horse in the mountains */}
-      <Image
-        src="/images/footer/yurt.webp"
-        alt=""
-        width={640}
-        height={250}
-        className="pointer-events-none absolute bottom-[72px] left-0 w-[85%] max-w-[640px] opacity-90 [mask-image:linear-gradient(to_right,#000_70%,transparent),linear-gradient(to_top,#000_75%,transparent)] [mask-composite:intersect] md:w-[40%] lg:w-[33%]"
-      />
-      <Image
-        src="/images/footer/horse.webp"
-        alt=""
-        width={508}
-        height={375}
-        className="pointer-events-none absolute bottom-[72px] right-0 hidden w-[27%] max-w-[508px] [mask-image:linear-gradient(to_left,#000_75%,transparent),linear-gradient(to_top,#000_70%,transparent)] [mask-composite:intersect] lg:block"
-      />
+    <footer className="relative mt-16 overflow-hidden bg-forest-dark text-cream-light">
+      <div className="h-px bg-gradient-to-r from-transparent via-honey/60 to-transparent" />
+      <MountainSilhouettes className="absolute inset-x-0 bottom-10 h-[220px] w-full opacity-90" />
+      <OrnamentCorner className="absolute -right-4 -top-4 h-28 w-28 -scale-x-100 text-honey/35" />
 
-      <div className="container relative pb-40 pt-16 md:pb-56 lg:pb-24 lg:pr-[26%]">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-start lg:gap-10">
-          {/* Brand */}
-          <div className="flex flex-col items-center text-center lg:w-[34%] lg:pt-2">
-            <Image
-              src="/images/footer/leaf.webp"
-              alt=""
-              width={155}
-              height={100}
-              className="w-24"
-            />
-            <Link
-              href={l('')}
-              className="font-serif text-5xl font-medium tracking-tight text-brand-dark md:text-6xl"
-            >
-              NUSKA_etno
-            </Link>
-            <p className="mt-3 flex items-center gap-3 text-sm font-medium text-brand-dark">
-              <span className="h-px w-6 bg-brand-dark/60" aria-hidden />
-              {t.footer.slogan}
-              <span className="h-px w-6 bg-brand-dark/60" aria-hidden />
-            </p>
-          </div>
+      <div className="container relative grid gap-10 pb-10 pt-12 sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1.3fr_auto] lg:gap-12">
+        <div className="space-y-4">
+          <Logo href={l('')} tone="gold" size="lg" />
+          <p className="max-w-[16rem] text-sm leading-relaxed text-honey-light/85">
+            {t.footer.slogan}
+          </p>
+        </div>
 
-          <Divider />
+        <nav aria-label={t.footer.navigation} className="lg:border-l lg:border-honey/20 lg:pl-10">
+          <Heading>{t.footer.navigation}</Heading>
+          <ul className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-1">
+            {nav.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className={linkClass}>
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-          {/* Menu */}
-          <nav aria-label={t.footer.menu} className="lg:min-w-[200px]">
-            <Heading icon={<FlowerIcon />}>{t.footer.menu}</Heading>
-            <ul className="space-y-4">
-              {menu.map((item) => (
-                <li key={item.href}>
-                  <Link href={item.href} className={linkClass}>
-                    {item.icon}
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          <Divider />
-
-          {/* Contacts */}
-          <div className="lg:min-w-[260px]">
-            <Heading icon={<PinIcon className="h-7 w-7" />}>{t.footer.contacts}</Heading>
-            <ul className="space-y-4">
-              {address && (
-                <li className="flex items-center gap-4 text-[15px]">
-                  <PinIcon className={iconClass} />
-                  {address}
-                </li>
-              )}
+        <div className="lg:border-l lg:border-honey/20 lg:pl-10">
+          <Heading>{t.footer.contacts}</Heading>
+          {hasContacts ? (
+            <ul className="space-y-2.5">
               {whatsapp && (
                 <li>
-                  <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} className={linkClass}>
-                    <WhatsAppIcon className={iconClass} />
-                    {whatsapp.replace(/^(\+996)(\d{3})(\d{3})(\d{3})$/, '$1 $2 $3 $4')}
+                  <a href={`https://wa.me/${whatsapp.replace(/\D/g, '')}`} className={contactClass}>
+                    <PhoneIcon width={18} height={18} className="shrink-0 text-honey" />
+                    {formatPhone(whatsapp)}
                   </a>
                 </li>
               )}
-              {phone && (
+              {phone && phone !== whatsapp && (
                 <li>
-                  <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className={linkClass}>
-                    <PhoneIcon />
+                  <a href={`tel:${phone.replace(/[^\d+]/g, '')}`} className={contactClass}>
+                    <PhoneIcon width={18} height={18} className="shrink-0 text-honey" />
                     {phone}
                   </a>
                 </li>
               )}
               {email && (
                 <li>
-                  <a href={`mailto:${email}`} className={linkClass}>
-                    <MailIcon />
+                  <a href={`mailto:${email}`} className={contactClass}>
+                    <MailIcon width={18} height={18} className="shrink-0 text-honey" />
                     {email}
                   </a>
                 </li>
               )}
-              {orders.map((o) => (
-                <li key={o.href}>
-                  <a href={o.href} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                    <ChevronRightIcon className={iconClass} />
-                    {o.label}
+              {address && (
+                <li className="flex items-center gap-3 text-sm text-cream-light/85">
+                  <PinIcon width={18} height={18} className="shrink-0 text-honey" />
+                  {address}
+                </li>
+              )}
+              {orders.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={contactClass}
+                  >
+                    <ChevronRightIcon width={18} height={18} className="shrink-0 text-honey" />
+                    {item.label}
                   </a>
                 </li>
               ))}
-              {!address && !whatsapp && !phone && !email && orders.length === 0 && (
-                <li className="text-sm text-ink-soft">{t.footer.contactsSoon}</li>
-              )}
             </ul>
-            {socials.length > 0 && (
-              <ul className="mt-7 flex gap-3" aria-label={t.footer.socialTitle}>
-                {socials.map((s) => (
-                  <li key={s.key}>
-                    <a
-                      href={s.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={s.label}
-                      className="flex h-12 w-12 items-center justify-center rounded-full bg-[#7E9460] text-[#FDF7E5] shadow-soft transition hover:-translate-y-0.5 hover:bg-brand"
-                    >
-                      {s.icon}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          ) : (
+            <p className="text-sm text-cream-light/60">{t.footer.contactsSoon}</p>
+          )}
+          {socials.length > 0 && (
+            <ul className="mt-5 flex gap-3" aria-label={t.footer.socialTitle}>
+              {socials.map((s) => (
+                <li key={s.key}>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-honey/60 text-honey transition hover:-translate-y-0.5 hover:bg-honey hover:text-forest-dark [&_svg]:h-5 [&_svg]:w-5"
+                  >
+                    {s.icon}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="lg:border-l lg:border-honey/20 lg:pl-10">
+          <Heading>{t.nav.language}</Heading>
+          <LanguageSwitcher variant="dark" className="text-sm [&_a]:px-3.5 [&_a]:py-1.5" />
         </div>
       </div>
 
-      {/* Bottom line: ornament — copyright — ornament */}
-      <div className="relative border-t border-[#7E9460]/40 bg-[#FDF7E5]">
-        <div className="container flex flex-col items-center gap-3 py-5 text-sm text-ink-muted md:flex-row md:gap-4">
-          <span className="hidden h-px flex-1 bg-[#7E9460]/40 md:block" aria-hidden />
-          <Diamond className="hidden md:block" />
-          <span className="text-center">
-            © {new Date().getFullYear()} NUSKA_etno. {t.footer.rights}
-          </span>
-          <Diamond className="hidden md:block" />
-          <span className="hidden h-px flex-1 bg-[#7E9460]/40 md:block" aria-hidden />
+      <div className="relative">
+        <OrnamentBand />
+        <div className="bg-forest-dark/80">
+          <div className="container flex flex-col items-center gap-3 py-5 text-xs text-cream-light/70 lg:flex-row lg:justify-between">
+            <p>
+              © {new Date().getFullYear()} NUSKA_etno. {t.footer.rights}
+            </p>
+            <nav
+              aria-label={t.footer.info}
+              className="flex flex-wrap justify-center gap-x-5 gap-y-1"
+            >
+              <Link href={l('/privacy')} className="hover:text-honey-light">
+                {t.footer.privacy}
+              </Link>
+              <Link href={l('/terms')} className="hover:text-honey-light">
+                {t.footer.terms}
+              </Link>
+              <Link href={l('/order-terms')} className="hover:text-honey-light">
+                {t.footer.orderTerms}
+              </Link>
+              {returns && (
+                <Link href={l('/returns')} className="hover:text-honey-light">
+                  {t.footer.returns}
+                </Link>
+              )}
+              <Link href={l('/faq')} className="hover:text-honey-light">
+                {t.nav.faq}
+              </Link>
+            </nav>
+            <p className="font-script text-lg text-honey-light">
+              {t.home.withLove} <span className="text-ruby">♥</span>
+            </p>
+          </div>
         </div>
-        <nav
-          className="container flex flex-wrap justify-center gap-x-5 gap-y-1 pb-5 text-xs text-ink-soft"
-          aria-label={t.footer.info}
-        >
-          <Link href={l('/privacy')} className="hover:text-brand">
-            {t.footer.privacy}
-          </Link>
-          <Link href={l('/terms')} className="hover:text-brand">
-            {t.footer.terms}
-          </Link>
-          <Link href={l('/order-terms')} className="hover:text-brand">
-            {t.footer.orderTerms}
-          </Link>
-          {returns && (
-            <Link href={l('/returns')} className="hover:text-brand">
-              {t.footer.returns}
-            </Link>
-          )}
-          <Link href={l('/faq')} className="hover:text-brand">
-            {t.nav.faq}
-          </Link>
-        </nav>
       </div>
     </footer>
   );
 }
 
-function LeafIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className={iconClass} fill="currentColor" aria-hidden>
-      <path
-        d="M12 21c-1-4-1-8 2-12 2-2.5 5-4 8-4-.2 4-1.6 7.2-4 9.3-1.8 1.6-4 2.6-6 2.7Z"
-        opacity=".55"
-      />
-      <path d="M12 21c0-3.5-1.2-7-4.5-9.5C5.6 10 3.6 9.4 2 9.5c.4 3.3 1.8 6 4 7.8 1.7 1.4 3.8 2.2 6 2.4V21Z" />
-    </svg>
-  );
-}
-function InfoIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={iconClass}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 11v6M12 7.5v.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-function PhoneIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className={iconClass} fill="currentColor" aria-hidden>
-      <path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z" />
-    </svg>
-  );
-}
-function MailIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={iconClass}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      aria-hidden
-    >
-      <rect x="3" y="5" width="18" height="14" rx="2" />
-      <path d="m3.5 6 8.5 7 8.5-7" />
-    </svg>
-  );
-}
-function FlowerIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className="h-7 w-7"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.4}
-      aria-hidden
-    >
-      <path d="M12 3c2 2 2 4 0 6-2-2-2-4 0-6ZM12 21c2-2 2-4 0-6-2 2-2 4 0 6ZM3 12c2-2 4-2 6 0-2 2-4 2-6 0ZM21 12c-2-2-4-2-6 0 2 2 4 2 6 0Z" />
-      <path d="M12 10.5 13.5 12 12 13.5 10.5 12Z" fill="currentColor" />
-    </svg>
-  );
+/** "996701111024" → "+996 701 111 024". */
+function formatPhone(raw: string) {
+  const digits = raw.replace(/\D/g, '');
+  const m = digits.match(/^(996)(\d{3})(\d{3})(\d{3})$/);
+  return m ? `+${m[1]} ${m[2]} ${m[3]} ${m[4]}` : raw;
 }

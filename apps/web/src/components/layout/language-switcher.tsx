@@ -21,8 +21,8 @@ export function LanguageSwitcher({
   variant = 'pill',
 }: {
   className?: string;
-  /** "plain": text-only KG RU, as in the header. */
-  variant?: 'pill' | 'plain';
+  /** "plain": text-only KG RU; "dark": KG RU on the deep green header and footer. */
+  variant?: 'pill' | 'plain' | 'dark';
 }) {
   const { locale, t } = useI18n();
   const pathname = usePathname();
@@ -32,9 +32,11 @@ export function LanguageSwitcher({
   return (
     <div
       className={cn(
-        variant === 'pill'
-          ? 'inline-flex rounded-full border border-cream-dark bg-white p-0.5 text-xs font-semibold'
-          : 'inline-flex gap-1 text-sm font-semibold',
+        variant === 'pill' &&
+          'inline-flex rounded-full border border-cream-dark bg-white p-0.5 text-xs font-semibold',
+        variant === 'plain' && 'inline-flex gap-1 text-sm font-semibold',
+        variant === 'dark' &&
+          'inline-flex rounded-full border border-honey/40 p-0.5 text-xs font-semibold',
         className
       )}
       role="group"
@@ -56,13 +58,13 @@ export function LanguageSwitcher({
           }}
           className={cn(
             'rounded-full px-2.5 py-1 transition',
-            variant === 'pill'
-              ? l === locale
-                ? 'bg-brand text-cream-light'
-                : 'text-ink-muted hover:text-brand'
-              : l === locale
-                ? 'text-ink'
-                : 'text-ink-soft hover:text-brand'
+            variant === 'pill' &&
+              (l === locale ? 'bg-brand text-cream-light' : 'text-ink-muted hover:text-brand'),
+            variant === 'plain' && (l === locale ? 'text-ink' : 'text-ink-soft hover:text-brand'),
+            variant === 'dark' &&
+              (l === locale
+                ? 'bg-gradient-to-b from-honey-light to-honey text-forest-dark'
+                : 'text-cream-light/80 hover:text-honey-light')
           )}
         >
           {localeShort[l]}

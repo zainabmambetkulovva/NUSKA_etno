@@ -34,6 +34,13 @@
   .section-title {
     @apply font-serif text-3xl font-semibold tracking-tight text-ink md:text-4xl;
   }
+  /* Honey-gold call to action of the design. */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-b from-honey-light to-honey px-6 py-3 text-sm font-semibold text-forest-dark shadow-[0_10px_24px_-10px_rgba(176,122,53,0.8)] ring-1 ring-inset ring-white/40 transition duration-300 hover:-translate-y-0.5 hover:from-honey hover:to-honey-dark hover:text-white;
+  }
+  .btn-outline-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/40 px-6 py-3 text-sm font-semibold text-ink transition duration-300 hover:-translate-y-0.5 hover:border-forest hover:bg-forest hover:text-cream-light;
+  }
   .card {
     @apply rounded-2xl border border-cream-dark/60 bg-white shadow-soft;
   }
@@ -63,4 +70,9 @@
     linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
     linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
   mask-composite: intersect;
+}
+
+/* The home page ends with a deep green band that flows straight into the footer. */
+main:has([data-flush-footer]) + footer {
+  margin-top: 0;
 }

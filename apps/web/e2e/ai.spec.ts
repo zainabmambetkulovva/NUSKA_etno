@@ -23,13 +23,12 @@ test('NUSKA AI widget: honest mode badge, budget set from the catalog, add to ca
   await expect(panel).toBeHidden();
 });
 
-test('the examples on the home page open the small NUSKA AI window with an answer', async ({
-  page,
-}) => {
+test('the small NUSKA AI window answers an example question in Kyrgyz', async ({ page }) => {
   await page.goto('/ky');
-  await page.getByRole('button', { name: ky.ai.examples[0] }).first().click();
+  await page.getByRole('button', { name: ky.ai.open }).click();
   const panel = page.getByRole('dialog', { name: ky.ai.name });
   await expect(panel).toBeVisible();
+  await panel.getByRole('button', { name: ky.ai.examples[0] }).click();
   await expect(panel.getByText(ky.ai.proposal)).toBeVisible();
 
   await panel.getByLabel(ky.ai.placeholder).fill('Заказды кантип алам?');
