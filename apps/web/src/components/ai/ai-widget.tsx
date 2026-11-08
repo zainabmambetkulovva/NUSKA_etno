@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
@@ -10,22 +10,22 @@ import { NuskaOrb } from './nuska-orb';
 
 import { CloseIcon } from '@/components/ui/icons';
 import { useI18n } from '@/i18n/i18n-provider';
+import { useAiWidget } from '@/stores/ai-widget';
 
-/** Floating NUSKA AI button + chat panel (hidden on the assistant page and in the admin panel). */
+/** Floating NUSKA AI button + small chat window (on every page except the admin panel). */
 export function AiWidget() {
   const { t, locale } = useI18n();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  useEffect(() => setOpen(false), [pathname]);
+  const { open, setOpen, pending, takePending } = useAiWidget();
+  useEffect(() => setOpen(false), [pathname, setOpen]);
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open]);
+  }, [open, setOpen]);
 
-  if (pathname.startsWith(`/${locale}/assistant`) || pathname.startsWith(`/${locale}/admin`))
-    return null;
+  if (pathname.startsWith(`/${locale}/admin`)) return null;
 
   return (
     <>
@@ -55,13 +55,17 @@ export function AiWidget() {
                 <CloseIcon />
               </button>
             </div>
-            <AiChat className="min-h-0 flex-1" />
+            <AiChat
+              className="min-h-0 flex-1"
+              initialQuestion={pending ?? undefined}
+              onAsked={takePending}
+            />
           </motion.div>
         )}
       </AnimatePresence>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-label={t.ai.open}
         className="group fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full bg-brand py-2 pl-2 pr-4 text-sm font-medium text-cream-light shadow-lift transition hover:-translate-y-0.5 sm:right-5"

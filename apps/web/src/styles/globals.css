@@ -29,7 +29,7 @@
 
 @layer components {
   .section {
-    @apply py-14 md:py-20;
+    @apply py-10 md:py-14;
   }
   .section-title {
     @apply font-serif text-3xl font-semibold tracking-tight text-ink md:text-4xl;

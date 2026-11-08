@@ -104,6 +104,45 @@ export class AuthService {
     return { user: toPublicUser(user), tokens };
   }
 
+  /**
+   * Signs in with a verified Google profile: by Google id, else by e-mail (the
+   * account is linked to Google), else a new account without a password.
+   */
+  async loginWithGoogle(
+    profile: { sub: string; email: string; firstName: string | null; lastName: string | null },
+    locale: string,
+    meta: ClientMeta
+  ) {
+    let user =
+      (await this.prisma.user.findUnique({ where: { googleId: profile.sub } })) ??
+      (await this.prisma.user.findUnique({ where: { email: profile.email } }));
+    if (user && (user.deletedAt || !user.isActive)) {
+      throw AppError.forbidden('ACCOUNT_DISABLED', 'This account is disabled');
+    }
+    if (user) {
+      if (!user.googleId || !user.emailVerifiedAt) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { googleId: profile.sub, emailVerifiedAt: user.emailVerifiedAt ?? new Date() },
+        });
+      }
+    } else {
+      user = await this.prisma.user.create({
+        data: {
+          email: profile.email,
+          googleId: profile.sub,
+          passwordHash: null,
+          firstName: profile.firstName ?? profile.email.split('@')[0].slice(0, 100),
+          lastName: profile.lastName,
+          emailVerifiedAt: new Date(),
+          locale: isLocale(locale) ? locale : DEFAULT_LOCALE,
+        },
+      });
+    }
+    const tokens = await this.createSession(user.id, meta);
+    return { user: toPublicUser(user), tokens };
+  }
+
   /** Rotates the refresh token: the presented token becomes invalid immediately. */
   async refresh(refreshToken: string | undefined, meta: ClientMeta) {
     if (!refreshToken) throw AppError.unauthorized('SESSION_EXPIRED', 'Session expired');

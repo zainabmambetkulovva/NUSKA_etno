@@ -4,20 +4,14 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { AnimatePresence, motion } from 'framer-motion';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
+import { HeaderMedallion } from './header-ornament';
 import { LanguageSwitcher } from './language-switcher';
 import { CatalogMegaMenu } from './mega-menu';
 
 import { Logo } from '@/components/brand/logo';
-import {
-  CartIcon,
-  CloseIcon,
-  HeartIcon,
-  MenuIcon,
-  SearchIcon,
-  UserIcon,
-} from '@/components/ui/icons';
+import { CartIcon, CloseIcon, HeartIcon, MenuIcon, UserIcon } from '@/components/ui/icons';
 import { useMe } from '@/hooks/use-auth';
 import { useCart } from '@/hooks/use-cart';
 import { useFavoriteIds } from '@/hooks/use-favorites';
@@ -27,13 +21,47 @@ import { cn } from '@/lib/cn';
 function useNavLinks() {
   const { t, locale } = useI18n();
   return [
-    { href: `/${locale}`, label: t.nav.home, exact: true },
     { href: `/${locale}/catalog`, label: t.nav.catalog, mega: true },
     { href: `/${locale}/about`, label: t.nav.about },
     { href: `/${locale}/traditions`, label: t.nav.traditions },
     { href: `/${locale}/pickup`, label: t.nav.pickup },
+    { href: `/${locale}#reviews`, label: t.nav.reviews },
     { href: `/${locale}/contacts`, label: t.nav.contacts },
   ];
+}
+
+function CountBadge({ count, bump }: { count: number; bump?: boolean }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={cn(
+        'absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold text-cream-light ring-2 ring-cream-light',
+        bump && 'animate-bump'
+      )}
+    >
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
+function FavoritesLink({ className }: { className?: string }) {
+  const { t, locale } = useI18n();
+  const me = useMe();
+  const ids = useFavoriteIds();
+  const count = ids.data?.size ?? 0;
+  return (
+    <Link
+      href={me.data ? `/${locale}/account/favorites` : `/${locale}/login`}
+      className={cn(
+        'relative h-10 w-10 items-center justify-center rounded-full text-ink transition hover:text-brand',
+        className
+      )}
+      aria-label={`${t.nav.favorites}: ${count}`}
+    >
+      <HeartIcon width={24} height={24} />
+      <CountBadge count={count} />
+    </Link>
+  );
 }
 
 function CartLink() {
@@ -55,79 +83,20 @@ function CartLink() {
     <Link
       href={`/${locale}/cart`}
       data-cart-target
-      className="relative flex h-10 w-10 items-center justify-center rounded-full hover:bg-cream-50"
+      className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition hover:text-brand"
       aria-label={`${t.nav.cart}: ${count}`}
     >
-      <CartIcon />
+      <CartIcon width={24} height={24} />
       <CountBadge count={count} bump={bump} />
     </Link>
   );
 }
 
-function CountBadge({ count, bump }: { count: number; bump?: boolean }) {
-  if (count <= 0) return null;
-  return (
-    <span
-      className={cn(
-        'absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold text-cream-light',
-        bump && 'animate-bump'
-      )}
-    >
-      {count > 99 ? '99+' : count}
-    </span>
-  );
-}
-
-function FavoritesLink({ className }: { className?: string }) {
-  const { t, locale } = useI18n();
-  const me = useMe();
-  const ids = useFavoriteIds();
-  const count = ids.data?.size ?? 0;
-  return (
-    <Link
-      href={me.data ? `/${locale}/account/favorites` : `/${locale}/login`}
-      className={cn(
-        'relative h-10 w-10 items-center justify-center rounded-full hover:bg-cream-50',
-        className
-      )}
-      aria-label={`${t.nav.favorites}: ${count}`}
-    >
-      <HeartIcon />
-      <CountBadge count={count} />
-    </Link>
-  );
-}
-
-function SearchForm({ onDone, className }: { onDone?: () => void; className?: string }) {
-  const { t, locale } = useI18n();
-  const router = useRouter();
-  return (
-    <form
-      role="search"
-      className={cn('relative', className)}
-      onSubmit={(event) => {
-        event.preventDefault();
-        const q = String(new FormData(event.currentTarget).get('q') ?? '').trim();
-        router.push(q ? `/${locale}/search?q=${encodeURIComponent(q)}` : `/${locale}/search`);
-        onDone?.();
-      }}
-    >
-      <SearchIcon
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft"
-        width={18}
-        height={18}
-      />
-      <input
-        name="q"
-        type="search"
-        placeholder={t.catalog.searchPlaceholder}
-        aria-label={t.common.search}
-        className="h-10 w-full rounded-full border border-cream-dark bg-white pl-9 pr-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-      />
-    </form>
-  );
-}
-
+/**
+ * Header after the design reference: a floating cream plate with an ornament
+ * medallion on top. Logo · Catalog ▾ · About · Traditions · Pickup · Reviews ·
+ * Contacts · KG RU · ♡ · cart · "Personal account". Burger menu below 1280 px.
+ */
 export function Header() {
   const { t, locale } = useI18n();
   const pathname = usePathname();
@@ -150,33 +119,38 @@ export function Header() {
     };
   }, [open]);
 
-  const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname.startsWith(href);
+  const isActive = (href: string) => !href.includes('#') && pathname.startsWith(href);
   const accountHref = me.data ? `/${locale}/account` : `/${locale}/login`;
 
   return (
     <>
-      <header
-        className={cn(
-          'sticky top-0 z-40 border-b transition-[background-color,border-color,box-shadow] duration-300',
-          scrolled
-            ? 'border-cream-dark/60 bg-milk/90 shadow-soft backdrop-blur-md'
-            : 'border-transparent bg-cream-light'
-        )}
-      >
-        <div className="container flex h-16 items-center gap-4">
+      <header className="sticky top-0 z-40 px-2 pt-2 sm:px-3 sm:pt-3 xl:pt-5">
+        <div
+          className={cn(
+            'relative mx-auto flex h-16 max-w-[1440px] items-center gap-3 rounded-[2rem] border border-gold/30 bg-cream-light/95 px-4 backdrop-blur-md transition-shadow duration-300 sm:px-6 xl:h-[84px] xl:rounded-[2.75rem] xl:px-7 2xl:px-10',
+            scrolled ? 'shadow-lift' : 'shadow-card'
+          )}
+        >
+          <HeaderMedallion className="pointer-events-none absolute -top-[19px] left-1/2 hidden h-10 w-32 -translate-x-1/2 xl:block" />
           <button
             type="button"
-            className="-ml-2 flex h-10 w-10 items-center justify-center rounded-full xl:hidden"
+            className="-ml-1 flex h-10 w-10 items-center justify-center rounded-full xl:hidden"
             onClick={() => setOpen(true)}
             aria-label={t.nav.menu}
             aria-expanded={open}
           >
             <MenuIcon />
           </button>
-          <Logo href={`/${locale}`} animate />
+          <Logo
+            href={`/${locale}`}
+            animate
+            className="shrink-0 2xl:[&_span]:text-[28px] 2xl:[&_svg]:h-9 2xl:[&_svg]:w-[72px]"
+          />
 
-          <nav className="ml-6 hidden items-center gap-1 xl:flex" aria-label={t.nav.menu}>
+          <nav
+            className="ml-2 hidden items-center xl:flex 2xl:ml-6 2xl:gap-1"
+            aria-label={t.nav.menu}
+          >
             {links.map((link) =>
               link.mega ? (
                 <CatalogMegaMenu key={link.href} active={isActive(link.href)} />
@@ -184,17 +158,18 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  aria-current={isActive(link.href, link.exact) ? 'page' : undefined}
+                  aria-current={isActive(link.href) ? 'page' : undefined}
                   className={cn(
-                    'group relative whitespace-nowrap rounded-full px-3 py-2 text-sm transition',
-                    isActive(link.href, link.exact)
-                      ? 'bg-brand-50 font-medium text-brand-dark'
-                      : 'text-ink-muted hover:text-brand'
+                    'group relative whitespace-nowrap px-2 py-2 text-sm transition min-[1360px]:px-3 2xl:text-[15px]',
+                    isActive(link.href) ? 'text-brand' : 'text-ink hover:text-brand'
                   )}
                 >
                   {link.label}
                   <span
-                    className="absolute inset-x-3 bottom-1 h-px origin-left scale-x-0 bg-brand transition-transform group-hover:scale-x-100"
+                    className={cn(
+                      'absolute inset-x-2 bottom-0.5 h-px origin-left bg-brand transition-transform min-[1360px]:inset-x-3',
+                      isActive(link.href) ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                    )}
                     aria-hidden
                   />
                 </Link>
@@ -202,29 +177,19 @@ export function Header() {
             )}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1">
-            <SearchForm className="mr-2 hidden w-52 2xl:block" />
+          <div className="ml-auto flex items-center gap-1 sm:gap-2">
             <Suspense>
-              <LanguageSwitcher className="mr-1 hidden sm:inline-flex" />
+              <LanguageSwitcher variant="plain" className="mr-1 hidden sm:inline-flex" />
             </Suspense>
-            <Link
-              href={`/${locale}/search`}
-              className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-cream-50 2xl:hidden"
-              aria-label={t.nav.search}
-            >
-              <SearchIcon />
-            </Link>
+            <span className="mx-1 hidden h-8 w-px bg-gold/40 sm:block" aria-hidden />
             <FavoritesLink className="hidden sm:flex" />
             <CartLink />
             <Link
               href={accountHref}
-              className="flex h-10 items-center gap-2 rounded-full px-2 hover:bg-cream-50"
-              aria-label={me.data ? t.nav.account : t.nav.login}
+              className="ml-2 hidden items-center gap-2 whitespace-nowrap rounded-full bg-brand px-4 py-3 text-sm font-medium 2xl:px-5 text-cream-light shadow-card transition hover:bg-brand-dark md:inline-flex"
             >
-              <UserIcon />
-              <span className="hidden text-sm md:inline">
-                {me.data ? me.data.firstName || t.nav.account : t.nav.login}
-              </span>
+              <UserIcon width={18} height={18} />
+              {t.nav.cabinet}
             </Link>
           </div>
         </div>
@@ -242,7 +207,7 @@ export function Header() {
               onClick={() => setOpen(false)}
             />
             <motion.aside
-              className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto bg-milk p-5 shadow-lift"
+              className="fixed inset-y-0 left-0 z-50 flex w-[86%] max-w-sm flex-col gap-6 overflow-y-auto bg-cream-light p-5 shadow-lift"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
@@ -260,37 +225,26 @@ export function Header() {
                   <CloseIcon />
                 </button>
               </div>
-              <SearchForm onDone={() => setOpen(false)} />
               <nav className="flex flex-col">
-                {links.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      'border-b border-cream-dark/50 py-3 font-serif text-lg',
-                      isActive(link.href, link.exact) ? 'text-brand' : 'text-ink'
-                    )}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
+                {[...links, { href: `/${locale}/gift-builder`, label: t.nav.giftSets }].map(
+                  (link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={cn(
+                        'border-b border-cream-dark/50 py-3 font-serif text-lg',
+                        isActive(link.href) ? 'text-brand' : 'text-ink'
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  )
+                )}
                 <Link
                   href={me.data ? `/${locale}/account/favorites` : `/${locale}/login`}
                   className="border-b border-cream-dark/50 py-3 font-serif text-lg"
                 >
                   {t.nav.favorites}
-                </Link>
-                <Link
-                  href={`/${locale}/assistant`}
-                  className="border-b border-cream-dark/50 py-3 font-serif text-lg"
-                >
-                  {t.ai.name}
-                </Link>
-                <Link
-                  href={`/${locale}/gift-builder`}
-                  className="border-b border-cream-dark/50 py-3 font-serif text-lg"
-                >
-                  {t.gift.nav}
                 </Link>
                 <Link
                   href={`/${locale}/faq`}
@@ -304,6 +258,12 @@ export function Header() {
                   </Link>
                 )}
               </nav>
+              <Link
+                href={accountHref}
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-medium text-cream-light"
+              >
+                <UserIcon width={18} height={18} /> {t.nav.cabinet}
+              </Link>
               <Suspense>
                 <LanguageSwitcher className="self-start" />
               </Suspense>

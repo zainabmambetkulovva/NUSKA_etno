@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 
 import type { SiteContent } from '@nuska/types';
+import Image from 'next/image';
 
 import { KochkorMuyuz, OrnamentDivider } from '@/components/brand/ornament';
-import { StoryScene } from '@/components/home/story-scene';
 import { ButtonLink } from '@/components/ui/button';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
@@ -42,7 +42,15 @@ export default async function TraditionsPage({ params }: { params: Promise<{ loc
       </section>
       <section className="section container">
         <Reveal>
-          <StoryScene label={t.home.storySceneLabel} />
+          <div className="relative mx-auto aspect-[16/7] max-w-5xl overflow-hidden rounded-[2rem] border border-gold/40 shadow-lift">
+            <Image
+              src="/images/hero-bg.webp"
+              alt={t.home.storySceneLabel}
+              fill
+              sizes="(min-width: 1024px) 1024px, 100vw"
+              className="object-cover object-[50%_60%]"
+            />
+          </div>
         </Reveal>
         {content?.body ? (
           <div className="mx-auto mt-12 max-w-3xl whitespace-pre-line text-lg leading-relaxed text-ink-muted">

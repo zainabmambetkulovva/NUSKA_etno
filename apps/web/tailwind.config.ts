@@ -49,6 +49,7 @@ const config: Config = {
           '50%': { transform: 'translateY(-6px)' },
         },
         'spin-slow': { to: { transform: 'rotate(360deg)' } },
+        marquee: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
       },
       animation: {
         'fade-up': 'fade-up .5s ease-out both',
@@ -56,6 +57,7 @@ const config: Config = {
         draw: 'draw 2.4s ease-in-out infinite alternate',
         float: 'float 5s ease-in-out infinite',
         'spin-slow': 'spin-slow 40s linear infinite',
+        marquee: 'marquee var(--marquee-duration, 40s) linear infinite',
       },
     },
   },

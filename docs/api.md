@@ -155,3 +155,11 @@ Conversations are not stored on the server (the browser keeps them for the tab).
 `GET /api/products` also accepts `minPrice` / `maxPrice` (whole som), `sort=name`
 (by the name in the request language), and `search` now matches the name, short
 description and description in any language.
+
+## Sign in with Google
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/api/auth/providers` | `{ google: boolean }` |
+| GET | `/api/auth/google?locale=&next=` | redirect to Google (state + PKCE in an httpOnly cookie, 10 min) |
+| GET | `/api/auth/google/callback` | verifies the ID token (audience, issuer, expiry, verified e-mail), finds the user by Google id or e-mail (links) or creates one without a password, sets the session cookies and redirects to `next` (only `/ky/...` or `/ru/...`); errors → `/{locale}/login?error=google` |

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { HORN_PATHS } from '@/components/brand/ornament';
+import { HORN_PATHS } from '@/components/brand/horn-paths';
 
 /**
  * Procedural assets for the dastorkon scene. Everything is generated in code:
