@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
 import { AuthCookies } from './auth.cookies';
 import { AuthService } from './auth.service';
+import { GoogleAuthService } from './google-auth.service';
 import { PasswordService } from './password.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
@@ -22,7 +23,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthCookies, PasswordService, JwtStrategy],
+  providers: [AuthService, AuthCookies, PasswordService, JwtStrategy, GoogleAuthService],
   exports: [PasswordService],
 })
 export class AuthModule {}

@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { AuthCard, safeNext } from '@/components/auth/auth-card';
+import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
@@ -57,6 +58,7 @@ function RegisterForm() {
         </>
       }
     >
+      <GoogleButton next={next} />
       <form
         className="space-y-4"
         noValidate

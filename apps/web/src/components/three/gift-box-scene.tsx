@@ -12,7 +12,7 @@ import {
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { HORN_PATHS } from '@/components/brand/ornament';
+import { HORN_PATHS } from '@/components/brand/horn-paths';
 
 /**
  * 3D gift box of the set builder (TZ section 08). Every chosen product appears

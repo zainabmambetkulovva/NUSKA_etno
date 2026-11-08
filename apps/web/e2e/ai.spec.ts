@@ -23,17 +23,18 @@ test('NUSKA AI widget: honest mode badge, budget set from the catalog, add to ca
   await expect(panel).toBeHidden();
 });
 
-test('assistant page answers a question from the link and shows the 3D symbol', async ({
+test('the examples on the home page open the small NUSKA AI window with an answer', async ({
   page,
 }) => {
-  await page.goto(`/ky/assistant?q=${encodeURIComponent(ky.ai.examples[0])}`);
-  await expect(page.getByRole('heading', { level: 1, name: ky.ai.name })).toBeVisible();
-  await expect(page.getByText(ky.ai.proposal)).toBeVisible();
-  await expect(page.getByTestId('ai-symbol').locator('canvas')).toBeVisible({ timeout: 30_000 });
-  // The floating widget is not duplicated on the assistant page.
-  await expect(page.getByRole('button', { name: ky.ai.open })).toHaveCount(0);
+  await page.goto('/ky');
+  await page.getByRole('button', { name: ky.ai.examples[0] }).first().click();
+  const panel = page.getByRole('dialog', { name: ky.ai.name });
+  await expect(panel).toBeVisible();
+  await expect(panel.getByText(ky.ai.proposal)).toBeVisible();
 
-  await page.getByLabel(ky.ai.placeholder).fill('Заказды кантип алам?');
-  await page.getByRole('button', { name: ky.ai.send }).click();
-  await expect(page.getByText(/Алып кетүү жайлары/)).toBeVisible();
+  await panel.getByLabel(ky.ai.placeholder).fill('Заказды кантип алам?');
+  await panel.getByRole('button', { name: ky.ai.send }).click();
+  await expect(panel.getByText(/Алып кетүү жайлары/)).toBeVisible();
+  // There is no separate assistant page any more.
+  expect((await page.request.get('/ky/assistant')).status()).toBe(404);
 });

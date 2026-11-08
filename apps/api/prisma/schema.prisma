@@ -116,7 +116,10 @@ model User {
   email           String    @unique
   /// Stored in E.164 format, e.g. +996XXXXXXXXX.
   phone           String?
-  passwordHash    String    @map("password_hash")
+  /// null for accounts created with Google sign-in (a password can be set via "forgot password").
+  passwordHash    String?   @map("password_hash")
+  /// Google account id ("sub") once the user has signed in with Google.
+  googleId        String?   @unique @map("google_id") @db.VarChar(255)
   role            UserRole  @default(USER)
   /// Preferred interface language: 'ky' | 'ru'. Also used for notifications.
   locale          String    @default("ky") @db.VarChar(5)

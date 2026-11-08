@@ -118,7 +118,6 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
     { href: l('/account/orders'), label: t.footer.orderHistory },
     { href: l('/pickup'), label: t.nav.pickup },
     { href: l('/faq'), label: t.nav.faq },
-    { href: l('/assistant'), label: t.ai.name },
   ];
   const info: FooterLink[] = [
     { href: l('/terms'), label: t.footer.terms },

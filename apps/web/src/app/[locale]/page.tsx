@@ -8,8 +8,10 @@ import type {
   PublicReview,
   SiteContent,
 } from '@nuska/types';
+import Image from 'next/image';
 import Link from 'next/link';
 
+import { AskAi } from '@/components/ai/ask-ai';
 import { NuskaOrb } from '@/components/ai/nuska-orb';
 import { KochkorMuyuz, OrnamentDivider } from '@/components/brand/ornament';
 import { FaqList } from '@/components/content/faq-list';
@@ -18,10 +20,12 @@ import { BenefitIcon } from '@/components/home/benefit-icon';
 import { Hero } from '@/components/home/hero';
 import { NewsletterForm } from '@/components/home/newsletter-form';
 import { ReviewsSlider } from '@/components/home/reviews-slider';
-import { StoryScene } from '@/components/home/story-scene';
+import { CategoryIcon } from '@/components/layout/category-icon';
 import { ProductCard } from '@/components/product/product-card';
-import { ButtonLink } from '@/components/ui/button';
+import { buttonClass, ButtonLink } from '@/components/ui/button';
+import { Carousel } from '@/components/ui/carousel';
 import { ChevronRightIcon, ClockIcon, PinIcon } from '@/components/ui/icons';
+import { Marquee } from '@/components/ui/marquee';
 import { SectionHeading } from '@/components/ui/misc';
 import { Parallax } from '@/components/ui/parallax';
 import { Reveal } from '@/components/ui/reveal';
@@ -36,7 +40,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const empty: Page<ProductCardData> = { data: [], meta: { total: 0, limit: 0, offset: 0 } };
   const [categories, featured, all, pickup, reviews, banners, about, faq] = await Promise.all([
     serverApiSafe<CategoryNode[]>('/categories', locale, []),
-    serverApiSafe<Page<ProductCardData>>('/products?featured=true&limit=8', locale, empty),
+    serverApiSafe<Page<ProductCardData>>('/products?featured=true&limit=12', locale, empty),
     serverApiSafe<Page<ProductCardData>>('/products?limit=50', locale, empty),
     serverApiSafe<PickupLocation[]>('/pickup-locations', locale, []),
     serverApiSafe<PublicReview[]>('/reviews/latest?limit=9', locale, []),
@@ -44,12 +48,31 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     serverApiSafe<SiteContent | null>('/content/home.about', locale, null),
     serverApiSafe<FaqItem[]>('/faq', locale, []),
   ]);
-  const products = featured.data.length > 0 ? featured.data : all.data;
+  const products = featured.data.length >= 4 ? featured.data : all.data;
 
   return (
     <>
       {/* 01 — Hero with the interactive 3D dastorkon */}
       <Hero locale={locale} t={t} sceneProducts={all.data} />
+
+      {/* Endless ticker with the products of the catalog */}
+      {all.data.length > 0 && (
+        <div className="bg-brand py-3 text-cream-light">
+          <Marquee
+            duration={60}
+            items={all.data.flatMap((p) => [
+              <Link
+                key={p.id}
+                href={`/${locale}/product/${p.slug}`}
+                className="whitespace-nowrap font-serif text-lg transition hover:text-gold-light"
+              >
+                {p.name}
+              </Link>,
+              <KochkorMuyuz key={`${p.id}-o`} className="mx-6 h-4 w-8 shrink-0 text-gold" />,
+            ])}
+          />
+        </div>
+      )}
 
       {banners.length > 0 && (
         <section className="container pt-10" aria-label="banners">
@@ -90,48 +113,41 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <Reveal>
             <SectionHeading title={t.home.categoriesTitle} subtitle={t.home.categoriesSubtitle} />
           </Reveal>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
             {categories.map((category, i) => (
               <Reveal key={category.id} delay={i * 0.05}>
                 <Link
                   href={`/${locale}/catalog/${category.slug}`}
-                  className="group card relative flex h-full min-h-[190px] flex-col overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-lift"
+                  className="group card relative flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-lift"
                 >
-                  <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-brand">
-                    {category.imageUrl ? (
+                  {category.imageUrl && (
+                    <div className="relative aspect-[4/3] overflow-hidden">
                       <img
                         src={category.imageUrl}
                         alt=""
                         loading="lazy"
                         className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
                       />
-                    ) : (
-                      <>
-                        <div
-                          className="bg-ornament absolute inset-0 opacity-25 transition duration-700 group-hover:scale-110 group-hover:opacity-40"
-                          aria-hidden
-                        />
-                        <KochkorMuyuz className="relative h-10 w-20 text-cream transition duration-500 group-hover:-translate-y-1 group-hover:scale-110" />
-                      </>
+                    </div>
+                  )}
+                  <div className="flex flex-1 items-center gap-4 p-4">
+                    {!category.imageUrl && (
+                      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand transition group-hover:bg-brand group-hover:text-cream-light">
+                        <CategoryIcon slug={category.slug} className="h-7 w-7" />
+                      </span>
                     )}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-serif text-lg font-semibold leading-snug group-hover:text-brand">
+                        {category.name}
+                      </h3>
+                      <span className="text-sm text-ink-soft">{category.productCount}</span>
+                    </div>
+                    <ChevronRightIcon
+                      width={18}
+                      height={18}
+                      className="shrink-0 text-brand opacity-40 transition group-hover:translate-x-1 group-hover:opacity-100"
+                    />
                   </div>
-                  <div className="flex flex-1 flex-col gap-1 p-4">
-                    <h3 className="font-serif text-lg font-semibold leading-snug group-hover:text-brand">
-                      {category.name}
-                    </h3>
-                    {category.description && (
-                      <p className="line-clamp-2 text-sm text-ink-soft">{category.description}</p>
-                    )}
-                    <span className="mt-auto flex items-center justify-between pt-2 text-sm text-ink-soft">
-                      {category.productCount}
-                      <ChevronRightIcon
-                        width={16}
-                        height={16}
-                        className="text-brand opacity-0 transition group-hover:translate-x-1 group-hover:opacity-100"
-                      />
-                    </span>
-                  </div>
-                  <KochkorMuyuz className="absolute right-2 top-2 h-4 w-8 text-gold opacity-0 transition group-hover:opacity-100" />
                 </Link>
               </Reveal>
             ))}
@@ -158,25 +174,38 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 }
               />
             </Reveal>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {products.slice(0, 8).map((product, i) => (
-                <Reveal key={product.id} delay={(i % 4) * 0.06}>
-                  <ProductCard product={product} />
-                </Reveal>
+            <Carousel label={t.home.popularTitle}>
+              {products.slice(0, 12).map((product) => (
+                <ProductCard key={product.id} product={product} />
               ))}
-            </div>
+            </Carousel>
           </div>
         </section>
       )}
 
-      {/* 05 — Brand story with the yurt scene */}
-      <section id="story" className="section relative scroll-mt-20 overflow-hidden">
+      {/* 05 — Brand story: the company's picture in an ornamental frame */}
+      <section id="story" className="section relative scroll-mt-28 overflow-hidden">
         <Parallax speed={0.25}>
           <KochkorMuyuz className="absolute -left-20 top-0 h-48 w-96 text-brand/[0.05]" />
         </Parallax>
-        <div className="container relative grid items-center gap-10 lg:grid-cols-2">
+        <div className="container relative grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
           <Reveal>
-            <StoryScene label={t.home.storySceneLabel} />
+            <figure className="relative mx-auto max-w-xl">
+              <div
+                className="absolute -inset-3 rounded-[2.25rem] border border-gold/50"
+                aria-hidden
+              />
+              <div className="relative aspect-[700/691] overflow-hidden rounded-[2rem] shadow-lift">
+                <Image
+                  src="/images/traditions.webp"
+                  alt={t.home.storySceneLabel}
+                  fill
+                  sizes="(min-width: 1024px) 560px, 100vw"
+                  className="object-cover transition duration-[1.5s] hover:scale-105"
+                />
+              </div>
+              <KochkorMuyuz className="absolute -bottom-5 left-1/2 h-10 w-20 -translate-x-1/2 rounded-full bg-cream-light px-3 text-gold" />
+            </figure>
           </Reveal>
           <Reveal className="space-y-5" delay={0.1}>
             <OrnamentDivider className="max-w-xs" />
@@ -184,7 +213,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <p className="whitespace-pre-line text-lg leading-relaxed text-ink-muted">
               {about?.body || t.home.aboutText}
             </p>
-            <p className="text-ink-muted">{t.home.dastorkonText}</p>
+            <ul className="grid gap-3 sm:grid-cols-3">
+              {t.pages.traditions.sections.slice(0, 3).map((item) => (
+                <li key={item.title} className="rounded-2xl border border-gold/30 bg-milk p-4">
+                  <KochkorMuyuz className="mb-2 h-4 w-8 text-gold" />
+                  <p className="font-serif text-lg font-semibold">{item.title}</p>
+                  <p className="line-clamp-3 text-sm text-ink-muted">{item.text}</p>
+                </li>
+              ))}
+            </ul>
             <div className="flex flex-wrap gap-3">
               <ButtonLink href={`/${locale}/about`}>{t.home.storyCta}</ButtonLink>
               <ButtonLink href={`/${locale}/traditions`} variant="outline">
@@ -229,18 +266,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <p className="max-w-2xl text-lg text-cream/80">{t.ai.homeText}</p>
             <div className="flex flex-wrap gap-2">
               {t.ai.examples.map((q) => (
-                <Link
+                <AskAi
                   key={q}
-                  href={`/${locale}/assistant?q=${encodeURIComponent(q)}`}
+                  question={q}
                   className="rounded-full border border-cream/30 px-4 py-2 text-sm text-cream transition hover:bg-cream hover:text-brand"
                 >
                   {q}
-                </Link>
+                </AskAi>
               ))}
             </div>
-            <ButtonLink href={`/${locale}/assistant`} variant="secondary" size="lg">
-              {t.ai.pageCta}
-            </ButtonLink>
+            <AskAi className={buttonClass('secondary', 'lg')}>{t.ai.pageCta}</AskAi>
           </Reveal>
         </div>
       </section>

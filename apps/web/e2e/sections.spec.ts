@@ -2,12 +2,35 @@ import { expect, test } from '@playwright/test';
 
 import { expectNoHorizontalScroll, ky, ru } from './helpers';
 
+test('header follows the design: no search field, personal account button', async ({ page }) => {
+  await page.goto('/ru');
+  const header = page.locator('header');
+  await expect(header.getByRole('searchbox')).toHaveCount(0);
+  await expect(header.getByRole('link', { name: ru.nav.cabinet })).toBeVisible();
+  for (const name of [
+    ru.nav.about,
+    ru.nav.traditions,
+    ru.nav.pickup,
+    ru.nav.reviews,
+    ru.nav.contacts,
+  ])
+    await expect(header.getByRole('link', { name, exact: true })).toBeVisible();
+});
+
+test('stores are shown as an endless ticker', async ({ page }) => {
+  await page.goto('/ky');
+  const stores = page.locator('section[aria-labelledby="stores-title"]');
+  await stores.scrollIntoViewIfNeeded();
+  await expect(stores.getByText('Бимар').first()).toBeVisible();
+});
+
 test('catalog mega menu shows the categories', async ({ page }) => {
   await page.goto('/ru');
-  await page.getByRole('button', { name: ru.nav.catalog }).click();
-  const allCatalog = page.getByRole('link', { name: ru.nav.allCatalog });
+  await page.getByRole('button', { name: ru.nav.catalog, exact: true }).click();
+  const allCatalog = page.getByRole('link', { name: ru.nav.goToCatalog });
   await expect(allCatalog).toBeVisible();
   await expect(page.getByRole('link', { name: /Молочные продукты/ }).first()).toBeVisible();
+  await expect(page.getByRole('link', { name: ru.nav.giftSets })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(allCatalog).toBeHidden();
 });

@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { AuthCard, safeNext } from '@/components/auth/auth-card';
+import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
@@ -19,7 +20,8 @@ import { errorMessage } from '@/lib/api/errors';
 function LoginForm() {
   const { t, locale } = useI18n();
   const router = useRouter();
-  const next = safeNext(useSearchParams().get('next'), locale, `/${locale}/account`);
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams.get('next'), locale, `/${locale}/account`);
   const login = useLogin();
   const schema = z.object({
     email: z.string().trim().email(t.validation.email),
@@ -43,6 +45,16 @@ function LoginForm() {
         </>
       }
     >
+      <GoogleButton next={next} />
+      {searchParams.get('error') && (
+        <div className="mt-4">
+          <ErrorBox>
+            {searchParams.get('error') === 'disabled'
+              ? t.errors.ACCOUNT_DISABLED
+              : t.auth.googleFailed}
+          </ErrorBox>
+        </div>
+      )}
       <form
         className="space-y-4"
         noValidate

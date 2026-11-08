@@ -10,12 +10,12 @@ import {
   OrbitControls,
   RoundedBox,
 } from '@react-three/drei';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 import { seeded } from './procedural';
 
-import { HORN_PATHS } from '@/components/brand/ornament';
+import { HORN_PATHS } from '@/components/brand/horn-paths';
 
 /**
  * Interactive 3D packaging on the product page (TZ §6.4). Models are built in
@@ -54,7 +54,7 @@ function drawHorn(
  * labels (bottle, jar) the text is kept within `maxTextWidth` around the
  * centre, which faces the viewer.
  */
-function createLabel(
+export function createLabel(
   name: string,
   style: LabelStyle,
   width: number,
@@ -138,7 +138,7 @@ function useDisposable<T extends { dispose: () => void }>(factory: () => T, deps
   return value;
 }
 
-function Bottle({ name }: { name: string }) {
+export function Bottle({ name }: { name: string }) {
   const label = useDisposable(
     () =>
       createLabel(
@@ -191,7 +191,15 @@ function Bottle({ name }: { name: string }) {
   );
 }
 
-function Jar({ name }: { name: string }) {
+export function Jar({
+  name,
+  body = '#F1C84B',
+  lid = '#1E1E1E',
+}: {
+  name: string;
+  body?: string;
+  lid?: string;
+}) {
   const label = useDisposable(
     () =>
       createLabel(
@@ -207,7 +215,7 @@ function Jar({ name }: { name: string }) {
     <group position={[0, -0.75, 0]}>
       <mesh position={[0, 0.55, 0]} castShadow>
         <cylinderGeometry args={[0.6, 0.6, 1.1, 64]} />
-        <meshPhysicalMaterial color="#F1C84B" roughness={0.35} clearcoat={0.4} />
+        <meshPhysicalMaterial color={body} roughness={0.35} clearcoat={0.4} />
       </mesh>
       <mesh position={[0, 0.5, 0]} rotation-y={FACE_CAMERA}>
         <cylinderGeometry args={[0.606, 0.606, 0.6, 64, 1, true]} />
@@ -215,13 +223,13 @@ function Jar({ name }: { name: string }) {
       </mesh>
       <mesh position={[0, 1.2, 0]} castShadow>
         <cylinderGeometry args={[0.63, 0.63, 0.22, 64]} />
-        <meshStandardMaterial color="#1E1E1E" roughness={0.35} metalness={0.2} />
+        <meshStandardMaterial color={lid} roughness={0.35} metalness={0.2} />
       </mesh>
     </group>
   );
 }
 
-function NavatBox({ name }: { name: string }) {
+export function NavatBox({ name }: { name: string }) {
   const label = useDisposable(
     () =>
       createLabel(
@@ -275,7 +283,7 @@ function NavatBox({ name }: { name: string }) {
   );
 }
 
-function Pack({ name }: { name: string }) {
+export function Pack({ name }: { name: string }) {
   const label = useDisposable(
     () =>
       createLabel(
@@ -304,6 +312,18 @@ function Pack({ name }: { name: string }) {
   );
 }
 
+/** Smoothly applies the zoom chosen with the +/- buttons (the mouse wheel keeps scrolling the page). */
+function Zoom({ value }: { value: number }) {
+  useFrame((state, delta) => {
+    const camera = state.camera as THREE.PerspectiveCamera;
+    if (Math.abs(camera.zoom - value) < 0.001) return;
+    camera.zoom = THREE.MathUtils.damp(camera.zoom, value, 8, delta);
+    camera.updateProjectionMatrix();
+    state.invalidate();
+  });
+  return null;
+}
+
 const MODELS: Record<PackagingModel, (props: { name: string }) => ReactElement> = {
   BOTTLE: Bottle,
   JAR: Jar,
@@ -315,10 +335,12 @@ export default function PackagingViewer({
   model,
   name,
   reducedMotion,
+  zoom = 1,
 }: {
   model: PackagingModel;
   name: string;
   reducedMotion: boolean;
+  zoom?: number;
 }) {
   const Model = MODELS[model];
   return (
@@ -368,6 +390,7 @@ export default function PackagingViewer({
           color="#27452F"
         />
       </Suspense>
+      <Zoom value={zoom} />
       <OrbitControls
         enablePan={false}
         enableZoom={false}

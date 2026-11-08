@@ -1,6 +1,6 @@
 'use client';
 
-import { HORN_PATHS } from '@/components/brand/ornament';
+import { HORN_PATHS } from '@/components/brand/horn-paths';
 import { cn } from '@/lib/cn';
 
 /**

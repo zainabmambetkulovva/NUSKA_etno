@@ -116,3 +116,18 @@ Add the key in Render → `nuska-etno-api` → Environment (never in Vercel, nev
 | `AI_MODEL` | `claude-opus-5-5` | Claude model, e.g. `claude-haiku-5-5` for lower cost |
 | `AI_EFFORT` | `low` | `low` / `medium` / `high` / `xhigh` / `max` |
 | `AI_DAILY_LIMIT` | `300` | Model calls per day per API instance; above it the catalog mode answers |
+
+### Sign in with Google (optional)
+
+Set in **Render → nuska-etno-api → Environment** (never in Git, never in Vercel):
+
+| Variable | Purpose |
+|---|---|
+| `GOOGLE_CLIENT_ID` | OAuth client ID (Google Cloud Console → APIs & Services → Credentials) |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret — **secret**, only in Render |
+| `GOOGLE_REDIRECT_URI` | optional; default `${WEB_URL}/api/auth/google/callback` |
+
+In Google Cloud Console add the redirect URI `https://<your-site>/api/auth/google/callback`
+(the address of the website, the request goes through the website to the API) and the site
+under "Authorized JavaScript origins". `WEB_URL` in Render must be the website address.
+Without these variables the "Continue with Google" button is not shown.

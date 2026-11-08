@@ -100,13 +100,16 @@ function Products({ reply }: { reply: AiReply }) {
   );
 }
 
-/** Chat with NUSKA AI: used in the floating widget and on the assistant page. */
+/** Chat with NUSKA AI, shown in the small floating window. */
 export function AiChat({
   className,
   initialQuestion,
+  onAsked,
 }: {
   className?: string;
   initialQuestion?: string;
+  /** Called once the initial question was sent. */
+  onAsked?: () => void;
 }) {
   const { t, locale } = useI18n();
   const { entries, push, clear } = useAiChat();
@@ -114,7 +117,7 @@ export function AiChat({
   const [text, setText] = useState('');
   const [hydrated, setHydrated] = useState(false);
   const list = useRef<HTMLDivElement>(null);
-  const asked = useRef(false);
+  const asked = useRef<string | null>(null);
   useEffect(() => setHydrated(true), []);
 
   const status = useQuery({
@@ -153,9 +156,14 @@ export function AiChat({
   };
 
   useEffect(() => {
-    if (hydrated && initialQuestion && !asked.current) {
-      asked.current = true;
+    if (!initialQuestion) {
+      asked.current = null;
+      return;
+    }
+    if (hydrated && asked.current !== initialQuestion) {
+      asked.current = initialQuestion;
       ask(initialQuestion);
+      onAsked?.();
     }
   }, [hydrated, initialQuestion]);
   useEffect(() => {

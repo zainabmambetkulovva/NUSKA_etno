@@ -8,6 +8,9 @@ export const ACCESS_COOKIE = 'nuska_access';
 export const REFRESH_COOKIE = 'nuska_refresh';
 /** The refresh cookie is only sent to the auth endpoints. */
 export const REFRESH_COOKIE_PATH = '/api/auth';
+/** Short-lived state of the Google sign-in (PKCE verifier, state, where to return). */
+export const OAUTH_COOKIE = 'nuska_oauth';
+export const OAUTH_COOKIE_PATH = '/api/auth/google';
 
 @Injectable()
 export class AuthCookies {
@@ -33,6 +36,20 @@ export class AuthCookies {
       path: REFRESH_COOKIE_PATH,
       maxAge: tokens.refreshTokenMaxAgeMs,
     });
+  }
+
+  setOAuth(response: Response, value: string) {
+    // SameSite=Lax is required: the callback is a top-level navigation from Google.
+    response.cookie(OAUTH_COOKIE, value, {
+      ...this.base,
+      sameSite: 'lax',
+      path: OAUTH_COOKIE_PATH,
+      maxAge: 10 * 60 * 1000,
+    });
+  }
+
+  clearOAuth(response: Response) {
+    response.clearCookie(OAUTH_COOKIE, { ...this.base, sameSite: 'lax', path: OAUTH_COOKIE_PATH });
   }
 
   clear(response: Response) {

@@ -62,6 +62,21 @@ React Hook Form + Zod, Framer Motion.
 - **Real models later:** when the company provides GLB/GLTF files (TZ §7.1), each
   procedural object can be swapped for `useGLTF` (compress with Draco/meshopt and KTX2 textures).
 
+## Design update (customer feedback, Nov 2026)
+
+- Header after the customer's reference: floating cream plate with an ornament medallion,
+  Catalog ▾ (category list with icons, gift sets, "Go to the catalog", photo) · About ·
+  Traditions · Pickup · Reviews · Contacts · KG RU · ♡ · cart · "Personal account". No search
+  field (search stays in the catalog and at `/search`).
+- Hero: the customer's picture `public/images/hero-bg.webp` keeps its proportions, so the 3D
+  layer (`components/three/podium-scene.tsx`) always stands on its podium; the packages move
+  on an ellipse; product buttons under the podium select a product (also without WebGL).
+- Brand story: photo `public/images/traditions.webp` in an ornamental frame (the procedural
+  yurt and the old dastorkon scene were removed).
+- Endless tickers (`components/ui/marquee.tsx`): products under the hero, stores; products
+  carousel (`components/ui/carousel.tsx`).
+- NUSKA AI only as the small window (`/assistant` removed); home examples open it.
+
 ## Home page sections (master brief)
 
 Order: Hero with the 3D dastorkon → categories → "Our products" → brand story with the
