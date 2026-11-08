@@ -507,6 +507,9 @@ const SITE_CONTENT: {
       whatsapp: '+996701111024',
       instagram: 'nuska_etno',
       telegram: 'nuska_etnokatalog',
+      address: 'Бишкек, Кыргызстан',
+      wholesale: 'https://project23274583.tilda.ws/nuska_etno',
+      retail: 'https://project23274583.tilda.ws/nuska_etno0',
     },
     translations: [
       {
