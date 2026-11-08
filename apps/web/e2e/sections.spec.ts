@@ -30,7 +30,7 @@ test('catalog mega menu shows the categories', async ({ page }) => {
   const allCatalog = page.getByRole('link', { name: ru.nav.goToCatalog });
   await expect(allCatalog).toBeVisible();
   await expect(page.getByRole('link', { name: /Молочные продукты/ }).first()).toBeVisible();
-  await expect(page.getByRole('link', { name: ru.nav.giftSets })).toBeVisible();
+  await expect(page.locator('header').getByRole('link', { name: ru.nav.giftSets })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(allCatalog).toBeHidden();
 });
@@ -48,13 +48,23 @@ test('home has the brand story, benefits, reviews, FAQ and newsletter sections',
   ]) {
     await expect(page.getByRole('heading', { name: title })).toBeAttached();
   }
-  // Footer: all columns and the "back to top" button.
+  // Footer: menu and contacts columns, order links and socials.
   const footer = page.locator('footer');
-  for (const title of [ky.footer.navigation, ky.footer.customers, ky.footer.info]) {
+  for (const title of [ky.footer.menu, ky.footer.contacts]) {
     await expect(footer.getByRole('heading', { name: title })).toBeVisible();
   }
-  await footer.getByRole('button', { name: ky.footer.backToTop }).click();
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(50);
+  await expect(footer.getByRole('link', { name: ky.footer.wholesale })).toHaveAttribute(
+    'href',
+    /^https:\/\//
+  );
+  await expect(footer.getByRole('link', { name: ky.footer.retail })).toHaveAttribute(
+    'href',
+    /^https:\/\//
+  );
+  await expect(footer.getByRole('link', { name: 'Instagram' })).toHaveAttribute(
+    'href',
+    /instagram\.com\//
+  );
 });
 
 test('FAQ page: search and category filter', async ({ page }) => {
