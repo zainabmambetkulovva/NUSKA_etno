@@ -35,10 +35,12 @@ function supportsWebGL() {
 /** Main product visual: photo, plus an interactive 3D packaging view when configured (TZ §6.4). */
 export function ProductGallery({
   name,
+  slug,
   image,
   packaging3d,
 }: {
   name: string;
+  slug: string;
   image: { url: string; alt: string | null } | null;
   packaging3d: PackagingModel | null;
 }) {
@@ -81,12 +83,13 @@ export function ProductGallery({
       ) : (
         <ProductImage
           url={image?.url}
+          slug={slug}
           alt={image?.alt}
           name={name}
           priority
           sizes="(min-width: 1024px) 50vw, 100vw"
           placeholderLabel={t.product.photoSoon}
-          className="absolute inset-0"
+          className="h-full w-full"
         />
       )}
       {can3d && (

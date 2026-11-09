@@ -14,7 +14,7 @@ React Hook Form + Zod, Framer Motion.
 
 | Path | Page |
 |---|---|
-| `/` | Home: hero, categories, popular products, about, advantages, dastorkon, pickup, reviews |
+| `/` | Home: hero, our products, why us, our story, reviews, gift sets + newsletter |
 | `/catalog`, `/catalog/[category]` | Catalog: search, category (with sub-categories), sort, in-stock filter, pagination |
 | `/product/[slug]` | Product page, JSON-LD, reviews, related products |
 | `/cart`, `/checkout` | Cart (guest cart in localStorage, merged on login), checkout (signed-in only) |
@@ -34,66 +34,47 @@ React Hook Form + Zod, Framer Motion.
 
 ## Design system
 
-- Brand colours `brand` (#355B3E) and `cream` (#F4E9B9) in `tailwind.config.ts`.
-- Fonts: Lora (headings) and Inter (text) with `cyrillic-ext` for Ң, Ө, Ү.
-- Ornament: line version of «кочкор мүйүз» (`components/brand/ornament.tsx`) for dividers,
-  backgrounds, the logo mark and the loader.
+- Brand colours `brand` (#355B3E) and `cream` (#F4E9B9), plus the rich palette of the
+  home design: `forest` (deep green), `honey` (gold), `sand` (warm cream), `wood`, `ruby`
+  (`tailwind.config.ts`); gold buttons `.btn-gold`, outline `.btn-outline-dark`.
+- Fonts: Lora (headings), Inter (text) and Caveat (handwritten accent), all with
+  `cyrillic-ext` for Ң, Ө, Ү.
+- Logo: the company's gold medallion `public/images/logo.webp` (taken unchanged from the
+  design the company sent) with the name in Lora (`components/brand/logo.tsx`).
+- Ornament: «кочкор мүйүз» (`components/brand/ornament.tsx`) and the decor of the design
+  (`components/brand/kyrgyz-decor.tsx`): gold corner ornaments, section waves, swaying
+  leaves, mountain line art and silhouettes, the ram's horn band of the footer.
 - Animations respect `prefers-reduced-motion`; product cards tilt only for mouse input.
 
-## 3D scene (TZ §7)
+## Home page (design sent by the company, Nov 2026)
 
-`components/three/dastorkon-scene.tsx` (React Three Fiber + drei), wrapped by
-`components/home/hero-scene.tsx`.
+Order: hero → "Our products" → "Why choose us?" → "Our story" → reviews → gift sets and
+the newsletter → footer. Nothing else is put on the home page (FAQ, pickup and the stores
+have their own pages).
 
-- **Content:** round dastorkon with a procedurally drawn kochkor-muyuz ornament,
-  kattama on a wooden board, kymyz in a wooden bowl with a ladle, a glass jar of honey,
-  navat crystals on a plate, sary may in a piyala, a stack of zhupka, a teapot and piyalas.
-  All models and textures are generated in code (`procedural.ts`): no downloads.
-- **Interaction:** the composition turns gently towards the cursor, the camera dollies in,
-  items appear one by one and "breathe"; hovering lifts an item and shows its name,
-  clicking opens the catalog search for it.
-- **Performance:** the three.js chunk (~690 KB) loads lazily after the page is idle and
-  never blocks the hero text; rendering stops when the hero is off screen or the tab is
-  hidden (`frameloop="never"`); lite mode for phones / weak CPUs (fewer segments, no glass
-  transmission, no shadow maps, capped pixel ratio); `prefers-reduced-motion` renders one
-  static frame; environment lighting comes from in-scene light panels (no HDR files).
-- **Fallback:** no WebGL, Save-Data, a lost WebGL context or any render error → the 2D
-  composition (`hero-visual.tsx`).
-- **Real models later:** when the company provides GLB/GLTF files (TZ §7.1), each
-  procedural object can be swapped for `useGLTF` (compress with Draco/meshopt and KTX2 textures).
+- **Header** (`components/layout/header.tsx`): deep green bar with the gold medallion,
+  Home · Catalog ▾ (mega menu) · About · Pickup · Reviews · Contacts, KG RU, search, ♡,
+  cart and "Sign in / Register" (the personal account once signed in). On the home page it
+  lies transparent over the hero until the page is scrolled. Burger menu below 1280 px.
+- **Hero** (`components/home/hero.tsx`): the dastorkon photo `public/images/home/hero.webp`
+  on the right, the deep green panel with the name, slogan, "Go to the catalog" and
+  "Make a gift" on the left; on phones the photo is on top and the text below it.
+- **Our products:** six signature products (sary may, zhupka, beshbarmak, kymyz, navat,
+  kurut) with their photos `public/images/home/product-*.webp`. A card opens the product
+  (matched by slug, e.g. `navat` → `navat-0-5`) with its price, otherwise the search.
+- **Signature photos as fallback** (`lib/product-photos.ts`): until the admin uploads a
+  product photo, these products show the photo from the design everywhere (catalog,
+  product page, cart, gift builder). An uploaded photo always wins.
+- **Why us / story / reviews / gifts:** gold line icons on deep green, the story photo
+  with the handwritten "With love from Kyrgyzstan", only real moderated reviews (honest
+  empty state), gift sets with the 3D builder and the newsletter (consent required).
+- **Footer** (`components/layout/footer.tsx`): deep green with mountains and the ram's
+  horn band; navigation, contacts with the wholesale/retail order links, the Telegram
+  catalog and socials, language switch. Contacts and links come only from the admin
+  `contacts` block.
+- **3D:** the product packaging viewer and the gift box of the builder
+  (`components/three/*`); the home page has no 3D scene any more.
 
-## Design update (customer feedback, Nov 2026)
-
-- Header after the customer's reference: floating cream plate with an ornament medallion,
-  Catalog ▾ (category list with icons, gift sets, "Go to the catalog", photo) · About ·
-  Traditions · Pickup · Reviews · Contacts · KG RU · ♡ · cart · "Personal account". No search
-  field (search stays in the catalog and at `/search`).
-- Hero: the customer's picture `public/images/hero-bg.webp` keeps its proportions, so the 3D
-  layer (`components/three/podium-scene.tsx`) always stands on its podium; the packages move
-  on an ellipse; product buttons under the podium select a product (also without WebGL).
-- Brand story: photo `public/images/traditions.webp` in an ornamental frame (the procedural
-  yurt and the old dastorkon scene were removed).
-- Endless tickers (`components/ui/marquee.tsx`): products under the hero, stores; products
-  carousel (`components/ui/carousel.tsx`).
-- NUSKA AI only as the small window (`/assistant` removed); home examples open it.
-
-## Home page sections (master brief)
-
-Order: Hero with the 3D dastorkon → categories → "Our products" → brand story with the
-3D yurt scene (`components/three/yurt-scene.tsx`, loaded only near the viewport) →
-benefits (animated line icons) → pickup (4 steps + points) → reviews (only real,
-moderated ones; honest empty state) → FAQ (from the admin panel) → newsletter.
-
-- **3D dastorkon:** hovering a product shows its name and current price from the API;
-  clicking zooms the camera in and opens a card with "Add to cart" and a product link
-  (Escape or a click outside closes it). Scene items map to catalog SKUs in
-  `components/home/hero-scene.tsx` (`SCENE_SKUS`).
-- **Header:** catalog mega menu (`components/layout/mega-menu.tsx`), favorites and cart
-  counters, header background changes on scroll; full navigation from 1280 px, burger menu
-  below.
-- **Footer:** 5 columns (collapsible on phones), contacts and socials only from the
-  admin `contacts` block (phone, whatsapp, email, address, hours, instagram, telegram,
-  youtube), "back to top".
 - **Pages:** `/faq` (search, categories, FAQPage structured data), `/traditions`, `/search`
   (suggestions, recent queries kept in this browser), `/checkout/success`,
   `/newsletter/confirm`, and `/privacy`, `/terms`, `/order-terms`, `/returns` whose text
@@ -143,8 +124,8 @@ moderated ones; honest empty state) → FAQ (from the admin panel) → newslette
 - Page transitions: `app/[locale]/template.tsx` (fade + slide, framer-motion).
 - "Fly to cart": `lib/fly-to-cart.ts` — the product image flies to the cart icon
   (`[data-cart-target]`) after adding.
-- Parallax: `components/ui/parallax.tsx` (hero ornament, dastorkon section).
-- The logo ornament in the header draws itself once on load.
+- Hero photo slowly zooms in (Ken Burns), leaves sway, sections appear on scroll (`Reveal`),
+  product cards lift on hover.
 - All of them are switched off with `prefers-reduced-motion`.
 
 ## Browser tests (Playwright)
@@ -152,9 +133,10 @@ moderated ones; honest empty state) → FAQ (from the admin panel) → newslette
 `apps/web/e2e/*.spec.ts`, config `apps/web/playwright.config.ts`. They run on every PR in
 GitHub Actions (job `e2e-web`) against a real API, website and PostgreSQL with demo data.
 
-Covered: languages and switching, catalog/search/product page, the full order flow
-(guest cart → login → checkout → admin confirms → customer notification), 3D scene and
-packaging viewer with fallback without WebGL, mobile menu and no horizontal scroll.
+Covered: languages and switching, header and home sections of the design, catalog/search/
+product page, the full order flow (guest cart → login → checkout → admin confirms →
+customer notification), packaging viewer with fallback without WebGL, mobile menu and no
+horizontal scroll.
 
 Run locally (API and website already started, API with `NODE_ENV=test THROTTLE_DISABLED=true`):
 
@@ -167,4 +149,4 @@ Without the `SEED_*` passwords the order test is skipped.
 
 ## Not done yet
 
-- Real product photos and the original logo (placeholders are shown).
+- Real product photos (the signature products use the photos of the design until then).

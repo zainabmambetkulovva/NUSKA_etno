@@ -19,8 +19,9 @@ export function KochkorMuyuz({
   className?: string;
   animate?: boolean;
 }) {
+  // The first render is the same on the server and the client (no hydration
+  // mismatch); with reduced motion the ornament simply appears without drawing.
   const reduce = useReducedMotion();
-  const draw = animate && !reduce;
   return (
     <svg viewBox="0 0 120 60" fill="none" aria-hidden className={cn('h-8 w-16', className)}>
       {HORN_PATHS.map((d, i) => (
@@ -30,10 +31,12 @@ export function KochkorMuyuz({
           stroke="currentColor"
           strokeWidth={2.2}
           strokeLinecap="round"
-          initial={draw ? { pathLength: 0, opacity: 0 } : false}
-          whileInView={draw ? { pathLength: 1, opacity: 1 } : undefined}
+          initial={animate ? { pathLength: 0, opacity: 0 } : false}
+          whileInView={animate ? { pathLength: 1, opacity: 1 } : undefined}
           viewport={{ once: true, amount: 0.6 }}
-          transition={{ duration: 1.2, delay: i * 0.12, ease: 'easeInOut' }}
+          transition={
+            reduce ? { duration: 0 } : { duration: 1.2, delay: i * 0.12, ease: 'easeInOut' }
+          }
         />
       ))}
     </svg>

@@ -48,12 +48,15 @@ export function ProductCard({
     <motion.article
       onPointerMove={onMove}
       onPointerLeave={reset}
-      style={reduce ? undefined : { rotateX, rotateY, transformPerspective: 900 }}
+      // Same style on the server and the client (no hydration mismatch); with reduced
+      // motion the values simply stay at rest because onMove ignores the pointer.
+      style={{ rotateX, rotateY, transformPerspective: 900 }}
       className="group card relative flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lift"
     >
       <Link href={href} className="block" tabIndex={-1} aria-hidden>
         <ProductImage
           url={product.image?.url}
+          slug={product.slug}
           alt={product.image?.alt}
           name={product.name}
           priority={priority}

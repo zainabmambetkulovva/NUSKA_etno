@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 
 import { KochkorMuyuz } from '@/components/brand/ornament';
-import { Button } from '@/components/ui/button';
-import { CheckIcon } from '@/components/ui/icons';
+import { ArrowRightIcon, CheckIcon } from '@/components/ui/icons';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
@@ -45,7 +44,7 @@ export function NewsletterForm() {
         subscribe.mutate();
       }}
     >
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2 rounded-[1.6rem] sm:flex-row sm:gap-0 sm:rounded-full sm:bg-white sm:p-1">
         <label className="sr-only" htmlFor="newsletter-email">
           {t.newsletter.email}
         </label>
@@ -57,18 +56,19 @@ export function NewsletterForm() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t.newsletter.email}
           aria-invalid={Boolean(error) || undefined}
-          className="h-12 flex-1 rounded-full border border-cream/30 bg-white/10 px-5 text-cream-light placeholder:text-cream/60 focus:border-cream focus:outline-none focus:ring-2 focus:ring-cream/30"
+          className="h-12 min-w-0 flex-1 rounded-full bg-white px-5 text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-honey/60 sm:h-11"
         />
-        <Button type="submit" variant="secondary" size="lg" loading={subscribe.isPending}>
+        <button type="submit" className="btn-gold" disabled={subscribe.isPending}>
           {t.newsletter.submit}
-        </Button>
+          <ArrowRightIcon width={16} height={16} />
+        </button>
       </div>
-      <label className="flex items-start gap-3 text-sm text-cream/80">
+      <label className="flex items-start gap-3 text-xs text-cream-light/75">
         <input
           type="checkbox"
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
-          className="mt-0.5 h-4 w-4 shrink-0 accent-cream"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-honey"
         />
         {t.newsletter.consent}
       </label>

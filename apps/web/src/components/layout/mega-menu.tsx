@@ -80,8 +80,10 @@ export function CatalogMegaMenu({ active }: { active: boolean }) {
         aria-expanded={open}
         aria-haspopup="true"
         className={cn(
-          'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2.5 text-sm transition 2xl:gap-2 2xl:px-4 2xl:text-[15px]',
-          active || open ? 'bg-beige/60 text-ink' : 'text-ink hover:text-brand'
+          'flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition 2xl:text-[15px]',
+          active || open
+            ? 'bg-white/10 text-honey-light'
+            : 'text-cream-light/90 hover:text-honey-light'
         )}
       >
         {t.nav.catalog}

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { Metadata, Viewport } from 'next';
 
-import { Inter, Lora } from 'next/font/google';
+import { Caveat, Inter, Lora } from 'next/font/google';
 
 import { AiWidget } from '@/components/ai/ai-widget';
 import { Footer } from '@/components/layout/footer';
@@ -25,7 +25,15 @@ const serif = Lora({
   display: 'swap',
 });
 
-export const viewport: Viewport = { themeColor: '#355B3E' };
+// Handwritten accent ("С любовью из Кыргызстана"); Caveat has the Kyrgyz letters too.
+const script = Caveat({
+  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
+  weight: ['500', '600'],
+  variable: '--font-script',
+  display: 'swap',
+});
+
+export const viewport: Viewport = { themeColor: '#1E3A23' };
 
 export async function generateMetadata({
   params,
@@ -59,7 +67,7 @@ export default async function LocaleLayout({
   const locale = await resolveLocale(params);
   const t = await getDictionary(locale);
   return (
-    <html lang={locale} className={`${sans.variable} ${serif.variable}`}>
+    <html lang={locale} className={`${sans.variable} ${serif.variable} ${script.variable}`}>
       <body className="flex min-h-screen flex-col">
         <a
           href="#main"

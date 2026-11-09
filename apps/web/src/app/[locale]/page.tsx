@@ -1,9 +1,6 @@
 import type {
   Banner,
-  CategoryNode,
-  FaqItem,
   Page,
-  PickupLocation,
   ProductCard as ProductCardData,
   PublicReview,
   SiteContent,
@@ -11,94 +8,154 @@ import type {
 import Image from 'next/image';
 import Link from 'next/link';
 
-import { AskAi } from '@/components/ai/ask-ai';
-import { NuskaOrb } from '@/components/ai/nuska-orb';
-import { KochkorMuyuz, OrnamentDivider } from '@/components/brand/ornament';
-import { FaqList } from '@/components/content/faq-list';
-import { StoresList } from '@/components/content/stores-list';
-import { BenefitIcon } from '@/components/home/benefit-icon';
+import {
+  Leaf,
+  MountainLines,
+  OrnamentCorner,
+  SectionTitle,
+  Wave,
+} from '@/components/brand/kyrgyz-decor';
 import { Hero } from '@/components/home/hero';
 import { NewsletterForm } from '@/components/home/newsletter-form';
 import { ReviewsSlider } from '@/components/home/reviews-slider';
-import { CategoryIcon } from '@/components/layout/category-icon';
-import { ProductCard } from '@/components/product/product-card';
-import { buttonClass, ButtonLink } from '@/components/ui/button';
-import { Carousel } from '@/components/ui/carousel';
-import { ChevronRightIcon, ClockIcon, PinIcon } from '@/components/ui/icons';
-import { Marquee } from '@/components/ui/marquee';
-import { SectionHeading } from '@/components/ui/misc';
-import { Parallax } from '@/components/ui/parallax';
+import {
+  ArrowRightIcon,
+  HeartIcon,
+  JugIcon,
+  MailIcon,
+  QualityIcon,
+  SproutIcon,
+} from '@/components/ui/icons';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
+import { formatMoney } from '@/lib/format';
 import { resolveLocale } from '@/lib/locale-params';
+import { signaturePhotoKey } from '@/lib/product-photos';
+
+/** The six signature products of the design, with their photos. */
+const SIGNATURE = [
+  { key: 'sary-mai', name: 'Сары май' },
+  { key: 'zhupka', name: 'Жупка' },
+  { key: 'besh-barmak', name: 'Бешбармак' },
+  { key: 'kymyz', name: 'Кымыз' },
+  { key: 'navat', name: 'Нават' },
+  { key: 'kurut', name: 'Курут' },
+] as const;
+
+const WHY_ICONS = [SproutIcon, QualityIcon, JugIcon, HeartIcon];
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
   const t = await getDictionary(locale);
 
   const empty: Page<ProductCardData> = { data: [], meta: { total: 0, limit: 0, offset: 0 } };
-  const [categories, featured, all, pickup, reviews, banners, about, faq] = await Promise.all([
-    serverApiSafe<CategoryNode[]>('/categories', locale, []),
-    serverApiSafe<Page<ProductCardData>>('/products?featured=true&limit=12', locale, empty),
+  const [all, reviews, banners, about] = await Promise.all([
     serverApiSafe<Page<ProductCardData>>('/products?limit=50', locale, empty),
-    serverApiSafe<PickupLocation[]>('/pickup-locations', locale, []),
     serverApiSafe<PublicReview[]>('/reviews/latest?limit=9', locale, []),
     serverApiSafe<Banner[]>('/content/banners', locale, []),
     serverApiSafe<SiteContent | null>('/content/home.about', locale, null),
-    serverApiSafe<FaqItem[]>('/faq', locale, []),
   ]);
-  const products = featured.data.length >= 4 ? featured.data : all.data;
+
+  // Each signature card opens the product itself when it is in the catalog
+  // ("navat" matches "navat-0-5"), otherwise the search for it.
+  const signature = SIGNATURE.map((item) => {
+    const product = all.data.find((p) => signaturePhotoKey(p.slug) === item.key);
+    return {
+      ...item,
+      product,
+      href: product
+        ? `/${locale}/product/${product.slug}`
+        : `/${locale}/search?q=${encodeURIComponent(item.name)}`,
+    };
+  });
 
   return (
     <>
-      {/* 01 — Hero with the interactive 3D dastorkon */}
-      <Hero locale={locale} t={t} sceneProducts={all.data} />
+      <Hero locale={locale} t={t} />
 
-      {/* Endless ticker with the products of the catalog */}
-      {all.data.length > 0 && (
-        <div className="bg-brand py-3 text-cream-light">
-          <Marquee
-            duration={60}
-            items={all.data.flatMap((p) => [
-              <Link
-                key={p.id}
-                href={`/${locale}/product/${p.slug}`}
-                className="whitespace-nowrap font-serif text-lg transition hover:text-gold-light"
-              >
-                {p.name}
-              </Link>,
-              <KochkorMuyuz key={`${p.id}-o`} className="mx-6 h-4 w-8 shrink-0 text-gold" />,
-            ])}
-          />
+      {/* 02 — Our products */}
+      <section className="relative bg-sand pb-14 pt-6 sm:pt-8" aria-labelledby="products-title">
+        <Leaf className="absolute -top-8 right-4 z-10 h-12 w-20 [--sway-from:160deg] [--sway-to:170deg] sm:right-16" />
+        <div className="container">
+          <Reveal>
+            <SectionTitle id="products-title">{t.home.productsTitle}</SectionTitle>
+          </Reveal>
+          <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 lg:gap-5">
+            {signature.map((item, i) => (
+              <li key={item.key}>
+                <Reveal delay={i * 0.06} className="h-full">
+                  <Link
+                    href={item.href}
+                    className="group flex h-full flex-col overflow-hidden rounded-[1.4rem] bg-sand-light shadow-[0_14px_30px_-18px_rgba(90,60,25,0.55)] ring-1 ring-honey/25 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_24px_40px_-20px_rgba(90,60,25,0.6)]"
+                  >
+                    <span className="relative block aspect-[3/2] overflow-hidden">
+                      <Image
+                        src={`/images/home/product-${item.key}.webp`}
+                        alt={item.name}
+                        fill
+                        sizes="(min-width: 1024px) 200px, (min-width: 640px) 33vw, 50vw"
+                        className="object-cover transition duration-700 group-hover:scale-110"
+                      />
+                    </span>
+                    <span className="flex flex-1 items-center gap-2 px-4 py-3">
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate font-medium text-ink">{item.name}</span>
+                        {item.product && (
+                          <span className="block text-xs font-semibold text-honey-dark">
+                            {formatMoney(item.product.price, locale, t.common.som)}
+                          </span>
+                        )}
+                      </span>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-ink shadow-sm transition group-hover:bg-forest group-hover:text-cream-light">
+                        <ArrowRightIcon width={16} height={16} />
+                      </span>
+                    </span>
+                  </Link>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 text-center">
+            <Link href={`/${locale}/catalog`} className="btn-outline-dark">
+              {t.home.productsAll}
+              <ArrowRightIcon width={16} height={16} />
+            </Link>
+          </div>
         </div>
-      )}
+      </section>
 
       {banners.length > 0 && (
-        <section className="container pt-10" aria-label="banners">
-          <div className="grid gap-4 md:grid-cols-2">
+        <section className="bg-sand pb-12" aria-label="banners">
+          <div className="container grid gap-4 md:grid-cols-2">
             {banners.slice(0, 2).map((banner) => (
               <div
                 key={banner.id}
-                className="relative overflow-hidden rounded-2xl bg-brand p-8 text-cream-light shadow-card"
+                className="relative overflow-hidden rounded-[1.6rem] bg-forest p-8 text-cream-light shadow-lift"
               >
-                <div className="bg-ornament absolute inset-0 opacity-40" aria-hidden />
+                <OrnamentCorner className="absolute -right-4 -top-4 h-24 w-24 -scale-x-100 text-honey/40" />
                 <div className="relative space-y-2">
                   <h2 className="font-serif text-2xl text-cream-light">{banner.title}</h2>
-                  {banner.subtitle && <p className="text-cream/80">{banner.subtitle}</p>}
+                  {banner.subtitle && <p className="text-cream-light/80">{banner.subtitle}</p>}
                   {banner.linkUrl && banner.buttonLabel && (
-                    <ButtonLink
+                    <Link
                       href={
                         banner.linkUrl.startsWith('/')
                           ? `/${locale}${banner.linkUrl}`
                           : banner.linkUrl
                       }
-                      variant="secondary"
-                      size="sm"
-                      className="mt-3"
+                      className="btn-gold mt-3"
                     >
                       {banner.buttonLabel}
-                    </ButtonLink>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -107,310 +164,180 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </section>
       )}
 
-      {/* 02 — Categories */}
-      {categories.length > 0 && (
-        <section className="section container">
-          <Reveal>
-            <SectionHeading title={t.home.categoriesTitle} subtitle={t.home.categoriesSubtitle} />
-          </Reveal>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {categories.map((category, i) => (
-              <Reveal key={category.id} delay={i * 0.05}>
-                <Link
-                  href={`/${locale}/catalog/${category.slug}`}
-                  className="group card relative flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-lift"
-                >
-                  {category.imageUrl && (
-                    <div className="relative aspect-[4/3] overflow-hidden">
-                      <img
-                        src={category.imageUrl}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover transition duration-700 group-hover:scale-110"
-                      />
-                    </div>
-                  )}
-                  <div className="flex flex-1 items-center gap-4 p-4">
-                    {!category.imageUrl && (
-                      <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand transition group-hover:bg-brand group-hover:text-cream-light">
-                        <CategoryIcon slug={category.slug} className="h-7 w-7" />
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-serif text-lg font-semibold leading-snug group-hover:text-brand">
-                        {category.name}
-                      </h3>
-                      <span className="text-sm text-ink-soft">{category.productCount}</span>
-                    </div>
-                    <ChevronRightIcon
-                      width={18}
-                      height={18}
-                      className="shrink-0 text-brand opacity-40 transition group-hover:translate-x-1 group-hover:opacity-100"
-                    />
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* 03 — Our products */}
-      {products.length > 0 && (
-        <section className="section bg-cream-50">
-          <div className="container">
-            <Reveal>
-              <SectionHeading
-                title={t.home.popularTitle}
-                subtitle={t.home.popularSubtitle}
-                action={
-                  <Link
-                    href={`/${locale}/catalog`}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
-                  >
-                    {t.common.showAll}
-                    <ChevronRightIcon width={16} height={16} />
-                  </Link>
-                }
-              />
+      {/* 03 — Why choose us */}
+      <section className="relative bg-sand" aria-labelledby="why-title">
+        <Wave className="text-forest" variant={2} />
+        <div className="relative overflow-hidden bg-forest text-cream-light">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(125,164,83,0.25),transparent_55%),radial-gradient(ellipse_at_90%_100%,rgba(217,168,91,0.18),transparent_50%)]"
+            aria-hidden
+          />
+          <Leaf className="absolute -left-5 top-4 h-14 w-24 [--sway-from:-30deg] [--sway-to:-20deg]" />
+          <Leaf
+            className="absolute -right-4 bottom-6 h-12 w-20 [--sway-from:200deg] [--sway-to:210deg]"
+            style={{ animationDelay: '-2s' }}
+          />
+          <div className="container relative grid items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,2fr)] lg:py-12">
+            <Reveal className="space-y-4">
+              <h2 id="why-title" className="font-serif text-4xl leading-tight text-cream-light">
+                {t.home.whyTitle}
+              </h2>
+              <p className="max-w-xs text-cream-light/85">{t.home.whyText}</p>
+              <Link href={`/${locale}/about`} className="btn-gold">
+                {t.home.learnMore}
+                <ArrowRightIcon width={16} height={16} />
+              </Link>
             </Reveal>
-            <Carousel label={t.home.popularTitle}>
-              {products.slice(0, 12).map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </Carousel>
+            <ul className="grid grid-cols-2 gap-y-8 md:grid-cols-4">
+              {t.home.why.map((label, i) => {
+                const Icon = WHY_ICONS[i] ?? SproutIcon;
+                return (
+                  <li
+                    key={label}
+                    className="group flex flex-col items-center gap-4 px-3 text-center md:border-l md:border-honey/30"
+                  >
+                    <Reveal delay={i * 0.08} className="flex flex-col items-center gap-4">
+                      <Icon
+                        width={56}
+                        height={56}
+                        strokeWidth={1.2}
+                        className="text-honey transition duration-500 group-hover:-translate-y-1 group-hover:scale-110 group-hover:text-honey-light"
+                      />
+                      <span className="max-w-[10rem] text-[15px] font-medium leading-snug">
+                        {label}
+                      </span>
+                    </Reveal>
+                  </li>
+                );
+              })}
+            </ul>
           </div>
-        </section>
-      )}
+        </div>
+        <Wave className="text-forest" flip />
+      </section>
 
-      {/* 05 — Brand story: the company's picture in an ornamental frame */}
-      <section id="story" className="section relative scroll-mt-28 overflow-hidden">
-        <Parallax speed={0.25}>
-          <KochkorMuyuz className="absolute -left-20 top-0 h-48 w-96 text-brand/[0.05]" />
-        </Parallax>
-        <div className="container relative grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
+      {/* 04 — Our story */}
+      <section
+        id="story"
+        className="relative scroll-mt-24 overflow-hidden bg-sand"
+        aria-labelledby="story-title"
+      >
+        <OrnamentCorner className="absolute -right-3 -top-3 hidden h-32 w-32 -scale-x-100 text-honey/50 lg:block" />
+        <MountainLines className="absolute -bottom-2 right-0 hidden w-[420px] text-honey-dark/45 lg:block" />
+        <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
           <Reveal>
-            <figure className="relative mx-auto max-w-xl">
-              <div
-                className="absolute -inset-3 rounded-[2.25rem] border border-gold/50"
-                aria-hidden
+            <figure className="relative aspect-[470/234] overflow-hidden rounded-r-[2.5rem] shadow-lift lg:rounded-r-[3.5rem]">
+              <Image
+                src="/images/home/story.webp"
+                alt={t.home.storySceneLabel}
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover transition duration-[1.5s] hover:scale-105"
               />
-              <div className="relative aspect-[700/691] overflow-hidden rounded-[2rem] shadow-lift">
-                <Image
-                  src="/images/traditions.webp"
-                  alt={t.home.storySceneLabel}
-                  fill
-                  sizes="(min-width: 1024px) 560px, 100vw"
-                  className="object-cover transition duration-[1.5s] hover:scale-105"
-                />
-              </div>
-              <KochkorMuyuz className="absolute -bottom-5 left-1/2 h-10 w-20 -translate-x-1/2 rounded-full bg-cream-light px-3 text-gold" />
             </figure>
           </Reveal>
-          <Reveal className="space-y-5" delay={0.1}>
-            <OrnamentDivider className="max-w-xs" />
-            <h2 className="section-title">{t.home.storyTitle}</h2>
-            <p className="whitespace-pre-line text-lg leading-relaxed text-ink-muted">
-              {about?.body || t.home.aboutText}
+          <Reveal className="relative px-4 pb-12 sm:px-8 lg:pb-6 lg:pr-12" delay={0.1}>
+            <p className="font-medium text-ink-muted">{t.home.storyEyebrow}</p>
+            <h2
+              id="story-title"
+              className="mt-2 max-w-md font-serif text-4xl leading-tight text-forest sm:text-[2.6rem]"
+            >
+              {t.home.storyTitle}
+            </h2>
+            <p className="mt-5 max-w-lg whitespace-pre-line leading-relaxed text-ink-muted">
+              {about?.body || t.home.storyText}
             </p>
-            <ul className="grid gap-3 sm:grid-cols-3">
-              {t.pages.traditions.sections.slice(0, 3).map((item) => (
-                <li key={item.title} className="rounded-2xl border border-gold/30 bg-milk p-4">
-                  <KochkorMuyuz className="mb-2 h-4 w-8 text-gold" />
-                  <p className="font-serif text-lg font-semibold">{item.title}</p>
-                  <p className="line-clamp-3 text-sm text-ink-muted">{item.text}</p>
-                </li>
-              ))}
-            </ul>
-            <div className="flex flex-wrap gap-3">
-              <ButtonLink href={`/${locale}/about`}>{t.home.storyCta}</ButtonLink>
-              <ButtonLink href={`/${locale}/traditions`} variant="outline">
-                {t.nav.traditions}
-              </ButtonLink>
+            <div className="mt-7 flex flex-wrap items-center gap-x-10 gap-y-5">
+              <Link href={`/${locale}/about`} className="btn-outline-dark">
+                {t.home.learnMore}
+                <ArrowRightIcon width={16} height={16} />
+              </Link>
+              <p className="-rotate-6 font-script text-3xl font-semibold text-wood xl:text-4xl">
+                {t.home.withLove} <span className="text-ruby">♥</span>
+              </p>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* 06 — Benefits */}
-      <section className="section relative overflow-hidden bg-brand text-cream-light">
-        <div className="bg-ornament absolute inset-0 opacity-[0.07]" aria-hidden />
-        <div className="container relative">
-          <Reveal>
-            <h2 className="section-title mb-10 text-cream-light">{t.home.advantagesTitle}</h2>
-          </Reveal>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {t.home.advantages.map((item, i) => (
-              <Reveal key={item.title} delay={i * 0.08}>
-                <div className="group h-full rounded-2xl border border-cream/15 bg-white/5 p-6 transition duration-300 hover:-translate-y-1 hover:bg-white/10">
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-cream text-brand transition group-hover:bg-gold-light">
-                    <BenefitIcon index={i} />
-                  </div>
-                  <h3 className="mb-2 font-serif text-xl text-cream-light">{item.title}</h3>
-                  <p className="text-sm text-cream/75">{item.text}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 07 — NUSKA AI */}
-      <section className="section bg-brand-dark text-cream-light">
-        <div className="container grid items-center gap-10 md:grid-cols-[auto_1fr]">
-          <Reveal>
-            <NuskaOrb className="mx-auto h-40 w-40 md:h-56 md:w-56" />
-          </Reveal>
-          <Reveal className="space-y-5" delay={0.1}>
-            <h2 className="section-title text-cream-light">{t.ai.name}</h2>
-            <p className="max-w-2xl text-lg text-cream/80">{t.ai.homeText}</p>
-            <div className="flex flex-wrap gap-2">
-              {t.ai.examples.map((q) => (
-                <AskAi
-                  key={q}
-                  question={q}
-                  className="rounded-full border border-cream/30 px-4 py-2 text-sm text-cream transition hover:bg-cream hover:text-brand"
-                >
-                  {q}
-                </AskAi>
-              ))}
-            </div>
-            <AskAi className={buttonClass('secondary', 'lg')}>{t.ai.pageCta}</AskAi>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* 08 — Gift set builder preview */}
-      <section className="section container">
-        <Reveal>
-          <div className="grid items-center gap-8 overflow-hidden rounded-3xl border border-cream-dark/60 bg-cream-light p-6 md:grid-cols-[1.1fr_1fr] md:p-10">
-            <div className="space-y-4">
-              <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-olive">
-                <KochkorMuyuz className="h-3 w-6 text-gold" /> 3D
-              </span>
-              <h2 className="section-title">{t.gift.title}</h2>
-              <p className="text-ink-muted">{t.gift.previewText}</p>
-              <ButtonLink href={`/${locale}/gift-builder`} size="lg">
-                {t.gift.cta}
-              </ButtonLink>
-            </div>
-            <div className="relative mx-auto aspect-[4/3] w-full max-w-md" aria-hidden>
-              <div className="absolute inset-x-6 bottom-6 top-1/3 rounded-2xl border-[12px] border-[#8A5A33] bg-cream shadow-lift" />
-              <div className="absolute inset-x-6 top-[30%] h-4 bg-brand" />
-              <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 gap-3">
-                {['#FBFBF7', '#F1C84B', '#F39A3D', '#E8C27E'].map((c, i) => (
-                  <span
-                    key={c}
-                    className="block h-14 w-10 rounded-lg shadow-card motion-safe:animate-float"
-                    style={{ background: c, animationDelay: `${i * 0.4}s` }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </Reveal>
-      </section>
-
-      {/* 10 — Pickup */}
-      <section className="section bg-cream-50">
+      {/* 05 — Reviews (only real, moderated ones) */}
+      <section
+        id="reviews"
+        className="relative scroll-mt-24 bg-sand py-12"
+        aria-labelledby="reviews-title"
+      >
+        <Leaf className="absolute -left-4 top-6 h-12 w-20 [--sway-from:-20deg] [--sway-to:-10deg]" />
         <div className="container">
           <Reveal>
-            <SectionHeading title={t.home.pickupTitle} subtitle={t.home.pickupText} />
+            <SectionTitle id="reviews-title">{t.home.reviewsTitle}</SectionTitle>
           </Reveal>
-          <ol className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {t.home.pickupSteps.map((step, i) => (
-              <Reveal key={step.title} delay={i * 0.08}>
-                <li className="relative h-full rounded-2xl border border-cream-dark/60 bg-milk p-5">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-brand font-serif text-cream-light">
-                    {i + 1}
-                  </span>
-                  <h3 className="mb-1 font-serif text-lg font-semibold">{step.title}</h3>
-                  <p className="text-sm text-ink-muted">{step.text}</p>
-                </li>
-              </Reveal>
-            ))}
-          </ol>
-          {pickup.length === 0 ? (
-            <p className="text-ink-soft">{t.home.pickupEmpty}</p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {pickup.map((point) => (
-                <div key={point.id} className="card space-y-2 p-6">
-                  <div className="flex items-center gap-2 text-brand">
-                    <PinIcon />
-                    <h3 className="font-serif text-lg font-semibold">{point.name}</h3>
-                  </div>
-                  <p className="text-ink-muted">{point.address}</p>
-                  {point.openingHours && (
-                    <p className="flex items-center gap-2 text-sm text-ink-soft">
-                      <ClockIcon width={16} height={16} /> {point.openingHours}
-                    </p>
-                  )}
-                  {point.phone && <p className="text-sm text-ink-soft">{point.phone}</p>}
+          <div className="mt-8">
+            {reviews.length === 0 ? (
+              <div className="mx-auto flex max-w-2xl items-center gap-5 rounded-[1.6rem] bg-sand-light p-6 shadow-[0_14px_30px_-18px_rgba(90,60,25,0.5)] ring-1 ring-honey/25">
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-forest text-honey">
+                  <HeartIcon width={26} height={26} />
+                </span>
+                <div>
+                  <p className="font-serif text-xl text-forest">{t.home.reviewsEmpty}</p>
+                  <p className="text-sm text-ink-muted">{t.home.reviewsEmptyText}</p>
                 </div>
-              ))}
-            </div>
-          )}
-          <StoresList locale={locale} className="mt-12" />
+              </div>
+            ) : (
+              <ReviewsSlider
+                reviews={reviews.map((r) => ({ ...r, initials: initials(r.author) }))}
+              />
+            )}
+          </div>
         </div>
       </section>
 
-      {/* 09 — Reviews (only real, moderated ones) */}
-      <section id="reviews" className="section container scroll-mt-20">
-        <Reveal>
-          <SectionHeading title={t.home.reviewsTitle} />
-          {reviews.length === 0 ? (
-            <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-cream-dark bg-milk px-6 py-12 text-center">
-              <KochkorMuyuz className="h-10 w-20 text-brand/40" animate />
-              <p className="font-serif text-xl">{t.home.reviewsEmpty}</p>
-              <p className="max-w-md text-sm text-ink-soft">{t.home.reviewsEmptyText}</p>
-            </div>
-          ) : (
-            <ReviewsSlider reviews={reviews} />
-          )}
-        </Reveal>
-      </section>
-
-      {/* 11 — FAQ */}
-      {faq.length > 0 && (
-        <section className="section bg-cream-50">
-          <div className="container max-w-4xl">
-            <Reveal>
-              <SectionHeading
-                title={t.home.faqTitle}
-                action={
-                  <Link
-                    href={`/${locale}/faq`}
-                    className="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"
-                  >
-                    {t.home.faqAll}
-                    <ChevronRightIcon width={16} height={16} />
-                  </Link>
-                }
-              />
-              <FaqList items={faq.slice(0, 5)} />
-            </Reveal>
-          </div>
-        </section>
-      )}
-
-      {/* 12 — Newsletter */}
-      <section className="section container">
-        <Reveal>
-          <div className="relative overflow-hidden rounded-3xl bg-brand px-6 py-10 text-cream-light shadow-lift md:px-12 md:py-14">
-            <div className="bg-ornament absolute inset-0 opacity-10" aria-hidden />
-            <KochkorMuyuz className="absolute -right-10 -top-6 h-32 w-64 text-gold/20 motion-safe:animate-float" />
-            <div className="relative grid items-center gap-8 md:grid-cols-2">
+      {/* 06 — Gift sets and the newsletter */}
+      <section className="relative bg-sand" aria-label={t.home.giftTitle} data-flush-footer>
+        <Wave className="text-forest" />
+        <div className="relative overflow-hidden bg-forest">
+          <div
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_15%_50%,rgba(217,168,91,0.22),transparent_45%)]"
+            aria-hidden
+          />
+          <div className="container relative grid items-center gap-8 py-8 lg:grid-cols-2 lg:py-6">
+            <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:text-left">
+              <div className="relative h-36 w-56 shrink-0 motion-safe:animate-float">
+                <Image
+                  src="/images/home/gift.webp"
+                  alt=""
+                  fill
+                  sizes="224px"
+                  className="object-cover [mask-image:radial-gradient(ellipse_at_center,#000_50%,transparent_72%)]"
+                />
+              </div>
               <div className="space-y-3">
-                <h2 className="font-serif text-3xl text-cream-light md:text-4xl">
-                  {t.newsletter.title}
+                <h2 className="font-serif text-2xl leading-snug text-cream-light sm:text-3xl">
+                  {t.home.giftTitle}
                 </h2>
-                <p className="text-cream/80">{t.newsletter.text}</p>
+                <p className="text-sm text-cream-light/80">{t.home.giftText}</p>
+                <Link href={`/${locale}/gift-builder`} className="btn-gold">
+                  {t.home.giftCta}
+                  <ArrowRightIcon width={16} height={16} />
+                </Link>
+              </div>
+            </div>
+            <div className="rounded-[1.8rem] border border-honey/40 bg-forest-dark/60 p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:p-7">
+              <div className="mb-4 flex items-start gap-4">
+                <MailIcon
+                  width={40}
+                  height={40}
+                  strokeWidth={1.3}
+                  className="shrink-0 text-honey"
+                />
+                <div>
+                  <h2 className="font-serif text-xl text-cream-light">{t.newsletter.title}</h2>
+                  <p className="text-sm text-cream-light/75">{t.newsletter.text}</p>
+                </div>
               </div>
               <NewsletterForm />
             </div>
           </div>
-        </Reveal>
+        </div>
       </section>
     </>
   );

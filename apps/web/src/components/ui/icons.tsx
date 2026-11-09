@@ -112,3 +112,43 @@ export const BagIcon = (p: IconProps) => (
     <path d="M5 8h14l-1 12H6L5 8ZM9 8V6a3 3 0 0 1 6 0v2" />
   </Icon>
 );
+export const ArrowRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </Icon>
+);
+export const GiftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 10h16v10H4V10ZM3 7h18v3H3V7ZM12 7v13M12 7S10.5 3 8 3.5 6.5 7 12 7ZM12 7s1.5-4 4-3.5S17.5 7 12 7Z" />
+  </Icon>
+);
+export const MailIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="m3.5 6.5 8.5 7 8.5-7" />
+  </Icon>
+);
+export const PhoneIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 3.5h3.5l1.5 4.5-2 1.5a12 12 0 0 0 6.5 6.5l1.5-2 4.5 1.5V19a2 2 0 0 1-2 2A17 17 0 0 1 3 5.5a2 2 0 0 1 2-2Z" />
+  </Icon>
+);
+/** Line icons of "Why choose us" (drawn larger, thin gold strokes). */
+export const SproutIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 21v-8M12 13c0-5-3.5-8.5-9-8.5 0 5.5 3.5 8.5 9 8.5ZM12 13c0-5 3.5-8.5 9-8.5 0 5.5-3.5 8.5-9 8.5ZM6 8.5l6 4.5M18 8.5 12 13" />
+  </Icon>
+);
+export const QualityIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m12 2 2.2 1.6 2.7-.2.8 2.6 2.3 1.4-.8 2.6.8 2.6-2.3 1.4-.8 2.6-2.7-.2L12 18l-2.2-1.6-2.7.2-.8-2.6-2.3-1.4.8-2.6-.8-2.6L6.3 6l.8-2.6 2.7.2L12 2Z" />
+    <path d="m8.8 10.2 2.2 2.2 4.2-4.2M8 17.5 6.5 22 9.5 21 12 22.5 14.5 21l3 1L16 17.5" />
+  </Icon>
+);
+export const JugIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 3h6M10 3v3c-3 1-5.5 3.5-5.5 7.5S7.5 21 12 21s7.5-3.5 7.5-7.5S17 7 14 6V3" />
+    <path d="M7 12.5c1.5-1.5 3 1.5 5 0s3.5 1.5 5 0M8 16c1.3 1 2.7 1 4 0s2.7-1 4 0" />
+    <path d="M19 10c1.8 0 2.5 1 2.5 2.3S20.5 15 19 15" />
+  </Icon>
+);
