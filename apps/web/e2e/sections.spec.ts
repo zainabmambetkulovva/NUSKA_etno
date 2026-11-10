@@ -2,17 +2,26 @@ import { expect, test } from '@playwright/test';
 
 import { expectNoHorizontalScroll, ky, ru } from './helpers';
 
-test('header follows the design: logo, menu, search, sign in / register', async ({ page }) => {
+test('header follows the brief: logo, menu, language, separate sign in and register', async ({
+  page,
+}) => {
   await page.goto('/ru');
   const header = page.locator('header');
   await expect(header.getByRole('link', { name: 'NUSKA_etno' })).toBeVisible();
-  await expect(header.getByRole('searchbox')).toHaveCount(0);
-  await expect(header.getByRole('link', { name: ru.nav.search })).toBeVisible();
-  await expect(
-    header.getByRole('link', { name: new RegExp(`${ru.nav.login}.*${ru.nav.register}`) })
-  ).toHaveAttribute('href', '/ru/login');
-  for (const name of [ru.nav.home, ru.nav.about, ru.nav.pickup, ru.nav.reviews, ru.nav.contacts])
+  for (const name of [ru.nav.home, ru.nav.about, ru.nav.prices, ru.nav.contacts])
     await expect(header.getByRole('link', { name, exact: true })).toBeVisible();
+  await expect(header.getByRole('group', { name: ru.nav.language })).toBeVisible();
+  await expect(header.getByRole('link', { name: ru.nav.login, exact: true })).toHaveAttribute(
+    'href',
+    '/ru/login'
+  );
+  await expect(header.getByRole('link', { name: ru.nav.register, exact: true })).toHaveAttribute(
+    'href',
+    '/ru/register'
+  );
+  // No search, no empty cart.
+  await expect(header.getByRole('searchbox')).toHaveCount(0);
+  await expect(header.locator('a[href="/ru/cart"]')).toHaveCount(0);
 });
 
 test('stores are shown as an endless ticker on the pickup page', async ({ page }) => {
@@ -22,57 +31,48 @@ test('stores are shown as an endless ticker on the pickup page', async ({ page }
   await expect(stores.getByText('Бимар').first()).toBeVisible();
 });
 
-test('catalog mega menu shows the categories', async ({ page }) => {
-  await page.goto('/ru');
-  await page.getByRole('button', { name: ru.nav.catalog, exact: true }).click();
-  const allCatalog = page.locator('header').getByRole('link', { name: ru.nav.goToCatalog });
-  await expect(allCatalog).toBeVisible();
-  await expect(page.getByRole('link', { name: /Молочные продукты/ }).first()).toBeVisible();
-  await expect(page.locator('header').getByRole('link', { name: ru.nav.giftSets })).toBeVisible();
-  await page.keyboard.press('Escape');
-  await expect(allCatalog).toBeHidden();
-});
-
-test('home follows the design: products, why us, story, reviews, gifts and newsletter', async ({
+test('home: why us, prices from the catalog, testimonials carousel and the footer', async ({
   page,
 }) => {
   await page.goto('/ky');
-  for (const title of [
-    ky.home.productsTitle,
-    ky.home.whyTitle,
-    ky.home.storyTitle,
-    ky.home.reviewsTitle,
-    ky.home.giftTitle,
-    ky.newsletter.title,
-  ]) {
+  for (const title of [ky.home.whyTitle, ky.home.pricesTitle, ky.home.reviewsTitle])
     await expect(page.getByRole('heading', { name: title })).toBeAttached();
-  }
-  // The six signature products, each opening the product (or the search for it).
-  const products = page.locator('section[aria-labelledby="products-title"]');
-  for (const name of ['Сары май', 'Жупка', 'Бешбармак', 'Кымыз', 'Нават', 'Курут'])
-    await expect(products.getByRole('link', { name: new RegExp(name) })).toBeVisible();
-  await products.getByRole('link', { name: /Кымыз/ }).click();
-  await expect(page).toHaveURL(/\/ky\/product\/kymyz$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Кымыз' })).toBeVisible();
-  await page.goBack();
 
-  // Footer: navigation and contacts columns, order links and socials.
+  // Prices come from the catalog: navat in three sizes, kymyz with its price.
+  const prices = page.locator('section#prices');
+  await prices.scrollIntoViewIfNeeded();
+  await expect(prices.getByRole('heading', { name: 'Нават', level: 3 })).toBeVisible();
+  for (const price of ['100 сом', '115 сом', '145 сом'])
+    await expect(prices.getByText(price).first()).toBeVisible();
+  await expect(prices.getByRole('link', { name: 'Кымыз' })).toBeVisible();
+
+  // Testimonials: an endless carousel with arrows; samples are labelled.
+  const reviews = page.locator('section#reviews');
+  await reviews.scrollIntoViewIfNeeded();
+  await expect(reviews.getByText('Айдана Теребаева').first()).toBeVisible();
+  await reviews.getByRole('button', { name: ky.common.next }).click();
+  await expect(reviews.getByText(ky.home.reviewsSampleNote)).toBeVisible();
+  await expect(reviews.getByRole('link', { name: ky.home.reviewsAll })).toHaveAttribute(
+    'href',
+    '/ky/reviews'
+  );
+
+  // Footer: menu and the four socials.
   const footer = page.locator('footer');
-  for (const title of [ky.footer.navigation, ky.footer.contacts]) {
-    await expect(footer.getByRole('heading', { name: title })).toBeVisible();
-  }
-  await expect(footer.getByRole('link', { name: ky.footer.wholesale })).toHaveAttribute(
-    'href',
-    /^https:\/\//
-  );
-  await expect(footer.getByRole('link', { name: ky.footer.retail })).toHaveAttribute(
-    'href',
-    /^https:\/\//
-  );
-  await expect(footer.getByRole('link', { name: 'Instagram' })).toHaveAttribute(
-    'href',
-    /instagram\.com\//
-  );
+  await expect(footer.getByRole('heading', { name: ky.footer.menu })).toBeVisible();
+  for (const [name, href] of [
+    ['Instagram', /instagram\.com\/nuska_etno$/],
+    ['Telegram', /t\.me\/nuska_etnokatalog$/],
+    ['WhatsApp', /wa\.me\/996701111024$/],
+    ['YouTube', /youtube\.com\/@nuskaetno$/],
+  ] as const)
+    await expect(footer.getByRole('link', { name })).toHaveAttribute('href', href);
+});
+
+test('all testimonials page', async ({ page }) => {
+  await page.goto('/ru/reviews');
+  await expect(page.getByRole('heading', { level: 1, name: ru.home.reviewsTitle })).toBeVisible();
+  await expect(page.getByText('Гүлнур Исмаилова')).toBeVisible();
 });
 
 test('FAQ page: search and category filter', async ({ page }) => {
@@ -88,17 +88,6 @@ test('FAQ page: search and category filter', async ({ page }) => {
   await page.getByRole('searchbox', { name: ru.faq.searchPlaceholder }).fill('');
   await page.getByRole('button', { name: ru.faq.categories.pickup }).click();
   await expect(questions).not.toHaveCount(total);
-});
-
-test('newsletter: consent is required, then the subscription is accepted', async ({ page }) => {
-  await page.goto('/ru');
-  const form = page.locator('form').filter({ has: page.getByLabel(ru.newsletter.email) });
-  await form.getByLabel(ru.newsletter.email).fill(`e2e-${Date.now()}@example.com`);
-  await form.getByRole('button', { name: ru.newsletter.submit }).click();
-  await expect(form.getByRole('alert')).toContainText(ru.newsletter.consentRequired);
-  await form.getByLabel(ru.newsletter.consent).check();
-  await form.getByRole('button', { name: ru.newsletter.submit }).click();
-  await expect(page.getByRole('status').filter({ hasText: ru.newsletter.done })).toBeVisible();
 });
 
 test('search page finds products and shows suggestions', async ({ page }) => {

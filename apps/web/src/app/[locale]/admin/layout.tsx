@@ -37,6 +37,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: `${base}/pickup`, label: t.admin.pickup },
     { href: `${base}/content`, label: t.admin.content },
     { href: `${base}/faq`, label: t.admin.faq },
+    { href: `${base}/testimonials`, label: t.admin.testimonials },
     { href: `${base}/newsletter`, label: t.admin.newsletter },
     { href: `${base}/ai`, label: t.admin.aiTitle },
   ];

@@ -432,3 +432,26 @@ export interface AdminAiSettings {
   dailyLimit: number;
   usedToday: number;
 }
+
+/** Customer testimonial of the home page carousel (admin-managed). */
+export interface Testimonial {
+  id: string;
+  authorName: string;
+  text: string;
+  rating: number;
+  /** YYYY-MM-DD */
+  reviewDate: string;
+  photoUrl: string | null;
+  avatarUrl: string | null;
+  productName: string | null;
+  instagramUrl: string | null;
+  /** Sample entry, labelled on the site until replaced by a real one. */
+  isDemo: boolean;
+}
+
+export interface AdminTestimonial extends Testimonial {
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}

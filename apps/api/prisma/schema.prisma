@@ -761,6 +761,29 @@ model FaqItemTranslation {
   @@map("faq_item_translations")
 }
 
+/// Customer testimonials of the home page carousel, managed in the admin panel.
+/// They are separate from product reviews (which need a delivered order).
+/// `isDemo` marks sample entries: the site labels them until real ones replace them.
+model Testimonial {
+  id           String   @id @default(uuid()) @db.Uuid
+  authorName   String   @map("author_name") @db.VarChar(80)
+  text         String   @db.VarChar(1000)
+  rating       Int      @default(5)
+  reviewDate   DateTime @map("review_date") @db.Date
+  photoUrl     String?  @map("photo_url")
+  avatarUrl    String?  @map("avatar_url")
+  productName  String?  @map("product_name") @db.VarChar(80)
+  instagramUrl String?  @map("instagram_url")
+  isPublished  Boolean  @default(true) @map("is_published")
+  isDemo       Boolean  @default(false) @map("is_demo")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@index([isPublished, sortOrder])
+  @@map("testimonials")
+}
+
 /// Newsletter subscriber with explicit consent. The e-mail is stored lower-case.
 /// Tokens are stored only as SHA-256 hashes.
 model NewsletterSubscriber {

@@ -231,3 +231,57 @@ export function OrnamentBand({ className }: { className?: string }) {
     />
   );
 }
+
+/**
+ * Kyrgyz mountain landscape drawn as layered vectors (no photo): warm sky
+ * with the sun, snowy Tian Shan peaks, green ridges melting into deep green.
+ */
+export function MountainLandscape({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 1440 320"
+      preserveAspectRatio="xMidYMax slice"
+      className={cn('pointer-events-none', className)}
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="ml-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#F4E9B9" />
+          <stop offset="0.55" stopColor="#E9DDBF" />
+          <stop offset="1" stopColor="#B9C49A" />
+        </linearGradient>
+        <radialGradient id="ml-sun" cx="0.72" cy="0.42" r="0.35">
+          <stop offset="0" stopColor="#FFF6D8" stopOpacity="0.95" />
+          <stop offset="1" stopColor="#FFF6D8" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="ml-far" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#9DB3A4" />
+          <stop offset="1" stopColor="#6F8F72" />
+        </linearGradient>
+        <linearGradient id="ml-mid" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5E8452" />
+          <stop offset="1" stopColor="#355B3E" />
+        </linearGradient>
+      </defs>
+      <rect width="1440" height="320" fill="url(#ml-sky)" />
+      <rect width="1440" height="320" fill="url(#ml-sun)" />
+      <path
+        d="M0 210 L110 150 L190 175 L300 92 L380 140 L470 110 L560 160 L660 70 L760 150 L850 118 L960 60 L1060 140 L1150 100 L1260 150 L1350 112 L1440 140 V320 H0 Z"
+        fill="url(#ml-far)"
+      />
+      <path
+        d="M300 92 L322 112 L310 110 L296 122 L284 108 Z M660 70 L686 96 L670 92 L656 108 L640 94 Z M960 60 L990 90 L972 86 L958 102 L940 88 Z M1150 100 L1170 118 L1158 116 L1146 126 L1134 116 Z"
+        fill="#FAF8EF"
+        opacity="0.9"
+      />
+      <path
+        d="M0 250 C160 200 300 230 420 196 C560 158 700 222 840 194 C980 166 1120 214 1260 186 C1340 170 1400 182 1440 176 V320 H0 Z"
+        fill="url(#ml-mid)"
+      />
+      <path
+        d="M0 290 C200 254 380 276 560 252 C760 226 940 270 1120 248 C1260 232 1360 244 1440 238 V320 H0 Z"
+        fill="#243D2B"
+      />
+    </svg>
+  );
+}

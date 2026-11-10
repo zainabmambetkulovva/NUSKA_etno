@@ -9,11 +9,11 @@ import { ImageUploadInterceptor } from './image-upload.interceptor';
 import { UploadFolder, UploadsService } from './uploads.service';
 
 class UploadQueryDto {
-  @IsIn(['categories', 'banners', 'content'])
+  @IsIn(['categories', 'banners', 'content', 'testimonials'])
   folder!: Exclude<UploadFolder, 'products'>;
 }
 
-/** Generic image upload for categories, banners and site content. Product images use /admin/products/:id/images. */
+/** Generic image upload for categories, banners, site content and testimonials. Product images use /admin/products/:id/images. */
 @ApiTags('admin')
 @Roles(UserRole.ADMIN)
 @Controller('admin/uploads')

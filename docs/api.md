@@ -123,6 +123,23 @@ Rate limits: 100 requests/min per IP overall; 5/min for login, register and pass
 
 Without SMTP no e-mail is sent: subscribers stay "pending" in the admin panel.
 
+## Testimonials
+
+Customer testimonials of the home page carousel. They are separate from product reviews
+(which need a delivered order) and are managed by the admin.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/testimonials` | Public: published ones, ordered by `sortOrder`, then newest date |
+| GET | `/admin/testimonials` | Admin: all, with `isPublished`, `sortOrder` |
+| POST | `/admin/testimonials` | `authorName`, `text`, `rating` 1–5, `reviewDate` (YYYY-MM-DD), optional `photoUrl`, `avatarUrl` (https), `productName`, `instagramUrl` (instagram.com), `isPublished`, `isDemo`, `sortOrder` |
+| PATCH | `/admin/testimonials/:id` | Same fields, all optional; `null` clears a picture or link |
+| DELETE | `/admin/testimonials/:id` | 204 |
+
+Photos are uploaded with `POST /admin/uploads/image?folder=testimonials`. The migration
+`20261109090000_testimonials` adds six sample testimonials with `isDemo = true`; the site
+labels them as samples until the admin replaces them. Every change is in the audit log.
+
 ## Gift sets
 
 | Method | Path | Access | Notes |
