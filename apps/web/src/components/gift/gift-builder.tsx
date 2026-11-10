@@ -142,7 +142,6 @@ export function GiftBuilder() {
                   <div className="relative aspect-[4/3] bg-cream-light">
                     <ProductImage
                       url={p.image?.url}
-                      slug={p.slug}
                       alt={p.image?.alt}
                       name={p.name}
                       sizes="300px"

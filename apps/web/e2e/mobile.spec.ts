@@ -6,9 +6,10 @@ test('mobile menu opens with the main sections', async ({ page }) => {
   await page.goto('/ky');
   await page.getByRole('button', { name: ky.nav.menu }).click();
   const menu = page.getByRole('complementary', { name: ky.nav.menu });
-  await expect(menu.getByRole('link', { name: ky.nav.catalog })).toBeVisible();
-  await menu.getByRole('link', { name: ky.nav.catalog }).click();
-  await expect(page).toHaveURL(/\/ky\/catalog$/);
+  await expect(menu.getByRole('link', { name: ky.nav.login, exact: true })).toBeVisible();
+  await expect(menu.getByRole('link', { name: ky.nav.register, exact: true })).toBeVisible();
+  await menu.getByRole('link', { name: ky.nav.about }).click();
+  await expect(page).toHaveURL(/\/ky\/about$/);
 });
 
 for (const path of [

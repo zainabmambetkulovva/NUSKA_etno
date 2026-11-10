@@ -127,7 +127,6 @@ export default async function ProductPage({ params }: { params: Params }) {
         <div className="space-y-3">
           <ProductGallery
             name={product.name}
-            slug={product.slug}
             image={product.images[0] ?? null}
             packaging3d={product.packaging3d}
           />

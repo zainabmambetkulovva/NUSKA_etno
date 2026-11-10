@@ -14,7 +14,7 @@ React Hook Form + Zod, Framer Motion.
 
 | Path | Page |
 |---|---|
-| `/` | Home: hero, our products, why us, our story, reviews, gift sets + newsletter |
+| `/` | Home: hero (3D podium), why us, our prices, testimonials |
 | `/catalog`, `/catalog/[category]` | Catalog: search, category (with sub-categories), sort, in-stock filter, pagination |
 | `/product/[slug]` | Product page, JSON-LD, reviews, related products |
 | `/cart`, `/checkout` | Cart (guest cart in localStorage, merged on login), checkout (signed-in only) |
@@ -46,34 +46,41 @@ React Hook Form + Zod, Framer Motion.
   leaves, mountain line art and silhouettes, the ram's horn band of the footer.
 - Animations respect `prefers-reduced-motion`; product cards tilt only for mouse input.
 
-## Home page (design sent by the company, Nov 2026)
+## Home page (brand brief, Nov 2026)
 
-Order: hero → "Our products" → "Why choose us?" → "Our story" → reviews → gift sets and
-the newsletter → footer. Nothing else is put on the home page (FAQ, pickup and the stores
-have their own pages).
+Order: header → hero with the 3D podium → "Why choose us?" → "Our prices" → customer
+testimonials → footer. No pictures cut out of design mockups are used anywhere; product
+pictures come only from the admin panel (product photos).
 
-- **Header** (`components/layout/header.tsx`): deep green bar with the gold medallion,
-  Home · Catalog ▾ (mega menu) · About · Pickup · Reviews · Contacts, KG RU, search, ♡,
-  cart and "Sign in / Register" (the personal account once signed in). On the home page it
-  lies transparent over the hero until the page is scrolled. Burger menu below 1280 px.
-- **Hero** (`components/home/hero.tsx`): the dastorkon photo `public/images/home/hero.webp`
-  on the right, the deep green panel with the name, slogan, "Go to the catalog" and
-  "Make a gift" on the left; on phones the photo is on top and the text below it.
-- **Our products:** six signature products (sary may, zhupka, beshbarmak, kymyz, navat,
-  kurut) with their photos `public/images/home/product-*.webp`. A card opens the product
-  (matched by slug, e.g. `navat` → `navat-0-5`) with its price, otherwise the search.
-- **Signature photos as fallback** (`lib/product-photos.ts`): until the admin uploads a
-  product photo, these products show the photo from the design everywhere (catalog,
-  product page, cart, gift builder). An uploaded photo always wins.
-- **Why us / story / reviews / gifts:** gold line icons on deep green, the story photo
-  with the handwritten "With love from Kyrgyzstan", only real moderated reviews (honest
-  empty state), gift sets with the 3D builder and the newsletter (consent required).
-- **Footer** (`components/layout/footer.tsx`): deep green with mountains and the ram's
-  horn band; navigation, contacts with the wholesale/retail order links, the Telegram
-  catalog and socials, language switch. Contacts and links come only from the admin
-  `contacts` block.
-- **3D:** the product packaging viewer and the gift box of the builder
-  (`components/three/*`); the home page has no 3D scene any more.
+- **Logo** (`components/brand/logo.tsx`): the gold knot of four lobes around a diamond,
+  drawn as a vector (`LogoMark`), and the name in Lora.
+- **Header** (`components/layout/header.tsx`): logo on the left, then the menu (Home ·
+  About · Our prices · Contacts), KG/RU, and two separate buttons "Sign in" and "Register"
+  (the personal account once signed in). The cart icon appears only when the cart is not
+  empty. Transparent over the hero on the home page; burger menu below 1280 px.
+- **Hero** (`components/home/hero.tsx`, `components/three/hero-podium-scene.tsx`): text and
+  buttons on the left; on the right a real 3D composition (React Three Fiber): a carved
+  wooden podium with Kyrgyz ornaments, a glass jar of honey with a dipper, navat crystals in
+  a carved bowl, kymyz in a ceramic bowl, zhupka, kurut and sary may. Everything is one
+  `THREE.Group` turning to the left (negative `rotation.y`, delta-time based, one turn per
+  30 s, no jumps). Floating leaves, golden sun particles, soft reflections from in-scene
+  light panels (no HDR download), contact shadows. Loaded lazily, rendered only while
+  visible, lighter on phones, still with reduced motion, nothing without WebGL.
+- **Why choose us?:** four promises with gold line icons (to be redone after the product
+  photos arrive).
+- **Our prices** (`components/home/prices-section.tsx`): prices straight from the catalog.
+  Product lines are grouped by name ("Нават 0.5/0.6/0.7" → "Нават" with three prices,
+  "Керемет шыпаа — классика/чычырканак" → two prices). The richest line is shown large
+  with floating price tags; the others as animated tiles with category tabs and "Add to
+  cart". Until a product has a photo, its tile shows the gold mark on a warm gradient.
+- **Testimonials** (`components/home/testimonials.tsx`, `/reviews`): admin-managed
+  (`/admin/testimonials`), endless carousel: the centre card is the largest with a gold
+  glow, the neighbours turned in perspective, autoplay with pause on hover/focus, arrows,
+  dots and swipe. Sample entries (`isDemo`) are labelled "Мисал / Пример" with a note.
+- **Footer** (`components/layout/footer.tsx`): mountain landscape drawn as vectors with
+  cream waves on top, deep green area with three columns (logo and slogan · menu ·
+  four round gold social icons: Instagram, Telegram, WhatsApp, YouTube), bottom line with
+  the copyright and the motto. Links come from the admin `contacts` block.
 
 - **Pages:** `/faq` (search, categories, FAQPage structured data), `/traditions`, `/search`
   (suggestions, recent queries kept in this browser), `/checkout/success`,
@@ -149,4 +156,4 @@ Without the `SEED_*` passwords the order test is skipped.
 
 ## Not done yet
 
-- Real product photos (the signature products use the photos of the design until then).
+- Real product photos (upload them in the admin panel).

@@ -1,15 +1,17 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
-import { Leaf, OrnamentCorner, Wave } from '@/components/brand/kyrgyz-decor';
+import { HeroPodium } from './hero-podium';
+
+import { Leaf, MountainSilhouettes, OrnamentCorner, Wave } from '@/components/brand/kyrgyz-decor';
 import { ArrowRightIcon, GiftIcon } from '@/components/ui/icons';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
 
 /**
- * First screen of the design: the dastorkon with butter, zhupka, kurut and
- * kymyz in front of a yurt and the Tian Shan, the deep green panel with the
- * brand name on the left, gold Kyrgyz corner ornaments and swaying leaves.
+ * First screen: the brand name, slogan and buttons on the left, and on the
+ * right the real 3D composition (carved wooden podium with honey, navat,
+ * kymyz and other products) turning slowly to the left. Deep green sky with
+ * the Tian Shan silhouettes, gold Kyrgyz corner ornaments, swaying leaves.
  * It slides under the header, which stays transparent over it.
  */
 export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
@@ -18,28 +20,15 @@ export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
       className="relative -mt-[68px] overflow-hidden bg-forest-dark lg:-mt-[76px]"
       aria-labelledby="hero-title"
     >
-      {/* Phone: the picture on top, the text below it. Desktop: the picture on the right. */}
-      <div className="absolute inset-x-0 top-0 h-[400px] sm:h-[480px] lg:inset-y-0 lg:left-[26%] lg:h-auto">
-        <Image
-          src="/images/home/hero.webp"
-          alt={t.home.heroImageAlt}
-          fill
-          priority
-          sizes="(min-width: 1024px) 74vw, 100vw"
-          className="object-cover object-[30%_center] motion-safe:animate-ken-burns"
-        />
-      </div>
+      {/* Deep green sky, a warm glow behind the podium and the Tian Shan silhouettes */}
       <div
-        className="absolute inset-x-0 top-0 h-[400px] bg-gradient-to-b from-forest-dark/80 via-transparent to-forest-dark sm:h-[480px] lg:hidden"
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_68%_58%,rgba(214,173,98,0.28),transparent_45%),radial-gradient(ellipse_at_70%_40%,#3B6B3A_0%,#1E3A23_45%,#0F2112_100%)]"
         aria-hidden
       />
-      <div
-        className="absolute inset-0 hidden bg-gradient-to-r from-forest-dark from-[25%] via-forest-dark/55 via-[34%] to-transparent to-[46%] lg:block"
-        aria-hidden
-      />
-      <div
-        className="absolute inset-x-0 top-0 hidden h-36 bg-gradient-to-b from-forest-dark/70 to-transparent lg:block"
-        aria-hidden
+      <MountainSilhouettes className="absolute inset-x-0 bottom-0 h-[260px] w-full opacity-80" />
+      <HeroPodium
+        label={t.home.heroImageAlt}
+        className="absolute inset-x-0 top-[64px] h-[380px] sm:h-[460px] lg:inset-y-0 lg:left-[38%] lg:right-0 lg:top-[40px] lg:h-auto"
       />
 
       <OrnamentCorner className="absolute -left-3 top-14 hidden h-36 w-36 text-honey/70 lg:block" />
@@ -50,7 +39,7 @@ export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
         style={{ animationDelay: '-3s' }}
       />
 
-      <div className="container relative flex flex-col pb-20 pt-[330px] sm:pt-[400px] lg:min-h-[620px] lg:justify-center lg:pb-24 lg:pt-32">
+      <div className="container relative flex flex-col pb-20 pt-[420px] sm:pt-[500px] lg:min-h-[620px] lg:justify-center lg:pb-24 lg:pt-32">
         <div className="max-w-lg motion-safe:animate-fade-up [text-shadow:0_2px_12px_rgba(10,25,12,0.55)]">
           <p className="mb-4 text-sm font-medium tracking-wide text-honey-light sm:text-base">
             {t.home.heroEyebrow}
@@ -84,7 +73,7 @@ export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
         </div>
       </div>
 
-      <Wave className="absolute inset-x-0 -bottom-px text-sand" />
+      <Wave className="absolute inset-x-0 -bottom-px text-forest" />
     </section>
   );
 }

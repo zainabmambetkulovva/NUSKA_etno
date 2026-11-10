@@ -15,7 +15,7 @@ export interface StoredFile {
   sizeBytes: number;
 }
 
-export type UploadFolder = 'products' | 'categories' | 'banners' | 'content';
+export type UploadFolder = 'products' | 'categories' | 'banners' | 'content' | 'testimonials';
 
 /**
  * Stores files in S3-compatible storage (AWS S3, Cloudflare R2, MinIO, ...).

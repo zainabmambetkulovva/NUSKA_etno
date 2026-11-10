@@ -28,6 +28,7 @@ import { PickupLocationsModule } from './pickup-locations/pickup-locations.modul
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { UsersModule } from './users/users.module';
 
@@ -58,6 +59,7 @@ import { UsersModule } from './users/users.module';
     ReviewsModule,
     ContentModule,
     FaqModule,
+    TestimonialsModule,
     NewsletterModule,
     AdminModule,
     AiModule,

@@ -8,7 +8,6 @@ import { useCart } from '@/hooks/use-cart';
 import { useI18n } from '@/i18n/i18n-provider';
 import { errorMessage } from '@/lib/api/errors';
 import { flyToCart } from '@/lib/fly-to-cart';
-import { fallbackPhoto } from '@/lib/product-photos';
 import { useToast } from '@/stores/toast';
 
 export function AddToCartButton({
@@ -47,7 +46,7 @@ export function AddToCartButton({
           { product, quantity },
           {
             onSuccess: () => {
-              flyToCart(button, product.image?.url ?? fallbackPhoto(product.slug));
+              flyToCart(button, product.image?.url);
               toast(`${t.product.added}: ${product.name}`);
               onAdded?.();
             },
