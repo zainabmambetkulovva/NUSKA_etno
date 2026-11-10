@@ -54,7 +54,7 @@ promises → closing call → footer. Sections live in `components/home/hero.tsx
 `components/home/sections.tsx`.
 
 - **Pictures** (`public/images/home`): the scenes of that design (hero, podium, meadow
-  photo, five product photos, closing landscape). They were cut out of the 726 px wide
+  photo, closing landscape, wooden podium). They were cut out of the 726 px wide
   design picture, the baked-in texts, buttons and prices were removed (inpainting) and the
   result was enlarged ×4 with an EDSR model, so they are a little soft. Replace a file with
   a full-resolution picture of the same proportions to sharpen it; no code change is needed.
@@ -65,15 +65,17 @@ promises → closing call → footer. Sections live in `components/home/hero.tsx
   gold), the text and the "Go to the catalog" button on its dark left side; on phones the
   scene is on top and the text below. A cream wave with the gold knot closes it.
 - **Why choose us?:** title on cream, four deep green cards with gold icons.
-- **Our prices** (`PricesPodium`): the podium picture with a plate under each product. The
-  names and prices on the plates are live catalog data ("from X" when a product has several
-  sizes), positioned in % of the picture and sized in container units, so they scale with it;
-  each plate opens its product. Slots: sary may, honey, kymyz, keremet shypaa, navat
-  (`PODIUM` in `sections.tsx`). On phones the prices are listed under the picture.
+- **Our prices** (`PricesPodium`): the wooden podium of the design (`podium-base.webp`, the
+  drawn products removed) with the company's own product photos standing on its blocks and a
+  plate under each. The photos are the original PNG files; the names and prices on the plates
+  are live catalog data ("from X" when a product has several sizes). Photos and plates are
+  placed in design pixels turned into % (`PODIUM` in `sections.tsx`), so they scale with the
+  picture; each plate opens its product. Blocks: zhupka, sary may, kymyz, keremet shypaa,
+  navat. On phones the prices are listed under the picture.
 - **About us:** meadow photo with a play button that opens the YouTube channel from the
   contacts block, the brand story and "Our story" → `/about`.
-- **Our products:** five photo cards (sary may, zhupka, beshbarmak, kymyz, navat) with the
-  catalog price, each opening its product.
+- **Our products:** six cards with the company's package photos (sary may, zhupka,
+  beshbarmak, kymyz, keremet shypaa, navat) and the catalog price, each opening its product.
 - **Promises** and the **closing call** with the yurt and the horse ("Buy" → catalog).
 - **Footer** (`components/layout/footer.tsx`): deep green with gold knot ornaments; logo and
   slogan, menu, contacts (phone → WhatsApp, Instagram, place) from the admin `contacts`
@@ -81,8 +83,11 @@ promises → closing call → footer. Sections live in `components/home/hero.tsx
 - **Testimonials** are not on the home page in this design; the admin-managed list stays at
   `/reviews` (`/admin/testimonials`), the carousel component is kept in
   `components/home/testimonials.tsx`.
-- **Catalog photos** (`public/images/products`, `lib/product-photos.ts`): the company's own
-  package photos stand in for a product until the admin uploads a photo.
+- **Company product photos** (`public/images/products/*.png`, `lib/product-photos.ts`): the
+  package photos the company sent, on a transparent background, stored exactly as sent (no
+  cropping of the product, no resizing, no recompression; only the picture with two products
+  was split in two). They are shown at quality 95 on the home page and stand in for a product
+  in the catalog, product page, cart and gift builder until the admin uploads another photo.
 
 - **Pages:** `/faq` (search, categories, FAQPage structured data), `/traditions`, `/search`
   (suggestions, recent queries kept in this browser), `/checkout/success`,

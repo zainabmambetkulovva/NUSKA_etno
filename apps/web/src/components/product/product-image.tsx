@@ -6,8 +6,8 @@ import { companyPhoto } from '@/lib/product-photos';
 
 /**
  * Product photo. Without an uploaded photo, products the company sent photos
- * of (matched by `slug`) show that photo, whole, on a blurred copy of itself;
- * the others show an ornamental placeholder. Remote images are optimised by
+ * of (matched by `slug`) show that package photo, whole, on a warm glow; the
+ * others show an ornamental placeholder. Remote images are optimised by
  * next/image.
  */
 export function ProductImage({
@@ -33,24 +33,18 @@ export function ProductImage({
   return (
     <div className={cn('relative overflow-hidden bg-cream-light', className)}>
       {fallback ? (
-        <>
-          <Image
-            src={fallback}
-            alt=""
-            fill
-            sizes="64px"
-            className="scale-110 object-cover opacity-70 blur-xl"
-            aria-hidden
-          />
+        // the company's package photo (transparent background) on a warm glow
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,#FFFDF5,#F1E2C2_70%,#E6D2A8)]">
           <Image
             src={fallback}
             alt={alt || name}
             fill
             sizes={sizes}
+            quality={95}
             priority={priority}
-            className="object-contain drop-shadow-[0_12px_18px_rgba(40,25,10,0.35)]"
+            className="object-contain p-[7%] drop-shadow-[0_14px_16px_rgba(60,40,15,0.35)]"
           />
-        </>
+        </div>
       ) : url ? (
         <Image
           src={url}

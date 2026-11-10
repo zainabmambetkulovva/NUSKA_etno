@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   eslint: { ignoreDuringBuilds: true },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // 95: the company's product photos are shown without visible compression
+    qualities: [75, 95],
     remotePatterns: imagesHost ? [{ protocol: 'https', hostname: imagesHost }] : [],
   },
   async headers() {

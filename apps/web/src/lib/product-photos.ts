@@ -1,14 +1,16 @@
 /**
- * Product photos sent by the company (public/images/products). They are
- * shown for a product until the admin uploads its own photo, which always
- * wins. Matched by slug: "navat" also covers "navat-0-5", "navat-0-6", …
+ * Product photos sent by the company: the real packages on a transparent
+ * background, stored exactly as sent (public/images/products). A product
+ * shows its photo until the admin uploads another one, which always wins.
+ * Matched by slug: "navat" also covers "navat-0-5", "navat-0-6", …
  */
 const PHOTOS: Record<string, string> = {
-  navat: '/images/products/navat.webp',
-  'besh-barmak': '/images/products/besh-barmak.webp',
-  kymyz: '/images/products/kymyz.webp',
-  zhupka: '/images/products/zhupka.webp',
-  'sary-mai': '/images/products/sary-mai.webp',
+  navat: '/images/products/navat.png',
+  'besh-barmak': '/images/products/besh-barmak.png',
+  kymyz: '/images/products/kymyz.png',
+  zhupka: '/images/products/zhupka.png',
+  'sary-mai': '/images/products/sary-mai.png',
+  'keremet-shypaa': '/images/products/keremet-shypaa.png',
 };
 
 export function companyPhoto(slug?: string | null) {

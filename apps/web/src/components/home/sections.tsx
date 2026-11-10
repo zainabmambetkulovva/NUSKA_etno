@@ -99,15 +99,49 @@ export function WhyUs({ t }: { t: Dictionary }) {
 // ---------------------------------------------------------------- 03 prices
 
 /**
- * Places of the price plates on the podium picture (in % of the picture) and
- * the catalog product each plate stands for (matched by slug, sizes included).
+ * The podium: for each wooden block the catalog product standing on it
+ * (matched by slug, sizes included), the place of its price plate and the
+ * place of the company's product photo. Everything is in design pixels of
+ * the 726 × 282 podium picture and is turned into % below, so the photos and
+ * the plates scale together with the picture.
  */
+const PODIUM_W = 726;
+const PODIUM_H = 282;
 const PODIUM = [
-  { key: 'sary-mai', left: 10.7, top: 56.4, width: 12.1, height: 19 },
-  { key: 'bal', left: 29.3, top: 64.2, width: 12.1, height: 18.4 },
-  { key: 'kymyz', left: 45.4, top: 66, width: 11.4, height: 18.4 },
-  { key: 'keremet-shypaa', left: 61.2, top: 60.7, width: 11.6, height: 18.4 },
-  { key: 'navat', left: 77.9, top: 56.4, width: 11.7, height: 19 },
+  {
+    key: 'zhupka',
+    plate: { left: 10.7, top: 56.4, width: 12.1, height: 19 },
+    photo: { src: 'zhupka.png', w: 480, h: 733, cx: 122, bottom: 160, height: 150, rotate: 0 },
+  },
+  {
+    key: 'sary-mai',
+    plate: { left: 29.3, top: 64.2, width: 12.1, height: 18.4 },
+    photo: { src: 'sary-mai.png', w: 825, h: 1148, cx: 257, bottom: 179, height: 122, rotate: 0 },
+  },
+  {
+    key: 'kymyz',
+    plate: { left: 45.4, top: 66, width: 11.4, height: 18.4 },
+    photo: { src: 'kymyz.png', w: 137, h: 470, cx: 372, bottom: 187, height: 172, rotate: 0 },
+  },
+  {
+    key: 'keremet-shypaa',
+    plate: { left: 61.2, top: 60.7, width: 11.6, height: 18.4 },
+    // the photo shows the bottle tilted; it is stood upright with a CSS rotation
+    photo: {
+      src: 'keremet-shypaa.png',
+      w: 681,
+      h: 1263,
+      cx: 487,
+      bottom: 175,
+      height: 166,
+      rotate: -19.6,
+    },
+  },
+  {
+    key: 'navat',
+    plate: { left: 77.9, top: 56.4, width: 11.7, height: 19 },
+    photo: { src: 'navat.png', w: 723, h: 566, cx: 608, bottom: 159, height: 98, rotate: 0 },
+  },
 ] as const;
 
 const SIZE = /\s+(\d+(?:[.,]\d+)?\s*(?:кг|л|г|мл)?)$/i;
@@ -145,7 +179,8 @@ export function PricesPodium({
     const price = formatMoney(line.cheapest.price, locale, t.common.som);
     return [
       {
-        ...slot,
+        key: slot.key,
+        ...slot.plate,
         name: line.name,
         price: line.many ? t.home.pricesFrom.replace('{price}', price) : price,
         href: `/${locale}/product/${line.cheapest.slug}`,
@@ -178,13 +213,45 @@ export function PricesPodium({
 
       <div className="relative mt-2 [container-type:inline-size]">
         <div className="relative aspect-[2400/932] w-full">
-          <Image
-            src="/images/home/podium.webp"
-            alt={t.home.pricesImageAlt}
-            fill
-            sizes="100vw"
-            className="object-cover [mask-image:linear-gradient(to_bottom,transparent,#000_14%)]"
-          />
+          {/* the wooden podium of the design; above it the section background shows */}
+          <div className="absolute inset-x-0 bottom-0 h-[57.45%]">
+            <Image
+              src="/images/home/podium-base.webp"
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover [mask-image:linear-gradient(to_bottom,transparent_2%,#000_20%)]"
+            />
+          </div>
+          {/* the company's product photos, exactly as sent, standing on the blocks */}
+          {PODIUM.map(({ key, photo }, i) => (
+            <div
+              key={key}
+              className="absolute -translate-x-1/2"
+              style={{
+                left: `${(photo.cx / PODIUM_W) * 100}%`,
+                bottom: `${((PODIUM_H - photo.bottom) / PODIUM_H) * 100}%`,
+                height: `${(photo.height / PODIUM_H) * 100}%`,
+                aspectRatio: `${photo.w} / ${photo.h}`,
+              }}
+            >
+              <div
+                className="h-full w-full motion-safe:animate-fade-up"
+                style={{ animationDelay: `${i * 0.08}s` }}
+              >
+                <Image
+                  src={`/images/products/${photo.src}`}
+                  alt={i === 0 ? t.home.pricesImageAlt : ''}
+                  width={photo.w}
+                  height={photo.h}
+                  quality={95}
+                  sizes="(min-width: 640px) 18vw, 24vw"
+                  className="h-full w-full object-contain drop-shadow-[0_0.9cqw_0.7cqw_rgba(15,10,0,0.5)]"
+                  style={photo.rotate ? { transform: `rotate(${photo.rotate}deg)` } : undefined}
+                />
+              </div>
+            </div>
+          ))}
           {/* the plates: live names and prices (hidden on phones, listed below instead) */}
           {plates.map((plate, i) => (
             <Link
@@ -199,10 +266,10 @@ export function PricesPodium({
                 animationDelay: `${0.15 + i * 0.1}s`,
               }}
             >
-              <span className="text-[1.65cqw] font-medium leading-[1.1] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
+              <span className="text-[1.45cqw] font-medium leading-[1.05] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
                 {plate.name}
               </span>
-              <span className="mt-[0.2cqw] text-[1.75cqw] font-bold leading-[1.15] text-[#FFF4D6] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
+              <span className="mt-[0.15cqw] text-[1.6cqw] font-bold leading-[1.1] text-[#FFF4D6] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
                 {plate.price}
               </span>
             </Link>
@@ -313,9 +380,9 @@ export function Story({
 
 // ---------------------------------------------------------------- 05 products
 
-const CARDS = ['sary-mai', 'zhupka', 'besh-barmak', 'kymyz', 'navat'] as const;
+const CARDS = ['sary-mai', 'zhupka', 'besh-barmak', 'kymyz', 'keremet-shypaa', 'navat'] as const;
 
-/** "Our products": five photo cards, each opening its product. */
+/** "Our products": the company's package photos, each card opening its product. */
 export function ProductsRow({
   t,
   locale,
@@ -337,29 +404,28 @@ export function ProductsRow({
           </h2>
           <p className="mt-2 text-base text-[#EADFC2] sm:text-lg">{t.home.productsText}</p>
         </Reveal>
-        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5">
+        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 lg:gap-5">
           {CARDS.map((key, i) => {
             const line = productLine(products, key);
             const name = line?.name ?? t.home.productNames[i];
             return (
-              <li key={key} className={i === 4 ? 'col-span-2 sm:col-span-1' : undefined}>
+              <li key={key}>
                 <Reveal delay={i * 0.06} className="h-full">
                   <Link
                     href={line ? `/${locale}/product/${line.cheapest.slug}` : `/${locale}/catalog`}
                     className="group relative block overflow-hidden rounded-[1.4rem] border border-[#E7C77F]/25 shadow-[0_24px_40px_-22px_rgba(0,0,0,0.75)] transition duration-300 hover:-translate-y-1.5 hover:border-[#E7C77F]/70"
                   >
-                    <span
-                      className={`relative block ${i === 4 ? 'aspect-[262/116] sm:aspect-[127/116]' : 'aspect-[127/116]'}`}
-                    >
+                    <span className="relative block aspect-[4/5] bg-[radial-gradient(circle_at_50%_38%,#FBF3DC_0%,#E9D6A8_38%,#55683B_78%,#27391F_100%)]">
                       <Image
-                        src={`/images/home/card-${key}.webp`}
+                        src={`/images/products/${key}.png`}
                         alt=""
                         fill
-                        sizes="(min-width: 1024px) 230px, 45vw"
-                        className="object-cover transition duration-700 group-hover:scale-110"
+                        quality={95}
+                        sizes="(min-width: 1024px) 200px, (min-width: 640px) 30vw, 45vw"
+                        className="object-contain px-[12%] pb-[30%] pt-[8%] drop-shadow-[0_14px_14px_rgba(25,15,0,0.45)] transition duration-500 group-hover:scale-110"
                       />
                       <span
-                        className="absolute inset-0 bg-gradient-to-t from-[#1B2D17] via-[#1B2D17]/25 via-35% to-transparent"
+                        className="absolute inset-0 bg-gradient-to-t from-[#1B2D17] via-[#1B2D17]/40 via-25% to-transparent to-45%"
                         aria-hidden
                       />
                     </span>
