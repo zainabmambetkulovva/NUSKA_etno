@@ -35,7 +35,11 @@ test('home: why us, prices from the catalog, testimonials carousel and the foote
   page,
 }) => {
   await page.goto('/ky');
-  for (const title of [ky.home.whyTitle, ky.home.pricesTitle, ky.home.reviewsTitle])
+  for (const title of [
+    `${ky.home.whyTitleTop} ${ky.home.whyTitleAccent}`,
+    ky.home.pricesTitle,
+    ky.home.reviewsTitle,
+  ])
     await expect(page.getByRole('heading', { name: title })).toBeAttached();
 
   // Prices come from the catalog: navat in three sizes, kymyz with its price.
@@ -45,6 +49,11 @@ test('home: why us, prices from the catalog, testimonials carousel and the foote
   for (const price of ['100 сом', '115 сом', '145 сом'])
     await expect(prices.getByText(price).first()).toBeVisible();
   await expect(prices.getByRole('link', { name: 'Кымыз' })).toBeVisible();
+  // The company's photo stands in until the admin uploads one.
+  await expect(prices.getByRole('img', { name: 'Кымыз' })).toHaveAttribute(
+    'src',
+    /images%2Fproducts%2Fkymyz\.webp|\/images\/products\/kymyz\.webp/
+  );
 
   // Testimonials: an endless carousel with arrows; samples are labelled.
   const reviews = page.locator('section#reviews');

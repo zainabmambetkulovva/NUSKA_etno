@@ -7,19 +7,18 @@ import type {
 } from '@nuska/types';
 import Link from 'next/link';
 
-import { Leaf, MountainSilhouettes, OrnamentBand, Wave } from '@/components/brand/kyrgyz-decor';
+import { MountainSilhouettes, OrnamentBand } from '@/components/brand/kyrgyz-decor';
 import { LogoMark } from '@/components/brand/logo';
 import { Hero } from '@/components/home/hero';
 import { PricesSection } from '@/components/home/prices-section';
 import { TestimonialsCarousel } from '@/components/home/testimonials';
+import { WhyUs } from '@/components/home/why-us';
 import { InstagramIcon } from '@/components/layout/social-icons';
-import { ArrowRightIcon, HeartIcon, JugIcon, QualityIcon, SproutIcon } from '@/components/ui/icons';
+import { ArrowRightIcon } from '@/components/ui/icons';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
 import { resolveLocale } from '@/lib/locale-params';
-
-const WHY_ICONS = [SproutIcon, QualityIcon, JugIcon, HeartIcon];
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
@@ -43,55 +42,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Hero locale={locale} t={t} />
 
       {/* 02 — Why choose us */}
-      <section className="relative bg-sand" aria-labelledby="why-title">
-        <div className="relative overflow-hidden bg-forest text-cream-light">
-          <div
-            className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_0%,rgba(125,164,83,0.25),transparent_55%),radial-gradient(ellipse_at_90%_100%,rgba(217,168,91,0.18),transparent_50%)]"
-            aria-hidden
-          />
-          <Leaf className="absolute -left-5 top-4 h-14 w-24 [--sway-from:-30deg] [--sway-to:-20deg]" />
-          <Leaf
-            className="absolute -right-4 bottom-6 h-12 w-20 [--sway-from:200deg] [--sway-to:210deg]"
-            style={{ animationDelay: '-2s' }}
-          />
-          <div className="container relative grid items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,2fr)] lg:py-12">
-            <Reveal className="space-y-4">
-              <h2 id="why-title" className="font-serif text-4xl leading-tight text-cream-light">
-                {t.home.whyTitle}
-              </h2>
-              <p className="max-w-xs text-cream-light/85">{t.home.whyText}</p>
-              <Link href={`/${locale}/about`} className="btn-gold">
-                {t.home.learnMore}
-                <ArrowRightIcon width={16} height={16} />
-              </Link>
-            </Reveal>
-            <ul className="grid grid-cols-2 gap-y-8 md:grid-cols-4">
-              {t.home.why.map((label, i) => {
-                const Icon = WHY_ICONS[i] ?? SproutIcon;
-                return (
-                  <li
-                    key={label}
-                    className="group flex flex-col items-center gap-4 px-3 text-center md:border-l md:border-honey/30"
-                  >
-                    <Reveal delay={i * 0.08} className="flex flex-col items-center gap-4">
-                      <Icon
-                        width={56}
-                        height={56}
-                        strokeWidth={1.2}
-                        className="text-honey transition duration-500 group-hover:-translate-y-1 group-hover:scale-110 group-hover:text-honey-light"
-                      />
-                      <span className="max-w-[10rem] text-[15px] font-medium leading-snug">
-                        {label}
-                      </span>
-                    </Reveal>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-        <Wave className="text-forest" flip />
-      </section>
+      <WhyUs t={t} />
 
       {/* 03 — Our prices (straight from the catalog) */}
       <PricesSection products={products.data} categories={categories} />

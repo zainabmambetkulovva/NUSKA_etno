@@ -50,7 +50,7 @@ React Hook Form + Zod, Framer Motion.
 
 Order: header → hero with the 3D podium → "Why choose us?" → "Our prices" → customer
 testimonials → footer. No pictures cut out of design mockups are used anywhere; product
-pictures come only from the admin panel (product photos).
+pictures are the company's own photos or the ones uploaded in the admin panel.
 
 - **Logo** (`components/brand/logo.tsx`): the gold knot of four lobes around a diamond,
   drawn as a vector (`LogoMark`), and the name in Lora.
@@ -66,13 +66,19 @@ pictures come only from the admin panel (product photos).
   30 s, no jumps). Floating leaves, golden sun particles, soft reflections from in-scene
   light panels (no HDR download), contact shadows. Loaded lazily, rendered only while
   visible, lighter on phones, still with reduced motion, nothing without WebGL.
-- **Why choose us?:** four promises with gold line icons (to be redone after the product
-  photos arrive).
+- **Why choose us?** (`components/home/why-us.tsx`): after the brand reference — deep green
+  with the Tian Shan, six numbered promises (01–06) with gold line icons, each next to a
+  floating photo of a company product, joined by thin gold curves.
+- **Company product photos** (`public/images/products`, `lib/product-photos.ts`): cut from the
+  photos the company sent and enlarged ×4 with an EDSR model. Until the admin uploads a photo
+  for a product, navat, beshbarmak, kymyz, zhupka and sary may show these photos everywhere
+  (catalog, product page, cart, gift builder, prices) — whole, on a blurred copy of themselves.
+  An uploaded photo always wins.
 - **Our prices** (`components/home/prices-section.tsx`): prices straight from the catalog.
   Product lines are grouped by name ("Нават 0.5/0.6/0.7" → "Нават" with three prices,
   "Керемет шыпаа — классика/чычырканак" → two prices). The richest line is shown large
   with floating price tags; the others as animated tiles with category tabs and "Add to
-  cart". Until a product has a photo, its tile shows the gold mark on a warm gradient.
+  cart". Photos float gently; a product without any photo shows the gold mark on a warm gradient.
 - **Testimonials** (`components/home/testimonials.tsx`, `/reviews`): admin-managed
   (`/admin/testimonials`), endless carousel: the centre card is the largest with a gold
   glow, the neighbours turned in perspective, autoplay with pause on hover/focus, arrows,

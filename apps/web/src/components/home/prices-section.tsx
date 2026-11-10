@@ -12,6 +12,7 @@ import { AddToCartButton } from '@/components/product/add-to-cart-button';
 import { ArrowRightIcon, LeafIcon, PinIcon } from '@/components/ui/icons';
 import { useI18n } from '@/i18n/i18n-provider';
 import { formatMoney } from '@/lib/format';
+import { companyPhoto } from '@/lib/product-photos';
 
 /** One product line with its sizes: "Нават 0.5 / 0.6 / 0.7" → "Нават" with three prices. */
 interface Group {
@@ -51,23 +52,44 @@ const TINTS = [
   'from-[#E6EEF4] to-[#BDD3E4]',
 ];
 
-/** Product photo, or until it is uploaded a warm tile with the gold mark. */
+/**
+ * Product photo (uploaded in the admin panel, or the photo the company sent),
+ * shown whole on a blurred copy of itself and gently floating; without any
+ * photo a warm tile with the gold mark.
+ */
 function Visual({ product, name, tint }: { product: ProductCard; name: string; tint: string }) {
-  return product.image ? (
-    <Image
-      src={product.image.url}
-      alt={product.image.alt || name}
-      fill
-      sizes="(min-width: 1024px) 260px, 45vw"
-      className="object-contain p-3 drop-shadow-[0_18px_18px_rgba(60,35,10,0.35)] transition duration-700 group-hover:scale-110"
-      unoptimized={!process.env.NEXT_PUBLIC_IMAGES_HOST}
-    />
-  ) : (
-    <span
-      className={`absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br ${tint}`}
-    >
-      <LogoMark className="h-16 w-16 opacity-80 transition duration-700 group-hover:rotate-45" />
-      <span className="font-serif text-lg text-forest/80">{name}</span>
+  const src = product.image?.url ?? companyPhoto(product.slug);
+  const remote = Boolean(product.image) && !process.env.NEXT_PUBLIC_IMAGES_HOST;
+  if (!src)
+    return (
+      <span
+        className={`absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br ${tint}`}
+      >
+        <LogoMark className="h-16 w-16 opacity-80 transition duration-700 group-hover:rotate-45" />
+        <span className="font-serif text-lg text-forest/80">{name}</span>
+      </span>
+    );
+  return (
+    <span className={`absolute inset-0 bg-gradient-to-br ${tint}`}>
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="64px"
+        className="scale-110 object-cover opacity-60 blur-xl"
+        unoptimized={remote}
+        aria-hidden
+      />
+      <span className="absolute inset-[8%] motion-safe:animate-float">
+        <Image
+          src={src}
+          alt={product.image?.alt || name}
+          fill
+          sizes="(min-width: 1024px) 260px, 45vw"
+          className="rounded-2xl object-contain drop-shadow-[0_18px_22px_rgba(40,25,10,0.45)] transition duration-700 group-hover:scale-105"
+          unoptimized={remote}
+        />
+      </span>
     </span>
   );
 }
