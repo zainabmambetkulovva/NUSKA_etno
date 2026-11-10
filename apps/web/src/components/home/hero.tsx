@@ -1,79 +1,75 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { HeroPodium } from './hero-podium';
-
-import { Leaf, MountainSilhouettes, OrnamentCorner, Wave } from '@/components/brand/kyrgyz-decor';
-import { ArrowRightIcon, GiftIcon } from '@/components/ui/icons';
+import { Leaf, Wave } from '@/components/brand/kyrgyz-decor';
+import { LogoMark } from '@/components/brand/logo';
+import { ArrowRightIcon } from '@/components/ui/icons';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
 
 /**
- * First screen: the brand name, slogan and buttons on the left, and on the
- * right the real 3D composition (carved wooden podium with honey, navat,
- * kymyz and other products) turning slowly to the left. Deep green sky with
- * the Tian Shan silhouettes, gold Kyrgyz corner ornaments, swaying leaves.
- * It slides under the header, which stays transparent over it.
+ * First screen after the company's design: the dastorkon scene (jar, butter,
+ * bowl, yurt, horse, Tian Shan) fills the screen, the slogan and the catalog
+ * button stand on its dark green left side. It slides under the header, which
+ * stays transparent over it. On phones the scene is on top, the text below.
  */
 export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
   return (
     <section
-      className="relative -mt-[68px] overflow-hidden bg-forest-dark lg:-mt-[76px]"
+      className="relative -mt-[68px] overflow-hidden bg-[#182B15] lg:-mt-[76px]"
       aria-labelledby="hero-title"
     >
-      {/* Deep green sky, a warm glow behind the podium and the Tian Shan silhouettes */}
+      <div className="absolute inset-x-0 top-0 h-[390px] sm:h-[480px] lg:inset-0 lg:h-auto">
+        <Image
+          src="/images/home/hero.webp"
+          alt={t.home.heroImageAlt}
+          fill
+          priority
+          sizes="(min-width: 1024px) 100vw, 170vw"
+          className="object-cover object-[80%_center] motion-safe:animate-ken-burns lg:object-center"
+        />
+      </div>
+      {/* phone: the scene melts into the dark green text block */}
       <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_68%_58%,rgba(214,173,98,0.28),transparent_45%),radial-gradient(ellipse_at_70%_40%,#3B6B3A_0%,#1E3A23_45%,#0F2112_100%)]"
+        className="absolute inset-x-0 top-0 h-[390px] bg-gradient-to-b from-[#182B15]/80 via-transparent via-30% to-[#182B15] sm:h-[480px] lg:hidden"
         aria-hidden
       />
-      <MountainSilhouettes className="absolute inset-x-0 bottom-0 h-[260px] w-full opacity-80" />
-      <HeroPodium
-        label={t.home.heroImageAlt}
-        className="absolute inset-x-0 top-[64px] h-[380px] sm:h-[460px] lg:inset-y-0 lg:left-[38%] lg:right-0 lg:top-[40px] lg:h-auto"
+      {/* desktop: darker top for the header and a calm left side for the text */}
+      <div
+        className="absolute inset-0 hidden bg-[linear-gradient(to_bottom,rgba(20,36,17,0.75),transparent_22%),linear-gradient(to_right,rgba(20,36,17,0.55),transparent_48%)] lg:block"
+        aria-hidden
       />
 
-      <OrnamentCorner className="absolute -left-3 top-14 hidden h-36 w-36 text-honey/70 lg:block" />
-      <OrnamentCorner className="absolute -bottom-3 -left-3 hidden h-36 w-36 -scale-y-100 text-honey/60 lg:block" />
-      <Leaf className="absolute -left-4 top-[46%] hidden h-14 w-24 [--sway-from:-24deg] [--sway-to:-14deg] md:block" />
-      <Leaf
-        className="absolute right-6 top-24 hidden h-10 w-16 [--sway-from:150deg] [--sway-to:160deg] lg:block"
-        style={{ animationDelay: '-3s' }}
-      />
-
-      <div className="container relative flex flex-col pb-20 pt-[420px] sm:pt-[500px] lg:min-h-[620px] lg:justify-center lg:pb-24 lg:pt-32">
-        <div className="max-w-lg motion-safe:animate-fade-up [text-shadow:0_2px_12px_rgba(10,25,12,0.55)]">
-          <p className="mb-4 text-sm font-medium tracking-wide text-honey-light sm:text-base">
-            {t.home.heroEyebrow}
+      <div className="container relative flex flex-col pb-24 pt-[400px] sm:pt-[490px] lg:h-[clamp(560px,60.3vw,900px)] lg:justify-center lg:pb-[8%] lg:pt-[76px]">
+        <div className="max-w-xl motion-safe:animate-fade-up">
+          <p className="flex items-center gap-3 text-xs font-medium tracking-[0.35em] text-[#E7C77F]">
+            <span className="h-px w-6 bg-[#E7C77F]/60" aria-hidden />
+            NUSKA_etno
+            <span className="h-px w-10 bg-[#E7C77F]/60" aria-hidden />
           </p>
-          <h1 id="hero-title">
-            <span className="block font-serif text-5xl font-medium leading-none tracking-tight text-cream-light drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] sm:text-7xl lg:text-[5.5rem]">
-              NUSKA_etno
-            </span>
-            <span className="mt-4 block font-serif text-[1.75rem] font-normal leading-tight text-cream-light sm:text-4xl">
-              {t.home.heroTitle}
-            </span>
+          <h1
+            id="hero-title"
+            className="mt-4 font-serif text-[clamp(2.25rem,4.7vw,4.5rem)] font-medium leading-[1.08] tracking-tight [text-shadow:0_2px_18px_rgba(10,22,8,0.6)]"
+          >
+            <span className="block text-[#FAF3DF]">{t.home.heroTitle}</span>{' '}
+            <span className="block text-[#E7C77F]">{t.home.heroTitleAccent}</span>
           </h1>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-cream-light/85 sm:text-lg">
+          <p className="mt-5 max-w-sm text-base leading-relaxed text-[#FAF3DF]/90 sm:text-lg lg:text-[clamp(1rem,1.45vw,1.3rem)]">
             {t.home.heroText}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-5">
-            <Link href={`/${locale}/catalog`} className="btn-gold px-7 py-3.5 text-[15px]">
-              {t.nav.goToCatalog}
-              <ArrowRightIcon width={18} height={18} />
-            </Link>
-            <Link
-              href={`/${locale}/gift-builder`}
-              className="group inline-flex items-center gap-3 text-sm font-medium text-cream-light"
-            >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cream-light text-forest shadow-lg transition group-hover:scale-110 group-hover:bg-honey-light">
-                <GiftIcon width={20} height={20} />
-              </span>
-              <span className="max-w-[7rem] leading-tight">{t.home.heroGift}</span>
-            </Link>
-          </div>
+          <Link
+            href={`/${locale}/catalog`}
+            className="btn-gold mt-8 px-8 py-4 text-[15px] lg:text-[clamp(0.95rem,1.15vw,1.1rem)]"
+          >
+            {t.nav.goToCatalog}
+            <ArrowRightIcon width={18} height={18} />
+          </Link>
         </div>
       </div>
 
-      <Wave className="absolute inset-x-0 -bottom-px text-forest" />
+      <Wave className="absolute inset-x-0 -bottom-px h-12 text-[#EAD5AE] sm:h-20" />
+      <LogoMark className="absolute -left-5 bottom-2 h-20 w-20 opacity-90 sm:h-24 sm:w-24" />
+      <Leaf className="absolute bottom-6 right-6 h-10 w-16 [--sway-from:150deg] [--sway-to:162deg] sm:right-12" />
     </section>
   );
 }

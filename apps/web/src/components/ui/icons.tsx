@@ -158,3 +158,19 @@ export const ShieldIcon = (p: IconProps) => (
     <path d="m8.8 12 2.2 2.2 4.4-4.4" />
   </Icon>
 );
+export const DiamondIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6.5 4h11l4 5.5L12 20.5 2.5 9.5 6.5 4Z" />
+    <path d="M2.5 9.5h19M9 4 7.5 9.5 12 20.5l4.5-11L15 4M12 4v5.5" />
+  </Icon>
+);
+export const PlayIcon = (p: IconProps) => (
+  <Icon {...p} fill="currentColor" stroke="none">
+    <path d="M8 5.5v13l11-6.5-11-6.5Z" />
+  </Icon>
+);
+export const ArrowUpIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 20V8M6.5 13 12 7.5 17.5 13M6 4.5h12" />
+  </Icon>
+);
