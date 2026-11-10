@@ -31,42 +31,52 @@ test('stores are shown as an endless ticker on the pickup page', async ({ page }
   await expect(stores.getByText('Бимар').first()).toBeVisible();
 });
 
-test('home: why us, prices from the catalog, testimonials carousel and the footer', async ({
+test('home follows the design: why us, live prices on the podium, story, products, footer', async ({
   page,
 }) => {
   await page.goto('/ky');
-  for (const title of [ky.home.whyTitle, ky.home.pricesTitle, ky.home.reviewsTitle])
+  for (const title of [
+    ky.home.whyTitle,
+    ky.home.pricesTitle,
+    ky.home.storyTitle,
+    ky.home.productsTitle,
+    ky.home.ctaTitle,
+  ])
     await expect(page.getByRole('heading', { name: title })).toBeAttached();
 
-  // Prices come from the catalog: navat in three sizes, kymyz with its price.
+  // The plates on the podium carry the catalog prices and open the product.
   const prices = page.locator('section#prices');
   await prices.scrollIntoViewIfNeeded();
-  await expect(prices.getByRole('heading', { name: 'Нават', level: 3 })).toBeVisible();
-  for (const price of ['100 сом', '115 сом', '145 сом'])
-    await expect(prices.getByText(price).first()).toBeVisible();
-  await expect(prices.getByRole('link', { name: 'Кымыз' })).toBeVisible();
+  await expect(prices.getByRole('link', { name: /Сары май\s*235 сом/ })).toBeVisible();
+  await expect(prices.getByRole('link', { name: /Нават\s*100 сомдон/ })).toBeVisible();
+  await prices.getByRole('link', { name: /Кымыз\s*300 сом/ }).click();
+  await expect(page).toHaveURL(/\/ky\/product\/kymyz$/);
+  await page.goBack();
 
-  // Testimonials: an endless carousel with arrows; samples are labelled.
-  const reviews = page.locator('section#reviews');
-  await reviews.scrollIntoViewIfNeeded();
-  await expect(reviews.getByText('Айдана Теребаева').first()).toBeVisible();
-  await reviews.getByRole('button', { name: ky.common.next }).click();
-  await expect(reviews.getByText(ky.home.reviewsSampleNote)).toBeVisible();
-  await expect(reviews.getByRole('link', { name: ky.home.reviewsAll })).toHaveAttribute(
+  // Product cards open the products.
+  const products = page.locator('section[aria-labelledby="products-title"]');
+  await expect(products.getByRole('link', { name: /Жупка/ })).toHaveAttribute(
     'href',
-    '/ky/reviews'
+    '/ky/product/zhupka'
+  );
+  await expect(page.getByRole('link', { name: ky.home.ctaButton })).toHaveAttribute(
+    'href',
+    '/ky/catalog'
   );
 
-  // Footer: menu and the four socials.
+  // Footer: menu, contacts from the admin block, back to top.
   const footer = page.locator('footer');
   await expect(footer.getByRole('heading', { name: ky.footer.menu })).toBeVisible();
-  for (const [name, href] of [
-    ['Instagram', /instagram\.com\/nuska_etno$/],
-    ['Telegram', /t\.me\/nuska_etnokatalog$/],
-    ['WhatsApp', /wa\.me\/996701111024$/],
-    ['YouTube', /youtube\.com\/@nuskaetno$/],
-  ] as const)
-    await expect(footer.getByRole('link', { name })).toHaveAttribute('href', href);
+  await expect(footer.getByRole('link', { name: '+996 701 111 024' })).toHaveAttribute(
+    'href',
+    /wa\.me\/996701111024$/
+  );
+  await expect(footer.getByRole('link', { name: '@nuska_etno' })).toHaveAttribute(
+    'href',
+    /instagram\.com\/nuska_etno$/
+  );
+  await footer.getByRole('button', { name: ky.footer.backToTop }).click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(50);
 });
 
 test('all testimonials page', async ({ page }) => {

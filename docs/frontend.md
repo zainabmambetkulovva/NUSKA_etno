@@ -14,7 +14,7 @@ React Hook Form + Zod, Framer Motion.
 
 | Path | Page |
 |---|---|
-| `/` | Home: hero (3D podium), why us, our prices, testimonials |
+| `/` | Home: hero, why us, our prices, about us, our products, closing call |
 | `/catalog`, `/catalog/[category]` | Catalog: search, category (with sub-categories), sort, in-stock filter, pagination |
 | `/product/[slug]` | Product page, JSON-LD, reviews, related products |
 | `/cart`, `/checkout` | Cart (guest cart in localStorage, merged on login), checkout (signed-in only) |
@@ -46,41 +46,43 @@ React Hook Form + Zod, Framer Motion.
   leaves, mountain line art and silhouettes, the ram's horn band of the footer.
 - Animations respect `prefers-reduced-motion`; product cards tilt only for mouse input.
 
-## Home page (brand brief, Nov 2026)
+## Home page (the company's full-page design, Nov 2026)
 
-Order: header → hero with the 3D podium → "Why choose us?" → "Our prices" → customer
-testimonials → footer. No pictures cut out of design mockups are used anywhere; product
-pictures come only from the admin panel (product photos).
+The home page follows the full-page design the company sent, top to bottom:
+header → hero → "Why choose us?" → "Our prices" (podium) → about us → "Our products" →
+promises → closing call → footer. Sections live in `components/home/hero.tsx` and
+`components/home/sections.tsx`.
 
-- **Logo** (`components/brand/logo.tsx`): the gold knot of four lobes around a diamond,
-  drawn as a vector (`LogoMark`), and the name in Lora.
-- **Header** (`components/layout/header.tsx`): logo on the left, then the menu (Home ·
-  About · Our prices · Contacts), KG/RU, and two separate buttons "Sign in" and "Register"
-  (the personal account once signed in). The cart icon appears only when the cart is not
-  empty. Transparent over the hero on the home page; burger menu below 1280 px.
-- **Hero** (`components/home/hero.tsx`, `components/three/hero-podium-scene.tsx`): text and
-  buttons on the left; on the right a real 3D composition (React Three Fiber): a carved
-  wooden podium with Kyrgyz ornaments, a glass jar of honey with a dipper, navat crystals in
-  a carved bowl, kymyz in a ceramic bowl, zhupka, kurut and sary may. Everything is one
-  `THREE.Group` turning to the left (negative `rotation.y`, delta-time based, one turn per
-  30 s, no jumps). Floating leaves, golden sun particles, soft reflections from in-scene
-  light panels (no HDR download), contact shadows. Loaded lazily, rendered only while
-  visible, lighter on phones, still with reduced motion, nothing without WebGL.
-- **Why choose us?:** four promises with gold line icons (to be redone after the product
-  photos arrive).
-- **Our prices** (`components/home/prices-section.tsx`): prices straight from the catalog.
-  Product lines are grouped by name ("Нават 0.5/0.6/0.7" → "Нават" with three prices,
-  "Керемет шыпаа — классика/чычырканак" → two prices). The richest line is shown large
-  with floating price tags; the others as animated tiles with category tabs and "Add to
-  cart". Until a product has a photo, its tile shows the gold mark on a warm gradient.
-- **Testimonials** (`components/home/testimonials.tsx`, `/reviews`): admin-managed
-  (`/admin/testimonials`), endless carousel: the centre card is the largest with a gold
-  glow, the neighbours turned in perspective, autoplay with pause on hover/focus, arrows,
-  dots and swipe. Sample entries (`isDemo`) are labelled "Мисал / Пример" with a note.
-- **Footer** (`components/layout/footer.tsx`): mountain landscape drawn as vectors with
-  cream waves on top, deep green area with three columns (logo and slogan · menu ·
-  four round gold social icons: Instagram, Telegram, WhatsApp, YouTube), bottom line with
-  the copyright and the motto. Links come from the admin `contacts` block.
+- **Pictures** (`public/images/home`): the scenes of that design (hero, podium, meadow
+  photo, five product photos, closing landscape). They were cut out of the 726 px wide
+  design picture, the baked-in texts, buttons and prices were removed (inpainting) and the
+  result was enlarged ×4 with an EDSR model, so they are a little soft. Replace a file with
+  a full-resolution picture of the same proportions to sharpen it; no code change is needed.
+- **Header** (`components/layout/header.tsx`): unchanged — logo, menu (Home · About · Our
+  prices · Contacts), KG/RU, separate "Sign in" and "Register" buttons, cart icon only when
+  the cart is not empty. Transparent over the hero.
+- **Hero:** the scene fills the screen (slow zoom), the slogan in two lines (cream and
+  gold), the text and the "Go to the catalog" button on its dark left side; on phones the
+  scene is on top and the text below. A cream wave with the gold knot closes it.
+- **Why choose us?:** title on cream, four deep green cards with gold icons.
+- **Our prices** (`PricesPodium`): the podium picture with a plate under each product. The
+  names and prices on the plates are live catalog data ("from X" when a product has several
+  sizes), positioned in % of the picture and sized in container units, so they scale with it;
+  each plate opens its product. Slots: sary may, honey, kymyz, keremet shypaa, navat
+  (`PODIUM` in `sections.tsx`). On phones the prices are listed under the picture.
+- **About us:** meadow photo with a play button that opens the YouTube channel from the
+  contacts block, the brand story and "Our story" → `/about`.
+- **Our products:** five photo cards (sary may, zhupka, beshbarmak, kymyz, navat) with the
+  catalog price, each opening its product.
+- **Promises** and the **closing call** with the yurt and the horse ("Buy" → catalog).
+- **Footer** (`components/layout/footer.tsx`): deep green with gold knot ornaments; logo and
+  slogan, menu, contacts (phone → WhatsApp, Instagram, place) from the admin `contacts`
+  block, copyright and a round "back to top" button.
+- **Testimonials** are not on the home page in this design; the admin-managed list stays at
+  `/reviews` (`/admin/testimonials`), the carousel component is kept in
+  `components/home/testimonials.tsx`.
+- **Catalog photos** (`public/images/products`, `lib/product-photos.ts`): the company's own
+  package photos stand in for a product until the admin uploads a photo.
 
 - **Pages:** `/faq` (search, categories, FAQPage structured data), `/traditions`, `/search`
   (suggestions, recent queries kept in this browser), `/checkout/success`,

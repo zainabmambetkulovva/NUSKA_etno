@@ -56,6 +56,7 @@ export function ProductCard({
       <Link href={href} className="block" tabIndex={-1} aria-hidden>
         <ProductImage
           url={product.image?.url}
+          slug={product.slug}
           alt={product.image?.alt}
           name={product.name}
           priority={priority}

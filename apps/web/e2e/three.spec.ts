@@ -2,18 +2,6 @@ import { expect, test } from '@playwright/test';
 
 import { ky } from './helpers';
 
-test('hero shows the rotating 3D podium with the products', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/ky');
-  await expect(page.getByRole('img', { name: ky.home.heroImageAlt }).locator('canvas')).toBeVisible(
-    {
-      timeout: 30_000,
-    }
-  );
-  expect(errors).toEqual([]);
-});
-
 test('product page shows the 3D packaging viewer', async ({ page }) => {
   await page.goto('/ky/product/kymyz');
   await page.locator('button', { hasText: /^3D$/ }).click();

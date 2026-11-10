@@ -38,6 +38,7 @@ export default function CartPage() {
                 <Link href={`/${locale}/product/${line.product.slug}`} className="shrink-0">
                   <ProductImage
                     url={line.product.image?.url}
+                    slug={line.product.slug}
                     alt={line.product.image?.alt}
                     name={line.product.name}
                     sizes="96px"

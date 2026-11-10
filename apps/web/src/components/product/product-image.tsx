@@ -2,13 +2,17 @@ import Image from 'next/image';
 
 import { KochkorMuyuz } from '@/components/brand/ornament';
 import { cn } from '@/lib/cn';
+import { companyPhoto } from '@/lib/product-photos';
 
 /**
- * Product photo, or an ornamental placeholder until the company provides
- * real photos (TZ §26). Remote images are optimised by next/image.
+ * Product photo. Without an uploaded photo, products the company sent photos
+ * of (matched by `slug`) show that photo, whole, on a blurred copy of itself;
+ * the others show an ornamental placeholder. Remote images are optimised by
+ * next/image.
  */
 export function ProductImage({
   url,
+  slug,
   alt,
   name,
   sizes = '(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw',
@@ -17,6 +21,7 @@ export function ProductImage({
   placeholderLabel,
 }: {
   url?: string | null;
+  slug?: string | null;
   alt?: string | null;
   name: string;
   sizes?: string;
@@ -24,9 +29,29 @@ export function ProductImage({
   className?: string;
   placeholderLabel?: string;
 }) {
+  const fallback = url ? null : companyPhoto(slug);
   return (
     <div className={cn('relative overflow-hidden bg-cream-light', className)}>
-      {url ? (
+      {fallback ? (
+        <>
+          <Image
+            src={fallback}
+            alt=""
+            fill
+            sizes="64px"
+            className="scale-110 object-cover opacity-70 blur-xl"
+            aria-hidden
+          />
+          <Image
+            src={fallback}
+            alt={alt || name}
+            fill
+            sizes={sizes}
+            priority={priority}
+            className="object-contain drop-shadow-[0_12px_18px_rgba(40,25,10,0.35)]"
+          />
+        </>
+      ) : url ? (
         <Image
           src={url}
           alt={alt || name}
