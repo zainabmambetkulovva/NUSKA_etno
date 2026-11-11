@@ -325,11 +325,12 @@ export function Story({
       <MountainLines className="absolute bottom-10 right-0 hidden w-[380px] text-[#B88B4A]/35 lg:block" />
       <div className="container relative grid items-center gap-8 pb-24 pt-10 sm:pt-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] lg:gap-12">
         <Reveal>
-          <figure className="relative aspect-[1200/937] overflow-hidden rounded-[1.75rem] shadow-[0_30px_50px_-24px_rgba(60,40,15,0.65)]">
+          <figure className="relative aspect-[3/2] overflow-hidden rounded-[1.75rem] shadow-[0_30px_50px_-24px_rgba(60,40,15,0.65)]">
             <Image
-              src="/images/home/about.webp"
+              src="/images/home/about.png"
               alt={t.home.storyPhotoAlt}
               fill
+              quality={95}
               sizes="(min-width: 1024px) 45vw, 100vw"
               className="object-cover transition duration-[1.5s] hover:scale-105"
             />
@@ -380,9 +381,18 @@ export function Story({
 
 // ---------------------------------------------------------------- 05 products
 
-const CARDS = ['sary-mai', 'zhupka', 'besh-barmak', 'kymyz', 'keremet-shypaa', 'navat'] as const;
+/** Dish photos sent by the company (public/images/dishes, stored exactly as sent). */
+const CARDS = [
+  'sary-mai',
+  'zhupka',
+  'besh-barmak',
+  'kymyz',
+  'navat',
+  'bal',
+  'keremet-shypaa',
+] as const;
 
-/** "Our products": the company's package photos, each card opening its product. */
+/** "Our products": the company's dish photos, each card opening its product. */
 export function ProductsRow({
   t,
   locale,
@@ -404,25 +414,28 @@ export function ProductsRow({
           </h2>
           <p className="mt-2 text-base text-[#EADFC2] sm:text-lg">{t.home.productsText}</p>
         </Reveal>
-        <ul className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 lg:gap-5">
+        <ul className="mt-8 flex flex-wrap justify-center gap-4 lg:gap-5">
           {CARDS.map((key, i) => {
             const line = productLine(products, key);
             const name = line?.name ?? t.home.productNames[i];
             return (
-              <li key={key}>
+              <li
+                key={key}
+                className="w-[calc(50%-0.5rem)] sm:w-[calc(33.333%-0.667rem)] lg:w-[calc(25%-0.95rem)]"
+              >
                 <Reveal delay={i * 0.06} className="h-full">
                   <Link
                     href={line ? `/${locale}/product/${line.cheapest.slug}` : `/${locale}/catalog`}
                     className="group relative block overflow-hidden rounded-[1.4rem] border border-[#E7C77F]/25 shadow-[0_24px_40px_-22px_rgba(0,0,0,0.75)] transition duration-300 hover:-translate-y-1.5 hover:border-[#E7C77F]/70"
                   >
-                    <span className="relative block aspect-[4/5] bg-[radial-gradient(circle_at_50%_38%,#FBF3DC_0%,#E9D6A8_38%,#55683B_78%,#27391F_100%)]">
+                    <span className="relative block aspect-[1/1] bg-[radial-gradient(circle_at_50%_40%,#FBF3DC_0%,#E9D6A8_36%,#55683B_76%,#27391F_100%)] sm:aspect-[5/4]">
                       <Image
-                        src={`/images/products/${key}.png`}
+                        src={`/images/dishes/${key}.png`}
                         alt=""
                         fill
                         quality={95}
-                        sizes="(min-width: 1024px) 200px, (min-width: 640px) 30vw, 45vw"
-                        className="object-contain px-[12%] pb-[30%] pt-[8%] drop-shadow-[0_14px_14px_rgba(25,15,0,0.45)] transition duration-500 group-hover:scale-110"
+                        sizes="(min-width: 1280px) 300px, (min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                        className="object-contain px-[5%] pb-[24%] pt-[5%] drop-shadow-[0_14px_14px_rgba(25,15,0,0.45)] transition duration-500 group-hover:scale-110"
                       />
                       <span
                         className="absolute inset-0 bg-gradient-to-t from-[#1B2D17] via-[#1B2D17]/40 via-25% to-transparent to-45%"
@@ -430,7 +443,7 @@ export function ProductsRow({
                       />
                     </span>
                     <span className="absolute inset-x-0 bottom-0 px-3 pb-3 text-center">
-                      <span className="block text-base font-medium text-white sm:text-lg">
+                      <span className="block text-base font-medium leading-tight text-white sm:text-xl">
                         {name}
                       </span>
                       {line && (

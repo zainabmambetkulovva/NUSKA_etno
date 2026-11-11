@@ -72,10 +72,11 @@ promises → closing call → footer. Sections live in `components/home/hero.tsx
   placed in design pixels turned into % (`PODIUM` in `sections.tsx`), so they scale with the
   picture; each plate opens its product. Blocks: zhupka, sary may, kymyz, keremet shypaa,
   navat. On phones the prices are listed under the picture.
-- **About us:** meadow photo with a play button that opens the YouTube channel from the
+- **About us:** the company's meadow photo (`about.png`, as sent) with a play button that opens the YouTube channel from the
   contacts block, the brand story and "Our story" → `/about`.
-- **Our products:** six cards with the company's package photos (sary may, zhupka,
-  beshbarmak, kymyz, keremet shypaa, navat) and the catalog price, each opening its product.
+- **Our products:** seven cards with the company's dish photos (`public/images/dishes`, stored
+  exactly as sent): sary may, zhupka, beshbarmak, kymyz, navat, honey, keremet shypaa, with the
+  catalog price; each opens its product. Four per row on desktop (4 + 3, centred).
 - **Promises** and the **closing call** with the yurt and the horse ("Buy" → catalog).
 - **Footer** (`components/layout/footer.tsx`): deep green with gold knot ornaments; logo and
   slogan, menu, contacts (phone → WhatsApp, Instagram, place) from the admin `contacts`
