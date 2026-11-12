@@ -39,9 +39,11 @@ React Hook Form + Zod, Framer Motion.
   (`tailwind.config.ts`); gold buttons `.btn-gold`, outline `.btn-outline-dark`.
 - Fonts: Lora (headings), Inter (text) and Caveat (handwritten accent), all with
   `cyrillic-ext` for Ң, Ө, Ү.
-- Logo (`components/brand/logo.tsx`): the NUSKA logo the company sent
-  (`public/images/logo-nuska.png`, only trimmed at the edges) on a cream badge, with the name
-  NUSKA_etno in Lora; the same picture is the browser tab icon (`src/app/icon.png`). The gold
+- Logo (`components/brand/logo.tsx`): the NUSKA logo the company sent on a transparent
+  background (`public/images/logo-nuska.png`, used as sent, only the empty transparent margins
+  trimmed) with the name NUSKA_etno in Lora, in the header, the phone menu (on a green badge,
+  because its white swirl needs a dark ground) and the footer. The browser tab icon
+  (`src/app/icon.png`, `apple-icon.png`) is the same logo on a green rounded square. The gold
   knot (`LogoMark`) is only a decoration.
 - Ornament: «кочкор мүйүз» (`components/brand/ornament.tsx`) and the decor of the design
   (`components/brand/kyrgyz-decor.tsx`): gold corner ornaments, section waves, swaying

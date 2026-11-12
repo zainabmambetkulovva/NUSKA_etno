@@ -51,9 +51,10 @@ export function LogoMark({ className }: { className?: string }) {
 }
 
 /**
- * The NUSKA logo sent by the company (public/images/logo-nuska.png, the
- * label's own cream background only trimmed at the edges), on a cream badge
- * of the same colour, with the name NUSKA_etno next to it.
+ * The NUSKA logo sent by the company on a transparent background
+ * (public/images/logo-nuska.png, used as sent) with the name NUSKA_etno next
+ * to it. On the light mobile menu ("dark" tone) it sits on a green badge, as
+ * its white swirl needs a dark ground.
  */
 export function Logo({
   href,
@@ -69,23 +70,24 @@ export function Logo({
   return (
     <Link
       href={href}
-      className={cn('group inline-flex items-center gap-2.5', className)}
+      className={cn('group inline-flex items-center gap-3', className)}
       aria-label="NUSKA_etno"
     >
       <span
         className={cn(
-          'relative shrink-0 overflow-hidden rounded-xl bg-[#F5DAAD] shadow-[0_4px_14px_-6px_rgba(0,0,0,0.5)] ring-1 ring-[#D6AD62]/50 transition-transform duration-500 group-hover:scale-105',
-          size === 'lg' ? 'h-[72px] w-[79px] rounded-2xl' : 'h-12 w-[53px]'
+          'shrink-0 transition-transform duration-500 group-hover:scale-105',
+          tone === 'dark' && 'rounded-xl bg-forest px-2 py-1.5'
         )}
       >
         <Image
           src="/images/logo-nuska.png"
           alt=""
-          fill
+          width={935}
+          height={1113}
           quality={95}
-          sizes={size === 'lg' ? '160px' : '106px'}
-          className="object-cover"
+          sizes={size === 'lg' ? '100px' : '56px'}
           priority={size === 'md'}
+          className={cn('w-auto', size === 'lg' ? 'h-[104px]' : 'h-[50px]')}
         />
       </span>
       <span
