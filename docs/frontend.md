@@ -40,8 +40,9 @@ React Hook Form + Zod, Framer Motion.
 - Fonts: Lora (headings), Inter (text) and Caveat (handwritten accent), all with
   `cyrillic-ext` for Ң, Ө, Ү.
 - Logo (`components/brand/logo.tsx`): the NUSKA logo the company sent on a transparent
-  background (`public/images/logo-nuska.png`, used as sent, only the empty transparent margins
-  trimmed) with the name NUSKA_etno in Lora, in the header, the phone menu (on a green badge,
+  background, the five swirls only (`public/images/logo-nuska.png`, used as sent; the word
+  "Nuska" under them is cut off at the clean gap between them, no pixel is changed) with the
+  name NUSKA_etno in Lora, in the header, the phone menu (on a green badge,
   because its white swirl needs a dark ground) and the footer. The browser tab icon
   (`src/app/icon.png`, `apple-icon.png`) is the same logo on a green rounded square. The gold
   knot (`LogoMark`) is only a decoration.
