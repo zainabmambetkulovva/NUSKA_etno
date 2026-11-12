@@ -136,12 +136,18 @@ export function Wave({
   );
 }
 
-/** A green leaf that slowly sways (decoration at the edges of the sections). */
+/**
+ * A green leaf that drifts and sways all the time (decoration at the edges of the
+ * sections). It keeps moving under "reduce motion" too, only much slower.
+ */
 export function Leaf({ className, style }: { className?: string; style?: CSSProperties }) {
   return (
     <svg
       viewBox="0 0 80 48"
-      className={cn('pointer-events-none h-12 w-20 motion-safe:animate-sway', className)}
+      className={cn(
+        'pointer-events-none h-12 w-20 animate-leaf-drift motion-reduce:[animation-duration:18s]',
+        className
+      )}
       style={style}
       aria-hidden
     >

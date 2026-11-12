@@ -61,6 +61,8 @@ const ru: Dictionary = {
   },
   footer: {
     slogan: 'Природное богатство — каждой семье!',
+    place: 'Адрес',
+    follow: 'Мы в соцсетях',
     menu: 'Меню',
     prices: 'Цены',
     contacts: 'Контакты',

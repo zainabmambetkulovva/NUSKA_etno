@@ -39,7 +39,15 @@ function TitleMark() {
 // ---------------------------------------------------------------- 02 why us
 
 const WHY_ICONS: ((props: { className?: string }) => ReactNode)[] = [
-  (p) => <LeafIcon width={52} height={52} strokeWidth={1.1} {...p} />,
+  (p) => (
+    <LeafIcon
+      width={52}
+      height={52}
+      strokeWidth={1.1}
+      {...p}
+      className={`${p.className ?? ''} animate-leaf-drift [--sway-from:-8deg] [--sway-to:8deg]`}
+    />
+  ),
   (p) => <ShieldIcon width={52} height={52} strokeWidth={1.1} {...p} />,
   (p) => <Knot className={`h-[52px] w-[52px] ${p.className ?? ''}`} />,
   (p) => <HeartIcon width={52} height={52} strokeWidth={1.1} {...p} />,
@@ -77,7 +85,10 @@ export function WhyUs({ t }: { t: Dictionary }) {
             return (
               <li key={item.title}>
                 <Reveal delay={i * 0.08} className="h-full">
-                  <div className="group flex h-full flex-col items-center rounded-[1.75rem] border border-white/10 bg-[#27391F]/90 px-4 py-7 text-center shadow-[0_24px_40px_-24px_rgba(15,25,10,0.8),inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur transition duration-300 hover:-translate-y-1.5 hover:border-[#D6AD62]/50">
+                  <div
+                    className="group flex h-full animate-border-glow flex-col items-center rounded-[1.75rem] border border-white/10 bg-[#27391F]/90 px-4 py-7 text-center backdrop-blur transition-transform duration-300 hover:-translate-y-1.5 motion-reduce:[animation-duration:16s]"
+                    style={{ animationDelay: `${i * 2}s` }}
+                  >
                     <Icon className="text-[#E2B96A] transition duration-500 group-hover:scale-110" />
                     <h3 className="mt-5 font-sans text-base font-semibold text-white sm:text-lg">
                       {item.title}
@@ -173,20 +184,30 @@ export function PricesPodium({
   locale: Locale;
   products: ProductCard[];
 }) {
-  const plates = PODIUM.flatMap((slot) => {
+  // The plates show live catalog data; if the catalog is not reachable they still show the
+  // product name (from the dictionary) and lead to the catalog instead of staying empty.
+  const plates = PODIUM.map((slot) => {
     const line = productLine(products, slot.key);
-    if (!line) return [];
-    const price = formatMoney(line.cheapest.price, locale, t.common.som);
-    return [
-      {
+    if (!line) {
+      const index = CARDS.indexOf(slot.key);
+      return {
         key: slot.key,
         ...slot.plate,
-        name: line.name,
-        price: line.many ? t.home.pricesFrom.replace('{price}', price) : price,
-        href: `/${locale}/product/${line.cheapest.slug}`,
-      },
-    ];
+        name: t.home.productNames[index] ?? slot.key,
+        price: null as string | null,
+        href: `/${locale}/catalog`,
+      };
+    }
+    const price = formatMoney(line.cheapest.price, locale, t.common.som);
+    return {
+      key: slot.key,
+      ...slot.plate,
+      name: line.name,
+      price: line.many ? t.home.pricesFrom.replace('{price}', price) : price,
+      href: `/${locale}/product/${line.cheapest.slug}`,
+    };
   });
+  const hrefOf = (key: string) => plates.find((plate) => plate.key === key)?.href;
 
   return (
     <section
@@ -239,16 +260,27 @@ export function PricesPodium({
                 className="h-full w-full motion-safe:animate-fade-up"
                 style={{ animationDelay: `${i * 0.08}s` }}
               >
-                <Image
-                  src={`/images/products/${photo.src}`}
-                  alt={i === 0 ? t.home.pricesImageAlt : ''}
-                  width={photo.w}
-                  height={photo.h}
-                  quality={95}
-                  sizes="(min-width: 640px) 18vw, 24vw"
-                  className="h-full w-full object-contain drop-shadow-[0_0.9cqw_0.7cqw_rgba(15,10,0,0.5)]"
-                  style={photo.rotate ? { transform: `rotate(${photo.rotate}deg)` } : undefined}
-                />
+                <Link
+                  href={hrefOf(key) ?? `/${locale}/catalog`}
+                  tabIndex={-1}
+                  aria-hidden
+                  className="group/photo relative block h-full w-full origin-bottom transition duration-300 ease-out hover:-translate-y-[4%] hover:scale-[1.07]"
+                >
+                  <span
+                    className="pointer-events-none absolute -inset-x-[18%] bottom-[-3%] h-[14%] rounded-[50%] bg-[#E7C77F]/0 blur-xl transition duration-300 group-hover/photo:bg-[#E7C77F]/45"
+                    aria-hidden
+                  />
+                  <Image
+                    src={`/images/products/${photo.src}`}
+                    alt={i === 0 ? t.home.pricesImageAlt : ''}
+                    width={photo.w}
+                    height={photo.h}
+                    quality={95}
+                    sizes="(min-width: 640px) 18vw, 24vw"
+                    className="relative h-full w-full object-contain drop-shadow-[0_0.9cqw_0.7cqw_rgba(15,10,0,0.5)] transition duration-300 group-hover/photo:drop-shadow-[0_1.2cqw_1cqw_rgba(15,10,0,0.55)]"
+                    style={photo.rotate ? { transform: `rotate(${photo.rotate}deg)` } : undefined}
+                  />
+                </Link>
               </div>
             </div>
           ))}
@@ -257,7 +289,7 @@ export function PricesPodium({
             <Link
               key={plate.key}
               href={plate.href}
-              className="group absolute hidden flex-col items-center justify-center rounded-[1.2cqw] text-center text-white transition hover:bg-white/10 motion-safe:animate-fade-up sm:flex"
+              className="group absolute hidden flex-col items-center justify-center rounded-[1.2cqw] border border-transparent text-center text-white transition duration-300 hover:-translate-y-[0.5cqw] hover:border-[#E7C77F]/70 hover:bg-[#27391F]/70 hover:shadow-[0_0_2.2cqw_rgba(231,199,127,0.45)] motion-safe:animate-fade-up sm:flex"
               style={{
                 left: `${plate.left}%`,
                 top: `${plate.top}%`,
@@ -269,9 +301,11 @@ export function PricesPodium({
               <span className="text-[1.45cqw] font-medium leading-[1.05] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
                 {plate.name}
               </span>
-              <span className="mt-[0.15cqw] text-[1.6cqw] font-bold leading-[1.1] text-[#FFF4D6] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)]">
-                {plate.price}
-              </span>
+              {plate.price && (
+                <span className="mt-[0.15cqw] text-[1.6cqw] font-bold leading-[1.1] text-[#FFF4D6] [text-shadow:0_1px_4px_rgba(0,0,0,0.6)] transition group-hover:text-[#F3D896]">
+                  {plate.price}
+                </span>
+              )}
             </Link>
           ))}
         </div>
@@ -294,7 +328,7 @@ export function PricesPodium({
               className="flex h-full flex-col rounded-2xl bg-[#27391F] px-4 py-3 text-white"
             >
               <span className="text-sm">{plate.name}</span>
-              <span className="font-bold text-[#FFF4D6]">{plate.price}</span>
+              {plate.price && <span className="font-bold text-[#FFF4D6]">{plate.price}</span>}
             </Link>
           </li>
         ))}
@@ -471,7 +505,13 @@ export function ProductsRow({
 // ---------------------------------------------------------------- 06 promises
 
 const PROMISE_ICONS = [
-  <LeafIcon key="leaf" width={46} height={46} strokeWidth={1.1} />,
+  <LeafIcon
+    key="leaf"
+    width={46}
+    height={46}
+    strokeWidth={1.1}
+    className="animate-leaf-drift [--sway-from:-8deg] [--sway-to:8deg]"
+  />,
   <DiamondIcon key="diamond" width={46} height={46} strokeWidth={1.1} />,
   <Knot key="knot" className="h-[46px] w-[46px]" />,
   <HeartIcon key="heart" width={46} height={46} strokeWidth={1.1} />,
@@ -522,7 +562,7 @@ export function ClosingCta({ t, locale }: { t: Dictionary; locale: Locale }) {
           src="/images/home/cta.png"
           alt=""
           fill
-          quality={95}
+          unoptimized
           sizes="100vw"
           className="object-cover object-[50%_72%] sm:object-[50%_55%]"
         />

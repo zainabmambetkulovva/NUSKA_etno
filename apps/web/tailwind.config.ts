@@ -60,6 +60,27 @@ const config: Config = {
           '0%,100%': { transform: 'rotate(var(--sway-from, -4deg)) translateY(0)' },
           '50%': { transform: 'rotate(var(--sway-to, 4deg)) translateY(-8px)' },
         },
+        'leaf-drift': {
+          '0%,100%': { transform: 'translate3d(0,0,0) rotate(var(--sway-from, -6deg))' },
+          '30%': {
+            transform:
+              'translate3d(6px,-9px,0) rotate(calc((var(--sway-from, -6deg) + var(--sway-to, 6deg)) / 2))',
+          },
+          '60%': { transform: 'translate3d(-4px,-4px,0) rotate(var(--sway-to, 6deg))' },
+        },
+        // one card lights up for 2 s of an 8 s round (4 cards, each delayed by 2 s)
+        'border-glow': {
+          '0%,26%,100%': {
+            'border-color': 'rgba(255,255,255,0.10)',
+            'box-shadow':
+              '0 24px 40px -24px rgba(15,25,10,0.8), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 0 rgba(231,199,127,0)',
+          },
+          '10%,16%': {
+            'border-color': 'rgba(231,199,127,0.95)',
+            'box-shadow':
+              '0 24px 40px -24px rgba(15,25,10,0.8), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 28px 2px rgba(231,199,127,0.55)',
+          },
+        },
         'ken-burns': { from: { transform: 'scale(1)' }, to: { transform: 'scale(1.08)' } },
         marquee: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
       },
@@ -70,6 +91,8 @@ const config: Config = {
         float: 'float 5s ease-in-out infinite',
         'spin-slow': 'spin-slow 40s linear infinite',
         sway: 'sway 7s ease-in-out infinite',
+        'leaf-drift': 'leaf-drift 8s ease-in-out infinite',
+        'border-glow': 'border-glow 8s ease-in-out infinite',
         'ken-burns': 'ken-burns 24s ease-out both',
         marquee: 'marquee var(--marquee-duration, 40s) linear infinite',
       },

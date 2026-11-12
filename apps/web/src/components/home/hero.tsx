@@ -10,8 +10,9 @@ import type { Dictionary } from '@/i18n/dictionaries/ky';
  * First screen: the company's picture (the NUSKA logo above a yurt, horses in
  * a mountain valley, curd and a bowl of milk), used as sent. The slogan, the
  * text and the catalog button stand on its left side over a dark green veil.
- * The picture starts below the header strip, so the logo painted in it is
- * never covered by the menu. On phones the picture is on top, the text below.
+ * It starts below the header strip (the logo painted in it sits right under the
+ * menu line) and dissolves into it at the top. On phones the text is under the
+ * picture. The file is shown untouched, never re-encoded or zoomed.
  */
 export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
   return (
@@ -19,15 +20,16 @@ export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
       className="relative -mt-[68px] overflow-hidden bg-[#182B15] lg:-mt-[76px] lg:h-[clamp(560px,calc(56.28vw+76px),980px)]"
       aria-labelledby="hero-title"
     >
+      {/* The company's file is served untouched (unoptimized): no re-encoding, no zoom. */}
       <div className="absolute inset-x-0 top-[68px] h-[360px] sm:h-[440px] lg:bottom-0 lg:top-[76px] lg:h-auto">
         <Image
           src="/images/home/hero.png"
           alt={t.home.heroImageAlt}
           fill
           priority
-          quality={95}
-          sizes="(min-width: 1024px) 100vw, 640px"
-          className="object-cover object-[50%_30%] motion-safe:animate-ken-burns lg:object-center"
+          unoptimized
+          sizes="100vw"
+          className="object-cover object-[50%_30%] lg:object-center"
         />
       </div>
       {/* phone: the picture melts into the dark green text block */}
@@ -35,9 +37,14 @@ export function Hero({ locale, t }: { locale: Locale; t: Dictionary }) {
         className="absolute inset-x-0 top-[68px] h-[360px] bg-gradient-to-b from-transparent from-55% to-[#182B15] sm:h-[440px] lg:hidden"
         aria-hidden
       />
-      {/* desktop: a dark green veil on the left, under the text */}
+      {/* the picture dissolves into the header strip, so there is no seam under the menu */}
       <div
-        className="absolute inset-x-0 bottom-0 top-[76px] hidden bg-[linear-gradient(to_right,rgba(16,30,13,0.86)_0%,rgba(16,30,13,0.68)_26%,rgba(16,30,13,0.22)_42%,transparent_50%),linear-gradient(to_top,rgba(16,30,13,0.55),transparent_35%)] lg:block"
+        className="absolute inset-x-0 top-[68px] h-14 bg-gradient-to-b from-[#182B15] to-transparent lg:top-[76px] lg:h-16"
+        aria-hidden
+      />
+      {/* desktop: a light dark-green veil on the left, only under the text */}
+      <div
+        className="absolute inset-x-0 bottom-0 top-[76px] hidden bg-[linear-gradient(to_right,rgba(16,30,13,0.62)_0%,rgba(16,30,13,0.42)_22%,rgba(16,30,13,0.12)_38%,transparent_46%),linear-gradient(to_top,rgba(16,30,13,0.4),transparent_30%)] lg:block"
         aria-hidden
       />
 

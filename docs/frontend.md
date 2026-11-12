@@ -66,11 +66,13 @@ promises → closing call → footer (the closing banner uses `cta.png`, a yurt 
   prices · Contacts), KG/RU, separate "Sign in" and "Register" buttons, cart icon only when
   the cart is not empty. Transparent over the hero.
 - **Hero:** the company's picture (`hero.png`: the NUSKA logo above a yurt, horses, curd and a
-  bowl of milk) starts below the header strip, so the logo painted in it is never covered
-  by the menu. The slogan in two lines (cream and gold), the text and the "Go to the catalog"
-  button stand on its left side over a dark green veil; on phones the picture is on top and
-  the text below. A cream wave with the gold knot closes it.
-- **Why choose us?:** title on cream, four deep green cards with gold icons.
+  bowl of milk) starts below the header strip (the logo painted in it sits right under the menu
+  line) and dissolves into the strip at the top, so there is no seam. It is served untouched
+  (`unoptimized`: no AVIF/WebP re-encoding, no zoom). The slogan, the text and the "Go to the
+  catalog" button stand on its left side over a light dark-green veil; on phones the text is
+  under the picture. A cream wave with the gold knot closes it. The menu is shown from 1180 px.
+- **Why choose us?:** title on cream, four deep green cards with gold icons. The border of the
+  cards lights up gold one card after another, 2 s each, in a loop (`border-glow`).
 - **Our prices** (`PricesPodium`): the wooden podium of the design (`podium-base.webp`, the
   drawn products removed) with the company's own product photos standing on its blocks and a
   plate under each. The photos are the original PNG files; the names and prices on the plates
@@ -181,3 +183,15 @@ editable in the admin product form (fields description, ingredients, benefits, s
 without numbers or health promises; the company must check them. The migration
 `20261112100000_product_page_content` and the seed fill only EMPTY fields, so admin edits are
 never overwritten.
+
+## Leaves, hover and the footer
+
+- Every `Leaf` (and the leaf icons in the cards) drifts and sways all the time (`leaf-drift`);
+  with "reduce motion" it only slows down.
+- "Our prices": the product photo and its plate rise and glow on hover. If the catalog cannot be
+  reached, the plates still show the product names and lead to the catalog.
+- **Footer:** logo, slogan, round Instagram / WhatsApp / YouTube buttons, the menu and the
+  contacts as small cards. The contacts come from the admin `contacts` block; the company's own
+  values (`lib/contacts.ts`) are used when it is empty or the API is down.
+- **Back to top** (`components/layout/back-to-top.tsx`): a fixed gold button right above the
+  NUSKA AI button, shown after scrolling, hidden while the AI chat is open and in the admin panel.

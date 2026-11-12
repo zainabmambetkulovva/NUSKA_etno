@@ -149,7 +149,10 @@ export function Header() {
         <div className="mx-auto flex h-[68px] max-w-[1440px] items-center gap-3 px-4 sm:px-6 lg:h-[76px] xl:px-10">
           <Logo href={home} className="shrink-0" />
 
-          <nav className="ml-10 hidden items-center gap-1 xl:flex" aria-label={t.nav.menu}>
+          <nav
+            className="ml-6 hidden items-center gap-1 min-[1180px]:flex xl:ml-10"
+            aria-label={t.nav.menu}
+          >
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -184,7 +187,7 @@ export function Header() {
             <div className="hidden items-center gap-2 md:flex">{authButtons()}</div>
             <button
               type="button"
-              className="-mr-1 flex h-10 w-10 items-center justify-center rounded-full text-cream-light xl:hidden"
+              className="-mr-1 flex h-10 w-10 items-center justify-center rounded-full text-cream-light min-[1180px]:hidden"
               onClick={() => setOpen(true)}
               aria-label={t.nav.menu}
               aria-expanded={open}

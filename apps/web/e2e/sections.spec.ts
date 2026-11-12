@@ -64,7 +64,7 @@ test('home follows the design: why us, live prices on the podium, story, product
     '/ky/catalog'
   );
 
-  // Footer: menu, contacts from the admin block, back to top.
+  // Footer: menu, contacts (WhatsApp, Instagram, YouTube) and the back to top button.
   const footer = page.locator('footer');
   await expect(footer.getByRole('heading', { name: ky.footer.menu })).toBeVisible();
   await expect(footer.getByRole('link', { name: '+996 701 111 024' })).toHaveAttribute(
@@ -75,7 +75,12 @@ test('home follows the design: why us, live prices on the podium, story, product
     'href',
     /instagram\.com\/nuska_etno$/
   );
-  await footer.getByRole('button', { name: ky.footer.backToTop }).click();
+  await expect(footer.getByRole('link', { name: 'YouTube' }).first()).toHaveAttribute(
+    'href',
+    /^https:\/\/(www\.)?youtube\.com\//
+  );
+  // the fixed button above the AI button, shown once the page is scrolled
+  await page.getByRole('button', { name: ky.footer.backToTop }).click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(50);
 });
 
