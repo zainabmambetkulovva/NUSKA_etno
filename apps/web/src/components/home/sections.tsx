@@ -505,7 +505,11 @@ export function Promises({ t }: { t: Dictionary }) {
 
 // ---------------------------------------------------------------- 07 closing
 
-/** Closing landscape with the yurt and the horse and the "Buy" button. */
+/**
+ * Closing banner: the company's picture of a yurt and horses in the mountains
+ * (portrait, used as sent; only the band with the yurt, the horses and the
+ * peaks is shown) under the "Clean and natural products" call and the Buy button.
+ */
 export function ClosingCta({ t, locale }: { t: Dictionary; locale: Locale }) {
   return (
     <section
@@ -513,23 +517,28 @@ export function ClosingCta({ t, locale }: { t: Dictionary; locale: Locale }) {
       aria-labelledby="cta-title"
       data-flush-footer
     >
-      <div className="relative h-[330px] sm:h-auto sm:aspect-[2400/648]">
+      <div className="relative h-[380px] sm:aspect-[16/7] sm:h-auto">
         <Image
-          src="/images/home/cta.webp"
+          src="/images/home/cta.png"
           alt=""
           fill
-          sizes="(min-width: 640px) 100vw, 300vw"
-          className="object-cover object-[8%_center] sm:object-center"
+          quality={95}
+          sizes="100vw"
+          className="object-cover object-[50%_72%] sm:object-[50%_55%]"
         />
+        {/* soft edges into the sections above and below, a green veil under the text */}
         <div
-          className="absolute inset-0 bg-[linear-gradient(to_bottom,#21381D,transparent_22%,transparent_82%,#1B2616)]"
+          className="absolute inset-0 bg-[linear-gradient(to_bottom,#21381D,transparent_20%,transparent_78%,#1B2616)]"
           aria-hidden
         />
-        <div className="absolute inset-0 bg-[#1B2D17]/45 sm:hidden" aria-hidden />
-        <Reveal className="absolute inset-0 flex flex-col items-center justify-center px-4 pb-[4%] text-center">
+        <div
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(16,30,13,0.62),rgba(16,30,13,0.3)_55%,transparent_80%)]"
+          aria-hidden
+        />
+        <Reveal className="absolute inset-0 flex flex-col items-center justify-center px-4 pb-[3%] text-center">
           <h2
             id="cta-title"
-            className="max-w-[26ch] font-serif text-[1.7rem] leading-snug text-[#FAF3DF] [text-shadow:0_2px_14px_rgba(10,22,8,0.7)] sm:text-[clamp(1.4rem,2.9vw,2.9rem)]"
+            className="max-w-[26ch] font-serif text-[1.7rem] leading-snug text-[#FAF3DF] [text-shadow:0_2px_14px_rgba(10,22,8,0.8)] sm:text-[clamp(1.4rem,2.9vw,2.9rem)]"
           >
             {t.home.ctaTitle}
           </h2>

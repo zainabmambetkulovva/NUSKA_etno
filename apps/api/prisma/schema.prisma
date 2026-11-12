@@ -281,6 +281,8 @@ model ProductTranslation {
   shortDescription    String? @map("short_description")
   description         String?
   ingredients         String?
+  /// "What is good about it": one benefit per line, shown as a list on the product page.
+  benefits            String?
   storageInstructions String? @map("storage_instructions")
   /// Product characteristics shown on the product page (TZ §6.4):
   /// an ordered array of { "name": string, "value": string } in this locale.

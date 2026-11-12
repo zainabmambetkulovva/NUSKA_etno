@@ -48,6 +48,7 @@ function translationData(t: ProductTranslationDto) {
     shortDescription: t.shortDescription ?? null,
     description: t.description ?? null,
     ingredients: t.ingredients ?? null,
+    benefits: t.benefits ?? null,
     storageInstructions: t.storageInstructions ?? null,
     characteristics: t.characteristics
       ? (t.characteristics.map((c) => ({ name: c.name, value: c.value })) as Prisma.InputJsonValue)

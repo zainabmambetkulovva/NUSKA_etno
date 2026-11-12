@@ -55,20 +55,21 @@ React Hook Form + Zod, Framer Motion.
 
 The home page follows the full-page design the company sent, top to bottom:
 header → hero → "Why choose us?" → "Our prices" (podium) → about us → "Our products" →
-promises → closing call → footer. Sections live in `components/home/hero.tsx` and
+promises → closing call → footer (the closing banner uses `cta.png`, a yurt in the mountains). Sections live in `components/home/hero.tsx` and
 `components/home/sections.tsx`.
 
-- **Pictures** (`public/images/home`): the scenes of that design (hero, podium, meadow
-  photo, closing landscape, wooden podium). They were cut out of the 726 px wide
-  design picture, the baked-in texts, buttons and prices were removed (inpainting) and the
-  result was enlarged ×4 with an EDSR model, so they are a little soft. Replace a file with
-  a full-resolution picture of the same proportions to sharpen it; no code change is needed.
+- **Pictures** (`public/images/home`): `hero.png` and `cta.png` are the company's pictures
+  used exactly as sent (shown through next/image at quality 95, never cut or enhanced). The
+  podium base and a few other scenes were cut out of the old design picture and are a little
+  soft; replace a file with a full-resolution picture of the same proportions to sharpen it.
 - **Header** (`components/layout/header.tsx`): unchanged — logo, menu (Home · About · Our
   prices · Contacts), KG/RU, separate "Sign in" and "Register" buttons, cart icon only when
   the cart is not empty. Transparent over the hero.
-- **Hero:** the scene fills the screen (slow zoom), the slogan in two lines (cream and
-  gold), the text and the "Go to the catalog" button on its dark left side; on phones the
-  scene is on top and the text below. A cream wave with the gold knot closes it.
+- **Hero:** the company's picture (`hero.png`: the NUSKA logo above a yurt, horses, curd and a
+  bowl of milk) starts below the header strip, so the logo painted in it is never covered
+  by the menu. The slogan in two lines (cream and gold), the text and the "Go to the catalog"
+  button stand on its left side over a dark green veil; on phones the picture is on top and
+  the text below. A cream wave with the gold knot closes it.
 - **Why choose us?:** title on cream, four deep green cards with gold icons.
 - **Our prices** (`PricesPodium`): the wooden podium of the design (`podium-base.webp`, the
   drawn products removed) with the company's own product photos standing on its blocks and a
@@ -170,3 +171,13 @@ Without the `SEED_*` passwords the order test is skipped.
 ## Not done yet
 
 - Real product photos (upload them in the admin panel).
+
+## Product page texts
+
+`/product/[slug]` shows, in this order: description → **benefits** («Пайдасы», one per line)
+→ composition («Курамы / эмнеден жасалат») → storage, next to the price in som. The texts are
+editable in the admin product form (fields description, ingredients, benefits, storage).
+`apps/api/prisma/product-content.json` holds a first DRAFT of these texts for every dish, written
+without numbers or health promises; the company must check them. The migration
+`20261112100000_product_page_content` and the seed fill only EMPTY fields, so admin edits are
+never overwritten.

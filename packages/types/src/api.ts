@@ -88,6 +88,8 @@ export interface ProductCard {
 export interface ProductDetail extends ProductCard {
   description: string | null;
   ingredients: string | null;
+  /** Benefits, one list item each. */
+  benefits: string[];
   storageInstructions: string | null;
   characteristics: { name: string; value: string }[];
   images: (ImageRef & {
@@ -262,6 +264,8 @@ export interface AdminProduct {
     shortDescription: string | null;
     description: string | null;
     ingredients: string | null;
+    /** Benefits, one per line. */
+    benefits: string | null;
     storageInstructions: string | null;
     characteristics: { name: string; value: string }[] | null;
   }[];

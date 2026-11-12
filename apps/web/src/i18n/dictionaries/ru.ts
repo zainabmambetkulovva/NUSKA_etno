@@ -76,7 +76,8 @@ const ru: Dictionary = {
     heroTitle: 'Природное богатство —',
     heroTitleAccent: 'каждой семье!',
     heroText: 'Качественные и натуральные продукты из Кыргызстана',
-    heroImageAlt: 'У юрты в горах: мёд, сары май и кымыз на деревянном блюде',
+    heroImageAlt:
+      'Юрта, лошади в горной долине и молочные продукты в деревянной посуде — под логотипом NUSKA',
     toCatalog: 'Открыть каталог',
     aboutText:
       'NUSKA_etno — бренд, который объединяет кыргызское национальное наследие, традиции и натуральные продукты в современном интернет-магазине.',
@@ -206,7 +207,8 @@ const ru: Dictionary = {
     left: 'Осталось',
     quantity: 'Количество',
     description: 'Описание',
-    ingredients: 'Состав',
+    benefits: 'Чем полезен',
+    ingredients: 'Состав (из чего сделано)',
     storage: 'Условия хранения',
     characteristics: 'Характеристики',
     units: 'Объём',
@@ -505,6 +507,7 @@ const ru: Dictionary = {
     shortDescription: 'Краткое описание',
     description: 'Описание',
     ingredients: 'Состав',
+    benefits: 'Польза (каждая строка — один пункт)',
     storage: 'Условия хранения',
     characteristics: 'Характеристики',
     characteristicName: 'Название',

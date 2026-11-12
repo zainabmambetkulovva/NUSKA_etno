@@ -15,6 +15,7 @@ import { ProductCard } from '@/components/product/product-card';
 import { ProductGallery } from '@/components/product/product-gallery';
 import { ProductImage } from '@/components/product/product-image';
 import { ProductPurchase } from '@/components/product/product-purchase';
+import { CheckIcon } from '@/components/ui/icons';
 import { Badge, SectionHeading } from '@/components/ui/misc';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiOrNull, serverApiSafe } from '@/lib/api/server';
@@ -90,11 +91,16 @@ export default async function ProductPage({ params }: { params: Params }) {
       : {}),
   };
 
-  const info = [
-    { title: t.product.description, body: product.description },
+  // an older API (deployed before this field existed) may omit it
+  const benefits = product.benefits ?? [];
+  const intro = product.description
+    ? [{ title: t.product.description, body: product.description }]
+    : [];
+  const details = [
     { title: t.product.ingredients, body: product.ingredients },
     { title: t.product.storage, body: product.storageInstructions },
   ].filter((block) => block.body);
+  const hasInfo = intro.length > 0 || benefits.length > 0 || details.length > 0;
 
   return (
     <div className="container py-10">
@@ -210,13 +216,39 @@ export default async function ProductPage({ params }: { params: Params }) {
             </section>
           )}
 
-          {info.length > 0 ? (
-            info.map((block) => (
-              <section key={block.title}>
-                <h2 className="mb-2 font-serif text-xl">{block.title}</h2>
-                <p className="whitespace-pre-line leading-relaxed text-ink-muted">{block.body}</p>
-              </section>
-            ))
+          {hasInfo ? (
+            <>
+              {intro.map((block) => (
+                <section key={block.title}>
+                  <h2 className="mb-2 font-serif text-xl">{block.title}</h2>
+                  <p className="whitespace-pre-line leading-relaxed text-ink-muted">{block.body}</p>
+                </section>
+              ))}
+              {benefits.length > 0 && (
+                <section className="rounded-2xl border border-gold/40 bg-cream-light p-5">
+                  <h2 className="mb-3 font-serif text-xl">{t.product.benefits}</h2>
+                  <ul className="space-y-2.5">
+                    {benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-start gap-3 leading-relaxed">
+                        <span
+                          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-cream-light"
+                          aria-hidden
+                        >
+                          <CheckIcon width={14} height={14} strokeWidth={2.4} />
+                        </span>
+                        {benefit}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+              {details.map((block) => (
+                <section key={block.title}>
+                  <h2 className="mb-2 font-serif text-xl">{block.title}</h2>
+                  <p className="whitespace-pre-line leading-relaxed text-ink-muted">{block.body}</p>
+                </section>
+              ))}
+            </>
           ) : (
             <p className="text-sm text-ink-soft">{t.product.noInfo}</p>
           )}

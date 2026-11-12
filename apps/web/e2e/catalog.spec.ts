@@ -14,6 +14,27 @@ test('catalog search finds a product and opens its page', async ({ page }) => {
   await expect(page.getByText('300 сом').first()).toBeVisible();
 });
 
+test('a product page tells what it is good for, what it is made of and the price', async ({
+  page,
+}) => {
+  // Opened from the "Our products" cards of the home page.
+  await page.goto('/ky');
+  const products = page.locator('section[aria-labelledby="products-title"]');
+  await products.getByRole('link', { name: /Сары май/ }).click();
+  await expect(page).toHaveURL(/\/ky\/product\/sary-mai$/);
+  await expect(page.getByRole('heading', { level: 1, name: 'Сары май' })).toBeVisible();
+  await expect(page.getByText('235 сом').first()).toBeVisible();
+  await expect(page.getByRole('heading', { name: ky.product.benefits })).toBeVisible();
+  await expect(page.getByText(/Жогорку температурада күйүп кетпейт/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: ky.product.ingredients })).toBeVisible();
+  await expect(page.getByText(/Сүт майы/).first()).toBeVisible();
+
+  await page.goto('/ru/product/navat-0-5');
+  await expect(page.getByRole('heading', { name: ru.product.benefits })).toBeVisible();
+  await expect(page.getByText(/Можно класть в чай вместо сахара/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: ru.product.ingredients })).toBeVisible();
+});
+
 test('category filter and sorting by price', async ({ page }) => {
   await page.goto('/ky/catalog/national-sweets?sort=price_desc');
   const names = await page.getByRole('article').locator('h3').allTextContents();

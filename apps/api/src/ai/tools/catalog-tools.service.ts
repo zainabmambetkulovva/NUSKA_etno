@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import {
   productCardInclude,
   productDetailInclude,
+  splitLines,
   toProductCard,
   type ProductCard,
 } from '../../products/product.mapper';
@@ -84,6 +85,7 @@ export class CatalogToolsService {
       card: toProductCard({ ...product, images: product.images.slice(0, 1) }, locale),
       description: t?.description ?? null,
       ingredients: t?.ingredients ?? null,
+      benefits: splitLines(t?.benefits),
       storage: t?.storageInstructions ?? null,
       characteristics: (t?.characteristics as { name: string; value: string }[] | null) ?? [],
       units: product.units.map(

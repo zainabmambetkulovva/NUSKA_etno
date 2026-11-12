@@ -71,7 +71,7 @@ Rate limits: 100 requests/min per IP overall; 5/min for login, register and pass
 | Method | Path | Notes |
 |---|---|---|
 | GET | `/products` | `search`, `category` (slug, includes sub-categories), `sort` = `default \| price_asc \| price_desc \| popular \| newest`, `inStock`, `featured` |
-| GET | `/products/:slug` | details, images, characteristics, units, rating |
+| GET | `/products/:slug` | details (description, ingredients, `benefits: string[]`, storage), images, characteristics, units, rating |
 | GET | `/products/:slug/related` | |
 | GET | `/products/:slug/reviews` | approved reviews |
 | GET | `/reviews/latest?limit=6` | latest approved reviews across the catalog (home page) |

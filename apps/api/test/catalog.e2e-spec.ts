@@ -157,7 +157,13 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
 
   describe('admin catalog', () => {
     const translations = [
-      { locale: 'ru', name: 'Сары май', characteristics: [{ name: 'Вес', value: '500 г' }] },
+      {
+        locale: 'ru',
+        name: 'Сары май',
+        characteristics: [{ name: 'Вес', value: '500 г' }],
+        ingredients: 'Молочный жир',
+        benefits: 'Натуральный продукт\n\n  Не подгорает при жарке  \n',
+      },
       { locale: 'ky', name: 'Сары май' },
     ];
 
@@ -193,6 +199,11 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
 
       const publicDetail = (await http().get('/api/products/sary-mai?locale=ru').expect(200)).body;
       expect(publicDetail.characteristics).toEqual([{ name: 'Вес', value: '500 г' }]);
+      // Benefits are stored one per line and served as a clean list; empty lines are dropped.
+      expect(publicDetail.ingredients).toBe('Молочный жир');
+      expect(publicDetail.benefits).toEqual(['Натуральный продукт', 'Не подгорает при жарке']);
+      const ky = (await http().get('/api/products/sary-mai?locale=ky').expect(200)).body;
+      expect(ky.benefits).toEqual([]);
     });
 
     it('stores the 3D packaging choice and shows it on the product page', async () => {

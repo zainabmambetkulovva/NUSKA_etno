@@ -59,6 +59,14 @@ export type ProductDetailSource = Prisma.ProductGetPayload<{
   include: typeof productDetailInclude;
 }>;
 
+/** "One per line" text → list without empty lines. */
+export function splitLines(text: string | null | undefined): string[] {
+  return (text ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
 /** Product page (TZ §6.4). */
 export function toProductDetail(
   product: ProductDetailSource,
@@ -70,6 +78,7 @@ export function toProductDetail(
     ...toProductCard({ ...product, images: product.images.slice(0, 1) }, locale),
     description: translation?.description ?? null,
     ingredients: translation?.ingredients ?? null,
+    benefits: splitLines(translation?.benefits),
     storageInstructions: translation?.storageInstructions ?? null,
     characteristics:
       (translation?.characteristics as { name: string; value: string }[] | null) ?? [],

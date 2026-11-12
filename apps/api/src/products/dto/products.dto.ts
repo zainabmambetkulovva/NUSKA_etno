@@ -142,6 +142,10 @@ export class ProductTranslationDto {
   @NullableText(3000)
   ingredients?: string | null;
 
+  @ApiPropertyOptional({ nullable: true, description: 'Benefits, one per line' })
+  @NullableText(2000)
+  benefits?: string | null;
+
   @ApiPropertyOptional({ nullable: true })
   @NullableText(2000)
   storageInstructions?: string | null;

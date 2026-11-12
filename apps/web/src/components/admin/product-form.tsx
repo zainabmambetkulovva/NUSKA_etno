@@ -30,6 +30,7 @@ interface TranslationValues {
   shortDescription: string;
   description: string;
   ingredients: string;
+  benefits: string;
   storageInstructions: string;
   characteristics: { name: string; value: string }[];
 }
@@ -71,6 +72,7 @@ function toValues(product?: AdminProduct): ProductFormValues {
         shortDescription: t?.shortDescription ?? '',
         description: t?.description ?? '',
         ingredients: t?.ingredients ?? '',
+        benefits: t?.benefits ?? '',
         storageInstructions: t?.storageInstructions ?? '',
         characteristics: t?.characteristics ?? [],
       };
@@ -106,6 +108,7 @@ function toPayload(values: ProductFormValues, isNew: boolean) {
         shortDescription: text(t.shortDescription),
         description: text(t.description),
         ingredients: text(t.ingredients),
+        benefits: text(t.benefits),
         storageInstructions: text(t.storageInstructions),
         characteristics: t.characteristics.filter((c) => c.name.trim() && c.value.trim()),
       })),
@@ -348,6 +351,16 @@ export function ProductForm({
                 rows={5}
                 maxLength={10000}
                 {...form.register(`translations.${tIndex}.description`)}
+              />
+            )}
+          </Field>
+          <Field label={t.admin.benefits}>
+            {(id) => (
+              <Textarea
+                id={id}
+                rows={4}
+                maxLength={2000}
+                {...form.register(`translations.${tIndex}.benefits`)}
               />
             )}
           </Field>

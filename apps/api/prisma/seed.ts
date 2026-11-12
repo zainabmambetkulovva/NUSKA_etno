@@ -5,8 +5,11 @@
  * - Prices come from the company's initial price list.
  * - Nothing the company has not provided is invented: no weights, volumes
  *   (except Нават 0.5 / 0.6 / 0.7 л, confirmed by the company),
- *   ingredients, storage conditions, descriptions, stock levels, addresses,
- *   phone numbers or opening hours. Such fields stay empty.
+ *   storage conditions, stock levels, addresses, phone numbers or opening
+ *   hours. Such fields stay empty.
+ * - Product page texts (description, composition, benefits) are the DRAFT in
+ *   prisma/product-content.json, written at the owner's request on 2026-11-12;
+ *   the company has to check them, and the seed only fills empty fields.
  * - The pickup location is explicitly marked as DEMO.
  * - Demo account passwords come from env or are generated randomly.
  * - Kyrgyz category names must be reviewed by an editor before production.
@@ -14,6 +17,8 @@
  * The seed is idempotent: running it again does not create duplicates.
  */
 import { randomBytes } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import {
   OrderStatus,
@@ -29,6 +34,21 @@ import { hash } from 'bcrypt';
 const prisma = new PrismaClient();
 
 const SOM = 100; // prices are stored in tyiyn
+
+/** Draft product page texts by slug (prisma/product-content.json). */
+interface PageText {
+  description: string;
+  ingredients: string;
+  benefits: string[];
+}
+const pageTexts = new Map<string, Record<Locale, PageText>>();
+for (const group of Object.values(
+  JSON.parse(readFileSync(join(__dirname, 'product-content.json'), 'utf8')).groups as Record<
+    string,
+    { slugs: string[] } & Record<Locale, PageText>
+  >
+))
+  for (const slug of group.slugs) pageTexts.set(slug, { ky: group.ky, ru: group.ru });
 const DEMO_MARK = '[DEMO]';
 
 type Locale = 'ru' | 'ky';
@@ -275,12 +295,20 @@ async function seedProducts(categoryIds: Map<string, string>) {
     for (const locale of ['ru', 'ky'] as const) {
       const name = product.localizedName?.[locale] ?? product.name;
       const shortDescription = product.shortDescription?.[locale] ?? null;
+      const page = pageTexts.get(product.slug)?.[locale];
+      const pageData = page
+        ? {
+            description: page.description,
+            ingredients: page.ingredients,
+            benefits: page.benefits.join('\n'),
+          }
+        : {};
       const existing = await prisma.productTranslation.findUnique({
         where: { productId_locale: { productId: record.id, locale } },
       });
       if (!existing) {
         await prisma.productTranslation.create({
-          data: { productId: record.id, locale, name, shortDescription },
+          data: { productId: record.id, locale, name, shortDescription, ...pageData },
         });
       } else {
         // Re-running the seed fills in company-provided data but never overwrites edits made in the admin panel.
@@ -289,6 +317,9 @@ async function seedProducts(categoryIds: Map<string, string>) {
           data: {
             ...(existing.name === product.name && name !== product.name ? { name } : {}),
             ...(existing.shortDescription === null && shortDescription ? { shortDescription } : {}),
+            ...(page && existing.description === null ? { description: pageData.description } : {}),
+            ...(page && existing.ingredients === null ? { ingredients: pageData.ingredients } : {}),
+            ...(page && existing.benefits === null ? { benefits: pageData.benefits } : {}),
           },
         });
       }
