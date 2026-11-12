@@ -1,12 +1,13 @@
 import { useId } from 'react';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 import { cn } from '@/lib/cn';
 
 /**
- * NUSKA_etno mark: a gold knot of four lobes around a diamond (as on the
- * brand reference), drawn as a vector so it stays sharp at any size.
+ * Gold knot ornament of the design (four lobes around a diamond), drawn as a
+ * vector; used as a decoration next to titles and in the corners.
  */
 export function LogoMark({ className }: { className?: string }) {
   const id = useId().replace(/:/g, '');
@@ -49,7 +50,11 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-/** The logo: gold mark and the name in the serif font. */
+/**
+ * The NUSKA logo sent by the company (public/images/logo-nuska.png, the
+ * label's own cream background only trimmed at the edges), on a cream badge
+ * of the same colour, with the name NUSKA_etno next to it.
+ */
 export function Logo({
   href,
   className,
@@ -67,13 +72,22 @@ export function Logo({
       className={cn('group inline-flex items-center gap-2.5', className)}
       aria-label="NUSKA_etno"
     >
-      <LogoMark
+      <span
         className={cn(
-          'shrink-0 transition-transform duration-500 group-hover:rotate-45',
-          size === 'lg' ? 'h-14 w-14' : 'h-10 w-10',
-          tone === 'dark' && 'rounded-full bg-forest p-1'
+          'relative shrink-0 overflow-hidden rounded-xl bg-[#F5DAAD] shadow-[0_4px_14px_-6px_rgba(0,0,0,0.5)] ring-1 ring-[#D6AD62]/50 transition-transform duration-500 group-hover:scale-105',
+          size === 'lg' ? 'h-[72px] w-[79px] rounded-2xl' : 'h-12 w-[53px]'
         )}
-      />
+      >
+        <Image
+          src="/images/logo-nuska.png"
+          alt=""
+          fill
+          quality={95}
+          sizes={size === 'lg' ? '160px' : '106px'}
+          className="object-cover"
+          priority={size === 'md'}
+        />
+      </span>
       <span
         className={cn(
           'font-serif font-medium tracking-wide',
