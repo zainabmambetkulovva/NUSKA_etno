@@ -3,10 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "description": "Premium Kyrgyz Ethno E-commerce Monorepo",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+
   "scripts": {
     "dev": "pnpm -r run dev",
     "dev:web": "pnpm --filter @nuska/web run dev",
