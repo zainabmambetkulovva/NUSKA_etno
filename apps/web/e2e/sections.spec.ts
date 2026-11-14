@@ -188,11 +188,13 @@ test('legal pages show an honest notice until the company publishes the text', a
   ).toBeVisible();
 });
 
-for (const width of [1024, 1280, 1366]) {
+for (const width of [1024, 1210, 1280, 1366]) {
   test(`no horizontal scrolling at ${width}px (Kyrgyz labels are the longest)`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 800 });
+    // the worst case: before the web fonts arrive the page uses a wider fallback font
+    await page.route(/\.woff2?$/, (route) => route.abort());
     await page.goto('/ky');
     await expectNoHorizontalScroll(page);
   });

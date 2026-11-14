@@ -255,11 +255,11 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
             : 'bg-nk-cream/90 shadow-[0_10px_30px_-20px_rgba(43,42,34,0.45)] backdrop-blur-md'
         )}
       >
-        <div className="mx-auto flex h-[68px] max-w-[1320px] items-center gap-3 px-4 sm:px-6 lg:h-[80px] xl:px-10">
+        <div className="mx-auto flex h-[68px] max-w-[1320px] items-center gap-3 px-4 sm:px-6 lg:h-[80px] 2xl:px-10">
           <Logo href={home} tone="dark" className="shrink-0" />
 
           <nav
-            className="ml-8 hidden items-center gap-6 min-[1180px]:flex xl:ml-14 xl:gap-8"
+            className="ml-5 hidden items-center gap-4 min-[1210px]:flex xl:ml-8 xl:gap-6 2xl:ml-14 2xl:gap-8"
             aria-label={t.nav.menu}
           >
             <CatalogMenu categories={categories} />
@@ -301,7 +301,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
             </div>
             <button
               type="button"
-              className={cn(iconButton, '-mr-1 min-[1180px]:hidden')}
+              className={cn(iconButton, '-mr-1 min-[1210px]:hidden')}
               onClick={() => setOpen(true)}
               aria-label={t.nav.menu}
               aria-expanded={open}

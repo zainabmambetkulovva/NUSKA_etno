@@ -59,7 +59,7 @@ Top to bottom (`app/[locale]/page.tsx`, `components/home/hero.tsx`, `components/
   categories, passed from the layout); О бренде · Доставка и оплата · Рецепты · Контакты;
   KG/RU menu (`language-menu.tsx`); search, favorites, cart (count badge), account (sign in /
   register menu, or the cabinet). Transparent over the cream hero, a cream bar once scrolled.
-  The menu shows from 1180 px; below it a drawer with the same links and the categories.
+  The menu shows from 1210 px; below it a drawer with the same links and the categories.
 - **Hero**: badge, «Природная сила Кыргызстана», subtitle, «Перейти в каталог» and
   «▶ Узнать больше» (the YouTube channel, or the brand section). The company's picture
   `hero.png` is shown untouched (`unoptimized`); only its lower 62 % is in view, so the logo
