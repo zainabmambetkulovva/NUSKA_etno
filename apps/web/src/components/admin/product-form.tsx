@@ -32,6 +32,10 @@ interface TranslationValues {
   ingredients: string;
   benefits: string;
   storageInstructions: string;
+  shelfLife: string;
+  nutrition: string;
+  origin: string;
+  producer: string;
   characteristics: { name: string; value: string }[];
 }
 
@@ -74,6 +78,10 @@ function toValues(product?: AdminProduct): ProductFormValues {
         ingredients: t?.ingredients ?? '',
         benefits: t?.benefits ?? '',
         storageInstructions: t?.storageInstructions ?? '',
+        shelfLife: t?.shelfLife ?? '',
+        nutrition: t?.nutrition ?? '',
+        origin: t?.origin ?? '',
+        producer: t?.producer ?? '',
         characteristics: t?.characteristics ?? [],
       };
     }),
@@ -110,6 +118,10 @@ function toPayload(values: ProductFormValues, isNew: boolean) {
         ingredients: text(t.ingredients),
         benefits: text(t.benefits),
         storageInstructions: text(t.storageInstructions),
+        shelfLife: text(t.shelfLife),
+        nutrition: text(t.nutrition),
+        origin: text(t.origin),
+        producer: text(t.producer),
         characteristics: t.characteristics.filter((c) => c.name.trim() && c.value.trim()),
       })),
     units: values.units.map((u) => ({ ...u, quantityValue: Number(u.quantityValue) })),
@@ -380,6 +392,45 @@ export function ProductForm({
                   id={id}
                   maxLength={2000}
                   {...form.register(`translations.${tIndex}.storageInstructions`)}
+                />
+              )}
+            </Field>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field label={t.admin.shelfLife}>
+              {(id) => (
+                <Input
+                  id={id}
+                  maxLength={500}
+                  {...form.register(`translations.${tIndex}.shelfLife`)}
+                />
+              )}
+            </Field>
+            <Field label={t.admin.nutrition}>
+              {(id) => (
+                <Textarea
+                  id={id}
+                  rows={3}
+                  maxLength={2000}
+                  {...form.register(`translations.${tIndex}.nutrition`)}
+                />
+              )}
+            </Field>
+            <Field label={t.admin.origin}>
+              {(id) => (
+                <Input
+                  id={id}
+                  maxLength={500}
+                  {...form.register(`translations.${tIndex}.origin`)}
+                />
+              )}
+            </Field>
+            <Field label={t.admin.producer}>
+              {(id) => (
+                <Input
+                  id={id}
+                  maxLength={500}
+                  {...form.register(`translations.${tIndex}.producer`)}
                 />
               )}
             </Field>

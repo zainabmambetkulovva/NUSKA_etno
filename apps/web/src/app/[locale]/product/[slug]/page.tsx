@@ -21,6 +21,7 @@ import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiOrNull, serverApiSafe } from '@/lib/api/server';
 import { formatDate, formatMoney } from '@/lib/format';
 import { alternates, resolveLocale, siteUrl } from '@/lib/locale-params';
+import { ORIGIN } from '@/lib/origin';
 
 type Params = Promise<{ locale: string; slug: string }>;
 
@@ -100,6 +101,29 @@ export default async function ProductPage({ params }: { params: Params }) {
     { title: t.product.ingredients, body: product.ingredients },
     { title: t.product.storage, body: product.storageInstructions },
   ].filter((block) => block.body);
+  // Facts table: only what the catalog holds; nothing is filled in by the site.
+  const tradition = ORIGIN.find(
+    (o) => product.slug === o.key || product.slug.startsWith(`${o.key}-`)
+  );
+  const traditionText = !tradition
+    ? null
+    : tradition.regions === 'all'
+      ? t.product.traditionAll
+      : tradition.regions === 'none'
+        ? t.product.traditionNone
+        : tradition.regions.map((r) => t.landing.regions[r]).join(', ');
+  const specs = [
+    product.units.length > 0 && {
+      name: t.product.size,
+      value: product.units.map((u) => `${u.quantityValue} ${u.quantityUnit}`).join(', '),
+    },
+    product.shelfLife && { name: t.product.shelfLife, value: product.shelfLife },
+    product.origin && { name: t.product.origin, value: product.origin },
+    product.producer && { name: t.product.producer, value: product.producer },
+    traditionText && { name: t.product.tradition, value: traditionText },
+    ...product.characteristics,
+  ].filter((row): row is { name: string; value: string } => Boolean(row));
+  const nutrition = product.nutrition ?? [];
   const hasInfo = intro.length > 0 || benefits.length > 0 || details.length > 0;
 
   return (
@@ -202,17 +226,29 @@ export default async function ProductPage({ params }: { params: Params }) {
 
           <ProductPurchase product={product} />
 
-          {product.characteristics.length > 0 && (
+          {specs.length > 0 && (
             <section>
-              <h2 className="mb-3 font-serif text-xl">{t.product.characteristics}</h2>
+              <h2 className="mb-3 font-serif text-xl">{t.product.specs}</h2>
               <dl className="divide-y divide-cream-dark/60 rounded-xl border border-cream-dark/60 bg-white">
-                {product.characteristics.map((c) => (
-                  <div key={c.name} className="flex justify-between gap-4 px-4 py-2.5 text-sm">
-                    <dt className="text-ink-muted">{c.name}</dt>
-                    <dd className="text-right font-medium">{c.value}</dd>
+                {specs.map((row) => (
+                  <div key={row.name} className="flex justify-between gap-4 px-4 py-2.5 text-sm">
+                    <dt className="text-ink-muted">{row.name}</dt>
+                    <dd className="text-right font-medium">{row.value}</dd>
                   </div>
                 ))}
               </dl>
+              {nutrition.length > 0 && (
+                <div className="mt-3 rounded-xl border border-cream-dark/60 bg-white px-4 py-3 text-sm">
+                  <p className="mb-1.5 text-ink-muted">{t.product.nutrition}</p>
+                  <ul className="space-y-1">
+                    {nutrition.map((line) => (
+                      <li key={line} className="font-medium">
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </section>
           )}
 

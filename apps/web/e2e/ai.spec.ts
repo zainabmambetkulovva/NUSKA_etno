@@ -5,7 +5,8 @@ import { ky, ru } from './helpers';
 test('NUSKA AI widget: honest mode badge, budget set from the catalog, add to cart by button', async ({
   page,
 }) => {
-  await page.goto('/ru');
+  // wait until the page is interactive: a click before hydration is lost
+  await page.goto('/ru', { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: ru.ai.open }).click();
   const panel = page.getByRole('dialog', { name: ru.ai.name });
   await expect(panel).toBeVisible();
@@ -28,7 +29,7 @@ test('NUSKA AI widget: honest mode badge, budget set from the catalog, add to ca
 });
 
 test('the small NUSKA AI window answers an example question in Kyrgyz', async ({ page }) => {
-  await page.goto('/ky');
+  await page.goto('/ky', { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: ky.ai.open }).click();
   const panel = page.getByRole('dialog', { name: ky.ai.name });
   await expect(panel).toBeVisible();

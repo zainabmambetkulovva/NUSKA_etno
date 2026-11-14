@@ -91,6 +91,11 @@ export function toProductDetail(
     ingredients: translation?.ingredients ?? null,
     benefits: splitLines(translation?.benefits),
     storageInstructions: translation?.storageInstructions ?? null,
+    shelfLife: translation?.shelfLife ?? null,
+    /** Nutrition facts, one line each. */
+    nutrition: splitLines(translation?.nutrition),
+    origin: translation?.origin ?? null,
+    producer: translation?.producer ?? null,
     characteristics:
       (translation?.characteristics as { name: string; value: string }[] | null) ?? [],
     images: product.images.map((image) => ({

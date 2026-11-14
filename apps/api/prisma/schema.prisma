@@ -284,6 +284,14 @@ model ProductTranslation {
   /// "What is good about it": one benefit per line, shown as a list on the product page.
   benefits            String?
   storageInstructions String? @map("storage_instructions")
+  /// Shelf life as the company states it (e.g. on the label).
+  shelfLife           String? @map("shelf_life")
+  /// Nutrition facts as on the label, one line per value.
+  nutrition           String?
+  /// Where the product comes from, only when the company has confirmed it.
+  origin              String?
+  /// Producer, only when verified by the company.
+  producer            String?
   /// Product characteristics shown on the product page (TZ §6.4):
   /// an ordered array of { "name": string, "value": string } in this locale.
   characteristics     Json?

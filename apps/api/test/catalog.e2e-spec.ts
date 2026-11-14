@@ -163,6 +163,9 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
         characteristics: [{ name: 'Вес', value: '500 г' }],
         ingredients: 'Молочный жир',
         benefits: 'Натуральный продукт\n\n  Не подгорает при жарке  \n',
+        shelfLife: '12 месяцев',
+        nutrition: 'Жиры — 99 г\nЭнергетическая ценность — 892 ккал',
+        producer: 'NUSKA ETNO',
       },
       { locale: 'ky', name: 'Сары май' },
     ];
@@ -202,8 +205,19 @@ describe('Catalog, admin catalog and payments (e2e)', () => {
       // Benefits are stored one per line and served as a clean list; empty lines are dropped.
       expect(publicDetail.ingredients).toBe('Молочный жир');
       expect(publicDetail.benefits).toEqual(['Натуральный продукт', 'Не подгорает при жарке']);
+      // Product facts: what the admin entered, nothing else (origin was left empty).
+      expect(publicDetail).toMatchObject({
+        shelfLife: '12 месяцев',
+        nutrition: ['Жиры — 99 г', 'Энергетическая ценность — 892 ккал'],
+        origin: null,
+        producer: 'NUSKA ETNO',
+      });
+      // product cards show the weight or volume of the first unit
+      const list = (await http().get('/api/products?locale=ru').expect(200)).body;
+      expect(list.data.find((p: { slug: string }) => p.slug === 'sary-mai').size).toBe('0.5 кг');
       const ky = (await http().get('/api/products/sary-mai?locale=ky').expect(200)).body;
       expect(ky.benefits).toEqual([]);
+      expect(ky).toMatchObject({ shelfLife: null, nutrition: [], producer: null });
     });
 
     it('stores the 3D packaging choice and shows it on the product page', async () => {

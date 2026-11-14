@@ -44,7 +44,9 @@ export function FavoriteButton({
         toggle.mutate({ productId, favorite: !active });
       }}
       className={cn(
-        'relative flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-soft backdrop-blur transition hover:scale-110',
+        // placed buttons (absolute) already hold the heart burst; others need a box for it
+        !className?.includes('absolute') && 'relative',
+        'flex h-10 w-10 items-center justify-center rounded-full bg-white/90 shadow-soft backdrop-blur transition hover:scale-110',
         active ? 'text-danger' : 'text-ink-muted hover:text-danger',
         className
       )}

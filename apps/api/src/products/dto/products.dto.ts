@@ -150,6 +150,22 @@ export class ProductTranslationDto {
   @NullableText(2000)
   storageInstructions?: string | null;
 
+  @ApiPropertyOptional({ nullable: true, description: 'Shelf life as on the label' })
+  @NullableText(500)
+  shelfLife?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Nutrition facts, one per line' })
+  @NullableText(2000)
+  nutrition?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Confirmed origin' })
+  @NullableText(500)
+  origin?: string | null;
+
+  @ApiPropertyOptional({ nullable: true, description: 'Verified producer' })
+  @NullableText(500)
+  producer?: string | null;
+
   @ApiPropertyOptional({ type: [CharacteristicDto], nullable: true })
   @IsOptional()
   @ValidateIf((_, value) => value !== null)

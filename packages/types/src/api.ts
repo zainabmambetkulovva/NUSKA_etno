@@ -93,6 +93,14 @@ export interface ProductDetail extends ProductCard {
   /** Benefits, one list item each. */
   benefits: string[];
   storageInstructions: string | null;
+  /** Shelf life as the company states it. */
+  shelfLife: string | null;
+  /** Nutrition facts, one item each. */
+  nutrition: string[];
+  /** Confirmed origin, or null. */
+  origin: string | null;
+  /** Verified producer, or null. */
+  producer: string | null;
   characteristics: { name: string; value: string }[];
   images: (ImageRef & {
     id: string;
@@ -269,6 +277,10 @@ export interface AdminProduct {
     /** Benefits, one per line. */
     benefits: string | null;
     storageInstructions: string | null;
+    shelfLife: string | null;
+    nutrition: string | null;
+    origin: string | null;
+    producer: string | null;
     characteristics: { name: string; value: string }[] | null;
   }[];
   images: { id: string; url: string; alt: string | null; isPrimary: boolean; sortOrder: number }[];

@@ -264,3 +264,16 @@ never overwritten.
 - **Reduced motion**: the markup is the same on server and client; movement is multiplied by
   `useMotionEnabled()` (0 with reduced motion) and MotionConfig `reducedMotion="user"` keeps
   only fades. No WebGL is loaded then. Tests: `e2e/three.spec.ts`.
+
+## Catalog and product facts (master brief, stage 4)
+
+- New optional product fields per language (`ProductTranslation`, migration
+  `20261114120000_product_facts`): `shelfLife`, `nutrition` (one value per line), `origin`
+  (only when confirmed), `producer` (only when verified). Edited in the admin product form.
+  Nothing is filled in by the site: an empty field is simply not shown.
+- Product page: «Характеристики» lists weight/volume (units), shelf life, origin, producer,
+  the traditional region from the company's table (`lib/origin.ts`) and the admin's own
+  characteristics; nutrition facts below it.
+- Catalog: cards show the weight or volume (`size`); on phones and tablets the filters are a
+  panel sliding in from the left (`catalog/filter-drawer.tsx`, one set of fields), so the
+  products are on the first screen; choosing a filter closes the panel.

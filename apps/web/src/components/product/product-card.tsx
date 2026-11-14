@@ -84,6 +84,7 @@ export function ProductCard({
             {product.name}
           </Link>
         </h3>
+        {product.size && <p className="text-xs text-ink-soft">{product.size}</p>}
         {product.shortDescription && (
           <p className="line-clamp-2 text-sm text-ink-muted">{product.shortDescription}</p>
         )}

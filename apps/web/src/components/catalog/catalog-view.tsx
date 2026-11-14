@@ -4,6 +4,7 @@ import type { CategoryNode, Page, ProductCard as ProductCardData } from '@nuska/
 import Link from 'next/link';
 
 import { CatalogFilters } from './catalog-filters';
+import { FilterDrawer } from './filter-drawer';
 
 import { ProductCard } from '@/components/product/product-card';
 import { buttonClass } from '@/components/ui/button';
@@ -89,9 +90,11 @@ export async function CatalogView({
         {t.catalog.results}: {products.meta.total}
       </p>
 
-      <div className="grid gap-10 lg:grid-cols-[260px_1fr]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_1fr] lg:gap-10">
         <Suspense>
-          <CatalogFilters categories={categories} activeCategory={category?.slug} />
+          <FilterDrawer>
+            <CatalogFilters categories={categories} activeCategory={category?.slug} />
+          </FilterDrawer>
         </Suspense>
         <div>
           {products.data.length === 0 ? (
