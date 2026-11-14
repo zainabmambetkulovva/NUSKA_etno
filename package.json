@@ -3,24 +3,24 @@
   "version": "0.1.0",
   "private": true,
   "description": "Premium Kyrgyz Ethno E-commerce Monorepo",
-
   "scripts": {
-    "dev": "pnpm -r run dev",
+    "dev": "pnpm -r --parallel run dev",
     "dev:web": "pnpm --filter @nuska/web run dev",
     "dev:api": "pnpm --filter @nuska/api run dev",
     "build": "pnpm -r run build",
     "build:web": "pnpm --filter @nuska/web run build",
     "build:api": "pnpm --filter @nuska/api run build",
     "test": "pnpm -r run test",
-    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
-    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
-    "typecheck": "tsc --noEmit",
-    "typecheck:web": "tsc --noEmit --project apps/web/tsconfig.json",
-    "typecheck:api": "tsc --noEmit --project apps/api/tsconfig.json",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "pnpm -r run typecheck",
+    "typecheck:web": "pnpm --filter @nuska/web run typecheck",
+    "typecheck:api": "pnpm --filter @nuska/api run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,mjs,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mjs,json}\"",
     "db:generate": "pnpm --filter @nuska/api run db:generate",
     "db:migrate": "pnpm --filter @nuska/api run db:migrate",
+    "db:deploy": "pnpm --filter @nuska/api run db:deploy",
     "db:studio": "pnpm --filter @nuska/api run db:studio",
     "db:seed": "pnpm --filter @nuska/api run db:seed"
   },
@@ -30,13 +30,26 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.0"
   },
   "engines": {
     "node": ">=20.0.0",
-    "pnpm": ">=8.0.0"
+    "pnpm": ">=9.0.0"
   },
-  "packageManager": "pnpm@8.0.0"
+  "packageManager": "pnpm@9.15.9",
+  "pnpm": {
+    "overrides": {
+      "multer": "^2.5.0",
+      "body-parser@1": "^1.20.9",
+      "qs": "^6.17.1",
+      "js-yaml@4": "^4.3.2",
+      "lodash@4": "^4.18.1",
+      "file-type@>=20 <22": "^21.3.4",
+      "postcss@8": "^8.5.32",
+      "tar@<8": "^7.5.22"
+    }
+  }
 }

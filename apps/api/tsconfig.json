@@ -1,15 +1,21 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "ES2022",
     "outDir": "./dist",
     "baseUrl": "./",
-    "paths": {
-      "@nuska/types": ["../../packages/types/src/index.ts"],
-      "@nuska/validators": ["../../packages/validators/src/index.ts"],
-      "@nuska/config": ["../../packages/config/src/index.ts"],
-      "@api/*": ["./src/*"]
-    }
+    "declaration": false,
+    "sourceMap": true,
+    "incremental": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "useDefineForClassFields": false,
+    "types": ["node", "jest", "multer"]
   },
-  "include": ["src/**/*.ts", "prisma/**/*.ts"],
-  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts", "**/*.test.ts"]
+  "include": ["src/**/*.ts", "prisma/**/*.ts", "test/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -2,26 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --brand: #355b3e;
-  --brand-dark: #2a4732;
-  --brand-light: #4d7a55;
-  --cream: #f4e9b9;
-  --cream-dark: #e5d8a6;
-  --cream-light: #fff9e6;
-  --text: #1a1a1a;
-  --text-muted: #666666;
-  --background: #f9f8f4;
-  --card: #ffffff;
-  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-nk-cream font-sans text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif text-ink;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-milk;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
 }
 
-* {
-  scroll-behavior: smooth;
+@layer components {
+  .section {
+    @apply py-10 md:py-14;
+  }
+  .section-title {
+    @apply font-serif text-3xl font-semibold tracking-tight text-ink md:text-4xl;
+  }
+  /* Honey-gold call to action of the design. */
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-b from-honey-light to-honey px-6 py-3 text-sm font-semibold text-forest-dark shadow-[0_10px_24px_-10px_rgba(176,122,53,0.8)] ring-1 ring-inset ring-white/40 transition duration-300 hover:-translate-y-0.5 hover:from-honey hover:to-honey-dark hover:text-white;
+  }
+  /* Deep forest green pill of the mockup ("Перейти в каталог →"). */
+  .btn-forest {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full bg-nk-forest px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_-14px_rgba(42,72,49,0.9)] ring-1 ring-inset ring-white/10 transition duration-300 hover:-translate-y-0.5 hover:bg-nk-deep hover:shadow-[0_18px_32px_-14px_rgba(42,72,49,0.95)];
+  }
+  /* Small eyebrow above a section title: a gold star and the label. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-sm font-semibold text-nk-ink;
+  }
+  .btn-outline-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/40 px-6 py-3 text-sm font-semibold text-ink transition duration-300 hover:-translate-y-0.5 hover:border-forest hover:bg-forest hover:text-cream-light;
+  }
+  .card {
+    @apply rounded-2xl border border-cream-dark/60 bg-white shadow-soft;
+  }
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+  .field-input {
+    @apply w-full rounded-xl border border-cream-dark bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-soft
+      transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-cream-50;
+  }
+  .field-error {
+    @apply mt-1 text-sm text-danger;
+  }
+  /* Small ornamental pattern used on surfaces (kochkor muyuz motif, see Ornament component). */
+  .bg-ornament {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cpath d='M32 14c-6 0-10 4-10 9 0 4 3 6 6 6 2 0 4-2 4-4m0-11c6 0 10 4 10 9 0 4-3 6-6 6-2 0-4-2-4-4m0 4v12m0 0c-6 0-10 4-10 9m10-9c6 0 10 4 10 9' fill='none' stroke='%23355B3E' stroke-opacity='.08' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  }
 }
 
-body {
-  background-color: var(--background);
-  color: var(--text);
+/* Soft edges for 3D canvases, so a zoomed-in scene never ends with a hard rectangle. */
+.scene-fade {
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(to bottom, transparent, #000 7%, #000 93%, transparent);
+  mask-composite: intersect;
+}
+
+/* The home page ends with a deep green band that flows straight into the footer. */
+main:has([data-flush-footer]) + footer {
+  margin-top: 0;
 }

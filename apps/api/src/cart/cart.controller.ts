@@ -1,42 +1,75 @@
-import { Controller, Get, Post, Body, Delete, Param, Patch, UseGuards } from '@nestjs/common';
-import { CartService } from './cart.service';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { RequestLocale } from '../common/decorators/request-locale.decorator';
+import { AuthenticatedUser } from '../common/types/authenticated-user';
+import { Locale } from '../common/utils/locale';
+
+import { CartService } from './cart.service';
+import { AddCartItemDto, MergeCartDto, SetCartItemQuantityDto } from './dto/cart.dto';
+
+@ApiTags('cart')
 @Controller('cart')
-@UseGuards(JwtAuthGuard)
 export class CartController {
-  constructor(private readonly cartService: CartService) {}
+  constructor(private readonly cart: CartService) {}
 
   @Get()
-  getCart() {
-    // TODO: Get cart for authenticated user
-    return { message: 'Get cart - to be implemented' };
+  get(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale) {
+    return this.cart.getCart(user.id, locale);
   }
 
   @Post('items')
-  addItem(@Body() addItemDto: { productId: string; quantity: number }) {
-    // TODO: Add item to cart for authenticated user
-    return { message: 'Add item - to be implemented' };
-  }
-
-  @Delete('items/:itemId')
-  removeItem(@Param('itemId') itemId: string) {
-    // TODO: Remove item from cart for authenticated user
-    return { message: 'Remove item - to be implemented' };
-  }
-
-  @Patch('items/:itemId')
-  updateItem(
-    @Param('itemId') itemId: string,
-    @Body() updateItemDto: { quantity: number },
+  add(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: AddCartItemDto,
+    @RequestLocale() locale: Locale
   ) {
-    // TODO: Update item quantity in cart for authenticated user
-    return { message: 'Update item - to be implemented' };
+    return this.cart.addItem(user.id, dto, locale);
+  }
+
+  @Patch('items/:productId')
+  setQuantity(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @Body() dto: SetCartItemQuantityDto,
+    @RequestLocale() locale: Locale
+  ) {
+    return this.cart.setQuantity(user.id, productId, dto.quantity, locale);
+  }
+
+  @Delete('items/:productId')
+  remove(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @RequestLocale() locale: Locale
+  ) {
+    return this.cart.removeItem(user.id, productId, locale);
   }
 
   @Delete()
-  clearCart() {
-    // TODO: Clear cart for authenticated user
-    return { message: 'Clear cart - to be implemented' };
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async clear(@CurrentUser() user: AuthenticatedUser) {
+    await this.cart.clear(user.id);
+  }
+
+  @Post('merge')
+  merge(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: MergeCartDto,
+    @RequestLocale() locale: Locale
+  ) {
+    return this.cart.merge(user.id, dto, locale);
   }
 }
