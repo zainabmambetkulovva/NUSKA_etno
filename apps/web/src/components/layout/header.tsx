@@ -52,7 +52,7 @@ function CartLink() {
       className={iconButton}
       aria-label={count > 0 ? `${t.nav.cart}: ${count}` : t.nav.cart}
     >
-      <CartIcon width={22} height={22} />
+      <CartIcon width={22} height={22} className={cn(bump && 'motion-safe:animate-shake')} />
       {count > 0 && (
         <span
           className={cn(

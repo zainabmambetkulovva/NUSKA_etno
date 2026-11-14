@@ -235,3 +235,32 @@ never overwritten.
   values (`lib/contacts.ts`) are used when it is empty or the API is down.
 - **Back to top** (`components/layout/back-to-top.tsx`): a fixed gold button right above the
   NUSKA AI button, shown after scrolling, hidden while the AI chat is open and in the admin panel.
+
+## 3D and animation system (master brief, stage 3)
+
+- **Hero stage** (`components/home/hero-stage.tsx`): the hero tracks the mouse (-1..1) and the
+  scroll progress through itself (0..1). Its layers move at different depths: the picture
+  slightly against the mouse, the products, eagle and text with it; while scrolling the
+  picture and the product podium zoom toward the products and the text lifts and fades.
+- **WebGL atmosphere** (`components/three/hero-atmosphere.tsx`, React Three Fiber): drifting
+  clouds, golden pollen (one GPU-animated point cloud) and light shafts, all drawn in code
+  (no downloads). The camera leans toward the mouse and dollies toward the products on scroll.
+  Loaded with `next/dynamic` only on desktops (≥ 1024 px, fine pointer, WebGL, no reduced
+  motion) when the browser is idle; the render loop stops while the hero is off screen;
+  textures and geometries are disposed on unmount; DPR ≤ 1.5. Phones keep CSS clouds.
+- **Products**: there are no real 3D models of the packages, so the brief's rule applies —
+  the company's photos with layered animation, no invented 3D objects: they float over the
+  stump in the hero, and on the product page the package photo floats over a wooden stand
+  with a breathing shadow and tilts toward the pointer (`product-gallery.tsx`). The
+  procedural 3D packaging viewer stays behind the «3D» switch.
+- **Scroll animations** (`components/motion/*`, framer-motion — GSAP was not added, the
+  installed library covers it): `TextReveal` (words rise from a mask), `ImageReveal`
+  (curtain + settle), `Parallax`, `HoneyDivider` (a golden wave draws itself and a drop of
+  honey runs down) between sections.
+- **Micro-interactions**: `Tilt` on category arches and bestseller cards, `Magnetic` on the
+  hero button, heart burst on «add to favorites», cart shake + count bump, page fade between
+  routes (`app/[locale]/template.tsx`). No `loading.tsx`: a streaming boundary would answer
+  missing pages with status 200 instead of 404.
+- **Reduced motion**: the markup is the same on server and client; movement is multiplied by
+  `useMotionEnabled()` (0 with reduced motion) and MotionConfig `reducedMotion="user"` keeps
+  only fades. No WebGL is loaded then. Tests: `e2e/three.spec.ts`.

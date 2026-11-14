@@ -15,6 +15,7 @@ import {
   Story,
   WhyUs,
 } from '@/components/home/sections';
+import { HoneyDivider } from '@/components/motion/honey-divider';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
 import { resolveLocale } from '@/lib/locale-params';
@@ -47,6 +48,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <Hero locale={locale} t={t} videoUrl={videoUrl} />
       <BenefitsBar t={t} />
       <CategoryArches t={t} locale={locale} categories={categories} />
+      <HoneyDivider className="-my-4" />
       <BrandAbout t={t} locale={locale} />
       <OriginAndBestsellers
         t={t}
@@ -54,6 +56,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         products={products.data}
         bestsellers={bestsellers}
       />
+      <HoneyDivider className="my-2" />
       <WhyUs t={t} />
       <PricesPodium t={t} locale={locale} products={products.data} />
       <Story t={t} locale={locale} videoUrl={videoUrl} />

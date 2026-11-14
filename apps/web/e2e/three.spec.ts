@@ -24,3 +24,35 @@ test('without WebGL the product page keeps the photo and hides the 3D switch', a
   await expect(page.locator('button', { hasText: /^3D$/ })).toHaveCount(0);
   await expect(page.locator('main canvas')).toHaveCount(0);
 });
+
+test('home hero: WebGL clouds and pollen load on desktop and follow the mouse', async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/ky');
+  await expect(page.locator('[data-hero-3d="on"] canvas')).toBeVisible({ timeout: 30_000 });
+  await page.mouse.move(200, 200);
+  await page.mouse.move(1200, 600, { steps: 5 });
+  // scrolling past the hero pauses the scene but keeps the page usable
+  await page.mouse.wheel(0, 1600);
+  await expect(page.getByRole('heading', { name: ky.landing.productsTitle })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('with reduced motion the hero stays still and loads no WebGL', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error' && /hydrat/i.test(message.text())) errors.push(message.text());
+  });
+  await page.goto('/ky');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(ky.home.heroTitle);
+  await page.waitForTimeout(3000);
+  await expect(page.locator('[data-hero-3d]')).toHaveAttribute('data-hero-3d', 'off');
+  await expect(page.locator('canvas')).toHaveCount(0);
+  expect(errors).toEqual([]);
+  await context.close();
+});

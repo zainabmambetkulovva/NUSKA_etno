@@ -9,8 +9,10 @@ import dynamic from 'next/dynamic';
 import { ProductImage } from './product-image';
 
 import { OrnamentLoader } from '@/components/brand/ornament';
+import { Tilt } from '@/components/motion/tilt';
 import { useI18n } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/cn';
+import { companyPhoto } from '@/lib/product-photos';
 
 // three.js is loaded only when the visitor opens the 3D view.
 const PackagingViewer = dynamic(() => import('@/components/three/packaging-viewer'), {
@@ -51,9 +53,11 @@ export function ProductGallery({
   const [webgl, setWebgl] = useState(false);
   useEffect(() => setWebgl(supportsWebGL()), []);
   const can3d = Boolean(packaging3d) && webgl;
+  // the company's package photos (transparent background) float on a wooden stand
+  const showcase = !image?.url && Boolean(companyPhoto(slug));
 
   return (
-    <div className="relative aspect-square overflow-hidden rounded-2xl bg-cream-light shadow-card">
+    <div className="relative aspect-square overflow-hidden rounded-2xl bg-[radial-gradient(ellipse_at_50%_35%,#FFF9EC,#F3E2C2)] shadow-card">
       {mode === '3d' && packaging3d ? (
         <div className="bg-ornament absolute inset-0" role="img" aria-label={`${name} — 3D`}>
           <PackagingViewer model={packaging3d} name={name} reducedMotion={reduce} zoom={zoom} />
@@ -80,6 +84,31 @@ export function ProductGallery({
             {t.product.rotateHint}
           </span>
         </div>
+      ) : showcase ? (
+        <Tilt className="group relative h-full w-full" max={6}>
+          {/* wooden stand with a breathing shadow under the floating package */}
+          <span
+            aria-hidden
+            className="absolute bottom-[9%] left-1/2 h-[9%] w-[58%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_at_50%_40%,#D9B07A,#A97546_70%,#7E5230)] shadow-[0_18px_30px_-12px_rgba(60,35,15,0.55)]"
+          />
+          <span
+            aria-hidden
+            className="absolute bottom-[12%] left-1/2 h-[5%] w-[40%] -translate-x-1/2 rounded-[50%] bg-black/25 blur-md motion-safe:animate-shadow-breathe"
+          />
+          <div className="absolute inset-x-[10%] bottom-[15%] top-[6%] motion-safe:animate-float [animation-duration:5.5s]">
+            <ProductImage
+              url={image?.url}
+              slug={slug}
+              alt={image?.alt}
+              name={name}
+              priority
+              sizes="(min-width: 1024px) 40vw, 80vw"
+              placeholderLabel={t.product.photoSoon}
+              bare
+              className="h-full w-full !overflow-visible"
+            />
+          </div>
+        </Tilt>
       ) : (
         <ProductImage
           url={image?.url}

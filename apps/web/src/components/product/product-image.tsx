@@ -19,7 +19,10 @@ export function ProductImage({
   priority,
   className,
   placeholderLabel,
+  bare = false,
 }: {
+  /** No background or glow (the photo floats over its own scene). */
+  bare?: boolean;
   url?: string | null;
   slug?: string | null;
   alt?: string | null;
@@ -31,10 +34,15 @@ export function ProductImage({
 }) {
   const fallback = url ? null : companyPhoto(slug);
   return (
-    <div className={cn('relative overflow-hidden bg-cream-light', className)}>
+    <div className={cn('relative overflow-hidden', !bare && 'bg-cream-light', className)}>
       {fallback ? (
         // the company's package photo (transparent background) on a warm glow
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,#FFFDF5,#F1E2C2_70%,#E6D2A8)]">
+        <div
+          className={cn(
+            'absolute inset-0',
+            !bare && 'bg-[radial-gradient(circle_at_50%_45%,#FFFDF5,#F1E2C2_70%,#E6D2A8)]'
+          )}
+        >
           <Image
             src={fallback}
             alt={alt || name}

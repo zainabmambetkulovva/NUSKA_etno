@@ -95,6 +95,27 @@ const config: Config = {
               '0 24px 40px -24px rgba(15,25,10,0.8), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 28px 2px rgba(231,199,127,0.55)',
           },
         },
+        'ping-slow': {
+          '0%': { transform: 'scale(1)', opacity: '0.8' },
+          '80%,100%': { transform: 'scale(1.7)', opacity: '0' },
+        },
+        pop: {
+          '0%': { transform: 'scale(1)' },
+          '35%': { transform: 'scale(1.35)' },
+          '70%': { transform: 'scale(0.92)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        shake: {
+          '0%,100%': { transform: 'rotate(0)' },
+          '20%': { transform: 'rotate(-12deg)' },
+          '40%': { transform: 'rotate(10deg)' },
+          '60%': { transform: 'rotate(-6deg)' },
+          '80%': { transform: 'rotate(4deg)' },
+        },
+        'shadow-breathe': {
+          '0%,100%': { transform: 'translateX(-50%) scale(1)', opacity: '0.9' },
+          '50%': { transform: 'translateX(-50%) scale(0.82)', opacity: '0.55' },
+        },
         drift: {
           '0%,100%': { transform: 'translate3d(0,0,0)' },
           '50%': { transform: 'translate3d(var(--drift, 40px),-6px,0)' },
@@ -122,6 +143,10 @@ const config: Config = {
         sway: 'sway 7s ease-in-out infinite',
         'leaf-drift': 'leaf-drift 8s ease-in-out infinite',
         drift: 'drift var(--drift-duration, 26s) ease-in-out infinite',
+        'ping-slow': 'ping-slow 2.4s cubic-bezier(0,0,0.2,1) infinite',
+        pop: 'pop .45s ease-out',
+        'shadow-breathe': 'shadow-breathe 5.5s ease-in-out infinite',
+        shake: 'shake .5s ease-in-out',
         glide: 'glide 18s ease-in-out infinite',
         flap: 'flap 1.6s ease-in-out infinite',
         'border-glow': 'border-glow 8s ease-in-out infinite',

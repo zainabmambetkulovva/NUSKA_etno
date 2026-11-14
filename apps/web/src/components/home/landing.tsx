@@ -9,6 +9,10 @@ import { OriginMap } from './origin-map';
 
 import { LogoMark } from '@/components/brand/logo';
 import { Branch } from '@/components/brand/nature-decor';
+import { ImageReveal } from '@/components/motion/image-reveal';
+import { Parallax } from '@/components/motion/parallax';
+import { TextReveal } from '@/components/motion/text-reveal';
+import { Tilt } from '@/components/motion/tilt';
 import {
   ArrowRightIcon,
   DiamondIcon,
@@ -109,12 +113,11 @@ export function CategoryArches({
       <div className="container grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] xl:gap-14">
         <Reveal>
           <Eyebrow>{t.landing.productsEyebrow}</Eyebrow>
-          <h2
+          <TextReveal
             id="categories-title"
+            text={t.landing.productsTitle}
             className="mt-3 font-serif text-[2.1rem] leading-[1.1] text-nk-ink sm:text-[2.5rem]"
-          >
-            {t.landing.productsTitle}
-          </h2>
+          />
           <p className="mt-4 text-[15px] leading-relaxed text-nk-muted">{t.landing.productsText}</p>
           <Link href={`/${locale}/catalog`} className="btn-forest group mt-7">
             {t.landing.productsButton}
@@ -132,38 +135,43 @@ export function CategoryArches({
             return (
               <li key={category.slug} className="w-[46%] shrink-0 snap-start sm:w-auto">
                 <Reveal delay={i * 0.06} className="h-full">
-                  <Link
-                    href={`/${locale}/catalog/${category.slug}`}
-                    className="group relative flex aspect-[3/4.4] flex-col overflow-hidden rounded-t-[999px] rounded-b-[1.6rem] border-[3px] border-white/80 bg-[linear-gradient(180deg,#FBEFD9_0%,#F0D6AA_70%)] shadow-[0_24px_40px_-26px_rgba(80,55,25,0.75)] transition duration-500 hover:-translate-y-2 hover:border-nk-gold/70 hover:shadow-[0_32px_48px_-26px_rgba(80,55,25,0.85)]"
+                  <Tilt
+                    className="group relative h-full rounded-b-[1.6rem] rounded-t-[999px]"
+                    max={7}
                   >
-                    <span className="relative flex-1">
-                      {photo ? (
-                        <Image
-                          src={photo}
-                          alt=""
-                          fill
-                          quality={95}
-                          sizes="(min-width: 1024px) 200px, 45vw"
-                          className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 group-hover:scale-110"
-                        />
-                      ) : (
-                        <span className="flex h-full flex-col items-center justify-center gap-2 pt-6">
-                          <LogoMark className="h-14 w-14 opacity-80 transition duration-700 group-hover:rotate-45" />
-                          <span className="text-[11px] uppercase tracking-[0.2em] text-nk-brown/70">
-                            {t.landing.categoryPhotoSoon}
+                    <Link
+                      href={`/${locale}/catalog/${category.slug}`}
+                      className="group relative flex aspect-[3/4.4] flex-col overflow-hidden rounded-t-[999px] rounded-b-[1.6rem] border-[3px] border-white/80 bg-[linear-gradient(180deg,#FBEFD9_0%,#F0D6AA_70%)] shadow-[0_24px_40px_-26px_rgba(80,55,25,0.75)] transition duration-500 hover:-translate-y-2 hover:border-nk-gold/70 hover:shadow-[0_32px_48px_-26px_rgba(80,55,25,0.85)]"
+                    >
+                      <span className="relative flex-1">
+                        {photo ? (
+                          <Image
+                            src={photo}
+                            alt=""
+                            fill
+                            quality={95}
+                            sizes="(min-width: 1024px) 200px, 45vw"
+                            className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <span className="flex h-full flex-col items-center justify-center gap-2 pt-6">
+                            <LogoMark className="h-14 w-14 opacity-80 transition duration-700 group-hover:rotate-45" />
+                            <span className="text-[11px] uppercase tracking-[0.2em] text-nk-brown/70">
+                              {t.landing.categoryPhotoSoon}
+                            </span>
                           </span>
-                        </span>
-                      )}
-                    </span>
-                    <span className="flex min-h-[4.5rem] items-center justify-center gap-1.5 bg-gradient-to-b from-nk-forest to-nk-deep px-2 py-3 text-center text-[15px] font-medium leading-tight text-white">
-                      {category.name}
-                      <ArrowRightIcon
-                        width={15}
-                        height={15}
-                        className="shrink-0 transition group-hover:translate-x-1"
-                      />
-                    </span>
-                  </Link>
+                        )}
+                      </span>
+                      <span className="flex min-h-[4.5rem] items-center justify-center gap-1.5 bg-gradient-to-b from-nk-forest to-nk-deep px-2 py-3 text-center text-[15px] font-medium leading-tight text-white">
+                        {category.name}
+                        <ArrowRightIcon
+                          width={15}
+                          height={15}
+                          className="shrink-0 transition group-hover:translate-x-1"
+                        />
+                      </span>
+                    </Link>
+                  </Tilt>
                 </Reveal>
               </li>
             );
@@ -193,7 +201,7 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
     >
       <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-0">
         <Reveal className="relative h-[340px] sm:h-[420px] lg:h-[460px]">
-          <div className="absolute inset-0 overflow-hidden rounded-r-[3rem] [mask-image:linear-gradient(to_right,#000_75%,transparent)] lg:rounded-r-none">
+          <ImageReveal className="absolute inset-0 overflow-hidden rounded-r-[3rem] [mask-image:linear-gradient(to_right,#000_75%,transparent)] lg:rounded-r-none">
             <Image
               src="/images/home/cta.png"
               alt=""
@@ -202,8 +210,11 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
               className="object-cover object-[50%_58%]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#F4E5CB]/50 to-transparent" />
-          </div>
-          <div className="absolute bottom-0 right-[8%] h-[96%] aspect-[1086/1448] sm:right-[14%]">
+          </ImageReveal>
+          <Parallax
+            speed={22}
+            className="absolute bottom-0 right-[8%] h-[96%] aspect-[1086/1448] sm:right-[14%]"
+          >
             <Image
               src="/images/home/brand-girl.webp"
               alt={t.landing.aboutImageAlt}
@@ -211,18 +222,17 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
               unoptimized
               className="object-contain object-bottom"
             />
-          </div>
+          </Parallax>
         </Reveal>
 
         <div className="container grid grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:pl-4 lg:pr-[max(2rem,calc((100vw-1280px)/2+2rem))]">
           <Reveal>
             <Eyebrow>{t.landing.aboutEyebrow}</Eyebrow>
-            <h2
+            <TextReveal
               id="brand-title"
+              text={t.landing.aboutTitle}
               className="mt-3 font-serif text-[2rem] leading-[1.12] text-nk-ink sm:text-[2.4rem]"
-            >
-              {t.landing.aboutTitle}
-            </h2>
+            />
             <p className="mt-4 text-[15px] leading-relaxed text-nk-muted">{t.landing.aboutText}</p>
             <Link href={`/${locale}/about`} className="btn-forest group mt-7">
               {t.landing.aboutButton}
@@ -271,9 +281,11 @@ export function OriginAndBestsellers({
         <Reveal className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
           <OriginMap products={products} compact className="mx-auto w-full min-w-0 max-w-[460px]" />
           <div>
-            <h2 id="origin-title" className="font-serif text-[1.9rem] leading-tight text-nk-ink">
-              {t.landing.originTitle}
-            </h2>
+            <TextReveal
+              id="origin-title"
+              text={t.landing.originTitle}
+              className="font-serif text-[1.9rem] leading-tight text-nk-ink"
+            />
             <p className="mt-3 text-[15px] leading-relaxed text-nk-muted">{t.landing.originText}</p>
             <Link
               href={`/${locale}/origin`}

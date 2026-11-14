@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent } from 'rea
 import type { ProductCard } from '@nuska/types';
 import Link from 'next/link';
 
+import { Tilt } from '@/components/motion/tilt';
 import { AddToCartButton } from '@/components/product/add-to-cart-button';
 import { FavoriteButton } from '@/components/product/favorite-button';
 import { ProductImage } from '@/components/product/product-image';
@@ -180,7 +181,9 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
               data-card
               className="w-[68%] shrink-0 snap-start sm:w-[44%] md:w-[30%] lg:w-[calc((100%-48px)/4)]"
             >
-              <BestsellerCard product={product} />
+              <Tilt className="group relative h-full rounded-[1.4rem]" max={6}>
+                <BestsellerCard product={product} />
+              </Tilt>
             </div>
           ))}
         </div>

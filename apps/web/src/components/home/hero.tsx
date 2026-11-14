@@ -1,7 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { HeroAtmosphereSlot, HeroLayer, HeroStage } from './hero-stage';
+
 import { Branch, Cloud, Eagle } from '@/components/brand/nature-decor';
+import { Magnetic } from '@/components/motion/magnetic';
+import { TextReveal } from '@/components/motion/text-reveal';
 import { ArrowRightIcon, LeafIcon, PlayIcon } from '@/components/ui/icons';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
@@ -112,11 +116,13 @@ function ProductComposition({ className }: { className?: string }) {
     <div className={className} aria-hidden>
       <div className="relative h-full w-full">
         <Stump className="absolute inset-x-0 bottom-0 w-full" />
-        {PRODUCTS.map((product) => (
+        {PRODUCTS.map((product, i) => (
           <div
             key={product.src}
-            className="absolute"
+            className="absolute motion-safe:animate-float"
             style={{
+              animationDelay: `${-i * 1.3}s`,
+              animationDuration: `${4.6 + i * 0.7}s`,
               left: `${product.left}%`,
               bottom: `${product.bottom}%`,
               height: `${product.height}%`,
@@ -164,9 +170,9 @@ export function Hero({
     : { href: `/${locale}#brand` };
 
   return (
-    <section
-      className="relative -mt-[68px] flex flex-col overflow-hidden bg-nk-cream lg:block [--hero-h:300px] lg:-mt-[80px] lg:h-[var(--hero-h)] lg:[--hero-h:max(620px,40vw)]"
-      aria-labelledby="hero-title"
+    <HeroStage
+      labelledBy="hero-title"
+      className="relative -mt-[68px] flex flex-col overflow-hidden bg-nk-cream [--hero-h:300px] lg:-mt-[80px] lg:block lg:h-[var(--hero-h)] lg:[--hero-h:max(620px,40vw)]"
     >
       {/* warm sky */}
       <div
@@ -174,18 +180,20 @@ export function Hero({
         aria-hidden
       />
 
-      {/* the picture: a band under the text on phones, the right side on desktop */}
+      {/* the picture: a band under the text on phones, the whole background on desktop */}
       <div className="relative order-2 h-[var(--hero-h)] overflow-hidden lg:absolute lg:inset-0 lg:h-auto">
-        <Image
-          src="/images/home/hero.png"
-          alt={t.home.heroImageAlt}
-          width={1672}
-          height={941}
-          priority
-          unoptimized
-          className="absolute bottom-0 right-0 h-auto max-w-none"
-          style={{ width: imageWidth }}
-        />
+        <HeroLayer className="absolute -inset-4" depth={-0.6} zoom={0.1} origin="66% 88%">
+          <Image
+            src="/images/home/hero.png"
+            alt={t.home.heroImageAlt}
+            width={1672}
+            height={941}
+            priority
+            unoptimized
+            className="absolute bottom-0 right-0 h-auto max-w-none"
+            style={{ width: imageWidth }}
+          />
+        </HeroLayer>
         {/* melts into the cream sky on the left and at the top */}
         <div
           className="absolute inset-0 hidden bg-[linear-gradient(to_right,#F7E9D1_0%,rgba(247,233,209,0.92)_18%,rgba(247,233,209,0.55)_32%,rgba(247,233,209,0.12)_46%,transparent_56%)] lg:block"
@@ -195,57 +203,93 @@ export function Hero({
           className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#F7E9D1] to-transparent lg:h-40"
           aria-hidden
         />
-        <ProductComposition className="absolute bottom-[9%] left-[52%] hidden aspect-[360/300] w-[clamp(250px,22vw,380px)] lg:block" />
         <div
           className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-nk-cream to-transparent lg:h-24"
           aria-hidden
         />
       </div>
 
-      <Cloud className="left-[34%] top-[16%] hidden h-16 w-60 [--drift:60px] lg:block" />
-      <Cloud
-        className="right-[6%] top-[26%] hidden h-14 w-52 [--drift:-50px] [--drift-duration:32s] lg:block"
-        style={{ animationDelay: '-8s' }}
-      />
-      <Eagle className="right-[30%] top-[18%] hidden h-12 w-28 lg:block" />
+      {/* WebGL clouds, pollen and light on desktops; CSS clouds otherwise */}
+      <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
+        <Cloud className="left-[34%] top-[16%] h-16 w-60 [--drift:60px]" />
+        <Cloud
+          className="right-[6%] top-[26%] h-14 w-52 [--drift:-50px] [--drift-duration:32s]"
+          style={{ animationDelay: '-8s' }}
+        />
+      </HeroAtmosphereSlot>
+
+      <HeroLayer
+        className="pointer-events-none absolute inset-0 hidden lg:block"
+        depth={1}
+        zoom={0.22}
+        origin="64% 92%"
+      >
+        <ProductComposition className="absolute bottom-[9%] left-[52%] aspect-[360/300] w-[clamp(250px,22vw,380px)]" />
+      </HeroLayer>
+      <HeroLayer
+        className="pointer-events-none absolute inset-0 hidden lg:block"
+        depth={1.8}
+        lift={160}
+      >
+        <Eagle className="right-[30%] top-[18%] h-12 w-28" />
+      </HeroLayer>
       <Branch className="-left-6 top-20 hidden xl:block" />
 
-      <div className="container relative z-10 order-1 pb-10 pt-[100px] lg:flex lg:h-full lg:items-center lg:pb-16 lg:pt-[80px]">
-        <div className="max-w-[640px] motion-safe:animate-fade-up">
-          <p className="inline-flex items-center gap-2 rounded-full bg-white/75 px-3.5 py-1.5 text-xs font-medium text-nk-ink shadow-sm backdrop-blur">
+      <HeroLayer
+        className="container relative z-10 order-1 pb-10 pt-[100px] lg:flex lg:h-full lg:items-center lg:pb-16 lg:pt-[80px]"
+        depth={0.25}
+        lift={120}
+        fade
+      >
+        <div className="max-w-[640px]">
+          <p className="inline-flex items-center gap-2 rounded-full bg-white/75 px-3.5 py-1.5 text-xs font-medium text-nk-ink shadow-sm backdrop-blur motion-safe:animate-fade-up">
             <LeafIcon width={16} height={16} className="text-nk-forest" />
             {t.home.heroBadge}
           </p>
-          <h1
+          <TextReveal
+            as="h1"
             id="hero-title"
+            immediate
+            delay={0.1}
+            text={t.home.heroTitle}
             className="mt-5 font-serif text-[clamp(2.4rem,4.3vw,4.3rem)] font-semibold leading-[1.02] tracking-tight text-nk-ink"
+          />
+          <p
+            className="mt-5 max-w-[30rem] text-base leading-relaxed text-nk-ink/85 motion-safe:animate-fade-up sm:text-lg"
+            style={{ animationDelay: '0.45s' }}
           >
-            {t.home.heroTitle}
-          </h1>
-          <p className="mt-5 max-w-[30rem] text-base leading-relaxed text-nk-ink/85 sm:text-lg">
             {t.home.heroText}
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-5">
-            <Link href={`/${locale}/catalog`} className="btn-forest group">
-              {t.nav.goToCatalog}
-              <ArrowRightIcon
-                width={18}
-                height={18}
-                className="transition-transform group-hover:translate-x-1"
-              />
-            </Link>
+          <div
+            className="mt-8 flex flex-wrap items-center gap-5 motion-safe:animate-fade-up"
+            style={{ animationDelay: '0.6s' }}
+          >
+            <Magnetic>
+              <Link href={`/${locale}/catalog`} className="btn-forest group">
+                {t.nav.goToCatalog}
+                <ArrowRightIcon
+                  width={18}
+                  height={18}
+                  className="transition-transform group-hover:translate-x-1"
+                />
+              </Link>
+            </Magnetic>
             <a
               {...more}
               className="group inline-flex items-center gap-3 text-sm font-medium text-nk-ink"
             >
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-nk-forest shadow-[0_10px_24px_-12px_rgba(43,42,34,0.6)] transition group-hover:scale-105">
+              <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white text-nk-forest shadow-[0_10px_24px_-12px_rgba(43,42,34,0.6)] transition group-hover:scale-105">
+                <span
+                  className="absolute inset-0 rounded-full ring-2 ring-white/70 motion-safe:animate-ping-slow"
+                  aria-hidden
+                />
                 <PlayIcon width={18} height={18} />
               </span>
               {t.home.heroMore}
             </a>
           </div>
         </div>
-      </div>
-    </section>
+      </HeroLayer>
+    </HeroStage>
   );
 }
