@@ -174,3 +174,22 @@ export const ArrowUpIcon = (p: IconProps) => (
     <path d="M12 20V8M6.5 13 12 7.5 17.5 13M6 4.5h12" />
   </Icon>
 );
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+);
+export const ArrowLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M19 12H5" />
+    <path d="m11 6-6 6 6 6" />
+  </Icon>
+);
+export const TruckIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2.5 6.5h11v9h-11z" />
+    <path d="M13.5 9.5h4l3 3.2v2.8h-7" />
+    <circle cx="6.5" cy="17" r="1.8" />
+    <circle cx="17" cy="17" r="1.8" />
+  </Icon>
+);

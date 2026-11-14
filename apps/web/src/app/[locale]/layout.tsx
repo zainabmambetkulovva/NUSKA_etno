@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { Metadata, Viewport } from 'next';
 
+import type { CategoryNode } from '@nuska/types';
 import { Caveat, Inter, Lora } from 'next/font/google';
 
 import { AiWidget } from '@/components/ai/ai-widget';
@@ -9,6 +10,7 @@ import { BackToTop } from '@/components/layout/back-to-top';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
 import { getDictionary } from '@/i18n/get-dictionary';
+import { serverApiSafe } from '@/lib/api/server';
 import { alternates, resolveLocale, siteUrl } from '@/lib/locale-params';
 import { AppProviders } from '@/providers/app-providers';
 
@@ -67,6 +69,7 @@ export default async function LocaleLayout({
 }) {
   const locale = await resolveLocale(params);
   const t = await getDictionary(locale);
+  const categories = await serverApiSafe<CategoryNode[]>('/categories', locale, []);
   return (
     <html lang={locale} className={`${sans.variable} ${serif.variable} ${script.variable}`}>
       <body className="flex min-h-screen flex-col">
@@ -77,7 +80,7 @@ export default async function LocaleLayout({
           {t.common.skipToContent}
         </a>
         <AppProviders locale={locale} dictionary={t}>
-          <Header />
+          <Header categories={categories.map(({ slug, name }) => ({ slug, name }))} />
           <main id="main" className="flex-1">
             {children}
           </main>

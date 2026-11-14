@@ -8,11 +8,8 @@ test('opens in Kyrgyz, switches to Russian and remembers the choice', async ({ p
   await expect(page.locator('html')).toHaveAttribute('lang', 'ky');
   await expect(page.getByRole('heading', { level: 1 })).toContainText(ky.home.heroTitle);
 
-  await page
-    .getByRole('group', { name: ky.nav.language })
-    .first()
-    .getByRole('link', { name: 'RU' })
-    .click();
+  await page.locator('header').getByRole('button', { name: ky.nav.language }).click();
+  await page.getByRole('menuitem', { name: /Русский/ }).click();
   await expect(page).toHaveURL(/\/ru$/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText(ru.home.heroTitle);
 

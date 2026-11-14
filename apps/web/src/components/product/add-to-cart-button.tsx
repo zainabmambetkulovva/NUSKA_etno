@@ -17,7 +17,10 @@ export function AddToCartButton({
   size = 'md',
   className,
   onAdded,
+  iconOnly = false,
 }: {
+  /** Round icon button (product carousels); the label is kept for screen readers. */
+  iconOnly?: boolean;
   product: ProductCard;
   quantity?: number;
   size?: 'sm' | 'md' | 'lg';
@@ -30,8 +33,14 @@ export function AddToCartButton({
 
   if (!product.inStock) {
     return (
-      <Button size={size} variant="secondary" disabled className={className}>
-        {t.product.outOfStock}
+      <Button
+        size={size}
+        variant="secondary"
+        disabled
+        className={className}
+        aria-label={iconOnly ? t.product.outOfStock : undefined}
+      >
+        {iconOnly ? <CartIcon width={18} height={18} /> : t.product.outOfStock}
       </Button>
     );
   }
@@ -40,6 +49,8 @@ export function AddToCartButton({
     <Button
       size={size}
       className={className}
+      aria-label={iconOnly ? t.product.addToCart : undefined}
+      title={iconOnly ? t.product.addToCart : undefined}
       loading={add.isPending}
       onClick={(event) => {
         const button = event.currentTarget;
@@ -57,7 +68,7 @@ export function AddToCartButton({
       }}
     >
       <CartIcon width={18} height={18} />
-      {t.product.addToCart}
+      {!iconOnly && t.product.addToCart}
     </Button>
   );
 }

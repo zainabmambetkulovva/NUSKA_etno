@@ -8,7 +8,7 @@ test('mobile menu opens with the main sections', async ({ page }) => {
   const menu = page.getByRole('complementary', { name: ky.nav.menu });
   await expect(menu.getByRole('link', { name: ky.nav.login, exact: true })).toBeVisible();
   await expect(menu.getByRole('link', { name: ky.nav.register, exact: true })).toBeVisible();
-  await menu.getByRole('link', { name: ky.nav.about }).click();
+  await menu.getByRole('link', { name: ky.nav.brand }).click();
   await expect(page).toHaveURL(/\/ky\/about$/);
 });
 

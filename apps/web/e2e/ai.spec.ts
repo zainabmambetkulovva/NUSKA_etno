@@ -15,8 +15,11 @@ test('NUSKA AI widget: honest mode badge, budget set from the catalog, add to ca
   await panel.getByRole('button', { name: ru.ai.examples[1] }).click();
   await expect(panel.getByText(ru.ai.proposal)).toBeVisible();
   // Nothing was added by the assistant itself.
-  // The cart appears in the header only once something is in it.
-  await expect(page.locator('header a[href="/ru/cart"]')).toHaveCount(0);
+  // The header cart shows no count while the cart is empty.
+  await expect(page.locator('header a[href="/ru/cart"]')).toHaveAttribute(
+    'aria-label',
+    ru.nav.cart
+  );
   await panel.getByRole('button', { name: ru.ai.addAll }).click();
   await expect(page.locator('header a[href="/ru/cart"]')).toHaveAttribute('aria-label', /: [1-9]/);
 

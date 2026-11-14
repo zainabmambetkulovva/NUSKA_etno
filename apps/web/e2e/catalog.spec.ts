@@ -49,8 +49,8 @@ test('unknown pages and products answer 404', async ({ page }) => {
 
 test('price filter in som and sorting by name', async ({ page }) => {
   await page.goto('/ru/catalog');
-  await page.getByLabel(ru.catalog.priceFrom).fill('200');
-  await page.getByLabel(ru.catalog.priceTo).fill('300');
+  await page.getByLabel(ru.catalog.priceFrom, { exact: true }).fill('200');
+  await page.getByLabel(ru.catalog.priceTo, { exact: true }).fill('300');
   await page.getByRole('button', { name: ru.catalog.applyPrice }).click();
   await page.waitForURL(/minPrice=200&maxPrice=300/);
   const prices = await page.locator('main article').getByText(/сом/).allTextContents();

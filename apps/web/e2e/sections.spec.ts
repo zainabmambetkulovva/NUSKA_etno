@@ -2,26 +2,68 @@ import { expect, test } from '@playwright/test';
 
 import { expectNoHorizontalScroll, ky, ru } from './helpers';
 
-test('header follows the brief: logo, menu, language, separate sign in and register', async ({
+test('header follows the mockup: catalog menu, pages, language, search, favorites, cart, account', async ({
   page,
 }) => {
   await page.goto('/ru');
   const header = page.locator('header');
   await expect(header.getByRole('link', { name: 'NUSKA_etno' })).toBeVisible();
-  for (const name of [ru.nav.home, ru.nav.about, ru.nav.prices, ru.nav.contacts])
-    await expect(header.getByRole('link', { name, exact: true })).toBeVisible();
-  await expect(header.getByRole('group', { name: ru.nav.language })).toBeVisible();
-  await expect(header.getByRole('link', { name: ru.nav.login, exact: true })).toHaveAttribute(
+  for (const [name, href] of [
+    [ru.nav.brand, '/ru/about'],
+    [ru.nav.delivery, '/ru/delivery'],
+    [ru.nav.recipes, '/ru/recipes'],
+    [ru.nav.contacts, '/ru/contacts'],
+  ])
+    await expect(header.getByRole('link', { name, exact: true })).toHaveAttribute('href', href);
+  // the catalog menu lists the real categories
+  await header.getByRole('button', { name: ru.nav.catalog }).click();
+  await expect(header.getByRole('link', { name: ru.nav.allProducts })).toHaveAttribute(
+    'href',
+    '/ru/catalog'
+  );
+  await expect(header.getByRole('link', { name: 'Молочные продукты' })).toHaveAttribute(
+    'href',
+    '/ru/catalog/dairy-products'
+  );
+  await expect(header.getByRole('link', { name: ru.nav.search })).toHaveAttribute(
+    'href',
+    '/ru/search'
+  );
+  await expect(header.getByRole('link', { name: ru.nav.favorites })).toHaveAttribute(
+    'href',
+    '/ru/account/favorites'
+  );
+  await expect(header.locator('a[href="/ru/cart"]')).toBeVisible();
+  // account: sign in and register
+  await header.getByRole('button', { name: ru.nav.account }).click();
+  await expect(header.getByRole('menuitem', { name: ru.nav.login })).toHaveAttribute(
     'href',
     '/ru/login'
   );
-  await expect(header.getByRole('link', { name: ru.nav.register, exact: true })).toHaveAttribute(
+  await expect(header.getByRole('menuitem', { name: ru.nav.register })).toHaveAttribute(
     'href',
     '/ru/register'
   );
-  // No search, no empty cart.
-  await expect(header.getByRole('searchbox')).toHaveCount(0);
-  await expect(header.locator('a[href="/ru/cart"]')).toHaveCount(0);
+  // language: KG / RU
+  await header.getByRole('button', { name: ru.nav.language }).click();
+  await expect(header.getByRole('menuitem', { name: /Кыргызча/ })).toHaveAttribute('href', '/ky');
+});
+
+test('new pages of the header open: delivery and payment, recipes, origin map', async ({
+  page,
+}) => {
+  await page.goto('/ru/delivery');
+  await expect(page.getByRole('heading', { level: 1, name: ru.deliveryPage.title })).toBeVisible();
+  await page.goto('/ru/recipes');
+  await expect(page.getByRole('heading', { level: 1, name: ru.recipesPage.title })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Бешбармак' })).toBeVisible();
+  await page.goto('/ru/origin');
+  await page.getByRole('button', { name: 'Таласская область' }).click();
+  await expect(page.getByRole('heading', { name: 'Таласская область' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Жупка' }).first()).toHaveAttribute(
+    'href',
+    '/ru/product/zhupka'
+  );
 });
 
 test('stores are shown as an endless ticker on the pickup page', async ({ page }) => {
@@ -31,11 +73,15 @@ test('stores are shown as an endless ticker on the pickup page', async ({ page }
   await expect(stores.getByText('Бимар').first()).toBeVisible();
 });
 
-test('home follows the design: why us, live prices on the podium, story, products, footer', async ({
+test('home follows the mockup and keeps the earlier blocks: categories, origin, bestsellers, prices, footer', async ({
   page,
 }) => {
   await page.goto('/ky');
   for (const title of [
+    ky.landing.productsTitle,
+    ky.landing.aboutTitle,
+    ky.landing.originTitle,
+    ky.landing.bestTitle,
     ky.home.whyTitle,
     ky.home.pricesTitle,
     ky.home.storyTitle,
@@ -64,14 +110,29 @@ test('home follows the design: why us, live prices on the podium, story, product
     '/ky/catalog'
   );
 
-  // Footer: menu, contacts (WhatsApp, Instagram, YouTube) and the back to top button.
+  // Category arches open the categories; bestsellers come from the catalog.
+  await expect(
+    page
+      .locator('section[aria-labelledby="categories-title"]')
+      .getByRole('link', { name: /Сүт азыктары/ })
+  ).toHaveAttribute('href', '/ky/catalog/dairy-products');
+  await expect(
+    page.getByRole('region', { name: ky.landing.bestTitle }).getByRole('link', { name: 'Кымыз' })
+  ).toHaveAttribute('href', '/ky/product/kymyz');
+
+  // Footer: catalog, company, help, newsletter, socials and the back to top button.
   const footer = page.locator('footer');
-  await expect(footer.getByRole('heading', { name: ky.footer.menu })).toBeVisible();
-  await expect(footer.getByRole('link', { name: '+996 701 111 024' })).toHaveAttribute(
+  for (const name of [ky.footer.catalog, ky.footer.company, ky.footer.help, ky.newsletter.title])
+    await expect(footer.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(footer.getByRole('link', { name: ky.nav.delivery })).toHaveAttribute(
+    'href',
+    '/ky/delivery'
+  );
+  await expect(footer.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute(
     'href',
     /wa\.me\/996701111024$/
   );
-  await expect(footer.getByRole('link', { name: '@nuska_etno' })).toHaveAttribute(
+  await expect(footer.getByRole('link', { name: 'Instagram' })).toHaveAttribute(
     'href',
     /instagram\.com\/nuska_etno$/
   );

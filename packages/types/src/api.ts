@@ -82,6 +82,8 @@ export interface ProductCard {
   inStock: boolean;
   availableQuantity: number | null;
   image: ImageRef | null;
+  /** Weight or volume, e.g. "0.5 л"; null when not known. */
+  size: string | null;
   categories: CategoryRef[];
 }
 

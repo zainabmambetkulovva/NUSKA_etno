@@ -9,6 +9,7 @@ const FALLBACK = {
   whatsapp: '+996701111024',
   instagram: 'nuska_etno',
   youtube: 'https://youtube.com/@nuskaetno',
+  telegram: 'nuska_etnokatalog',
   address: 'Бишкек, Кыргызстан',
 } as const;
 
@@ -18,6 +19,7 @@ export interface Contacts {
   instagram: string;
   instagramUrl: string;
   youtubeUrl: string;
+  telegramUrl: string;
   address: string;
 }
 
@@ -44,6 +46,7 @@ export function resolveContacts(content: SiteContent | null): Contacts {
     instagram,
     instagramUrl: `https://www.instagram.com/${instagram}`,
     youtubeUrl: youtube && /^https:\/\//.test(youtube) ? youtube : FALLBACK.youtube,
+    telegramUrl: `https://t.me/${(value('telegram') ?? FALLBACK.telegram).replace(/^@/, '').replace(/^https?:\/\/t\.me\//, '')}`,
     address: value('address') ?? FALLBACK.address,
   };
 }

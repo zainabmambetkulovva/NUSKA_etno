@@ -51,7 +51,47 @@ React Hook Form + Zod, Framer Motion.
   leaves, mountain line art and silhouettes, the ram's horn band of the footer.
 - Animations respect `prefers-reduced-motion`; product cards tilt only for mouse input.
 
-## Home page (the company's full-page design, Nov 2026)
+## Home page after the NUSKA_etno mockup (master brief, stage 2)
+
+Top to bottom (`app/[locale]/page.tsx`, `components/home/hero.tsx`, `components/home/landing.tsx`):
+
+- **Header** (`components/layout/header.tsx`): logo; «Каталог ⌄» (dropdown of the real
+  categories, passed from the layout); О бренде · Доставка и оплата · Рецепты · Контакты;
+  KG/RU menu (`language-menu.tsx`); search, favorites, cart (count badge), account (sign in /
+  register menu, or the cabinet). Transparent over the cream hero, a cream bar once scrolled.
+  The menu shows from 1180 px; below it a drawer with the same links and the categories.
+- **Hero**: badge, «Природная сила Кыргызстана», subtitle, «Перейти в каталог» and
+  «▶ Узнать больше» (the YouTube channel, or the brand section). The company's picture
+  `hero.png` is shown untouched (`unoptimized`); only its lower 62 % is in view, so the logo
+  painted in its sky stays out of the frame. On it: the company's packages on a wooden stump
+  with a felt carpet (SVG), drifting clouds and a gliding eagle (`brand/nature-decor.tsx`).
+- **Benefits bar**: five company claims only (100 % natural composition as on the labels, from
+  Kyrgyzstan, high quality, delivery and pickup, customer care).
+- **Categories** («Сила природы в каждой детали»): one arch per real category, with the
+  company's dish photos (`CATEGORY_PHOTOS`); «Мясные продукты» shows an ornament until a photo
+  is sent.
+- **About the brand** («Больше, чем натуральные продукты», `#brand`): the valley `cta.png`
+  with the girl `brand-girl.webp` (as sent), the text, «Узнать больше» → /about, and the four
+  values confirmed by the company.
+- **Origin map + bestsellers**: an interactive SVG map of the seven oblasts
+  (`home/kg-regions.ts`, outlines from the MIT package `@react-map/kyrgyzstan`) with the
+  company's region list (`lib/origin.ts`: where a product is *traditionally made*, not the
+  production address); the full version is `/origin`. «Хиты продаж» is a carousel of catalog
+  products (featured first, then the most ordered) with size, availability, ♥ and cart; it
+  scrolls by drag, swipe, wheel and the arrows.
+- Below, the earlier blocks the company asked to keep: why us, prices podium, story, products,
+  promises, closing call.
+- **Footer**: mountain ridge, logo, tagline, Instagram / YouTube / WhatsApp / Telegram,
+  Catalog (real categories), Company, Help, newsletter (double opt-in, consent checkbox),
+  legal links.
+
+New pages: `/delivery` (only confirmed facts: pickup, delivery agreed in WhatsApp, cash on
+receipt; online payment named as coming), `/recipes` (traditional recipes linked to the
+products), `/origin`, and `/contacts` rebuilt as contact cards. Colours of the mockup are the
+`nk-*` Tailwind tokens; `.btn-forest` is the dark green pill button.
+
+## Earlier home page (kept blocks)
+
 
 The home page follows the full-page design the company sent, top to bottom:
 header → hero → "Why choose us?" → "Our prices" (podium) → about us → "Our products" →

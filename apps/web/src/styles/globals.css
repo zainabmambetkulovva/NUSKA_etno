@@ -10,7 +10,7 @@
     -webkit-tap-highlight-color: transparent;
   }
   body {
-    @apply bg-milk font-sans text-ink antialiased;
+    @apply bg-nk-cream font-sans text-ink antialiased;
   }
   h1,
   h2,
@@ -37,6 +37,14 @@
   /* Honey-gold call to action of the design. */
   .btn-gold {
     @apply inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-b from-honey-light to-honey px-6 py-3 text-sm font-semibold text-forest-dark shadow-[0_10px_24px_-10px_rgba(176,122,53,0.8)] ring-1 ring-inset ring-white/40 transition duration-300 hover:-translate-y-0.5 hover:from-honey hover:to-honey-dark hover:text-white;
+  }
+  /* Deep forest green pill of the mockup ("Перейти в каталог →"). */
+  .btn-forest {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full bg-nk-forest px-7 py-3.5 text-[15px] font-semibold text-white shadow-[0_14px_28px_-14px_rgba(42,72,49,0.9)] ring-1 ring-inset ring-white/10 transition duration-300 hover:-translate-y-0.5 hover:bg-nk-deep hover:shadow-[0_18px_32px_-14px_rgba(42,72,49,0.95)];
+  }
+  /* Small eyebrow above a section title: a gold star and the label. */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-sm font-semibold text-nk-ink;
   }
   .btn-outline-dark {
     @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink/40 px-6 py-3 text-sm font-semibold text-ink transition duration-300 hover:-translate-y-0.5 hover:border-forest hover:bg-forest hover:text-cream-light;

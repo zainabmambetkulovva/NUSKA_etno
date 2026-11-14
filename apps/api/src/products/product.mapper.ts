@@ -6,6 +6,7 @@ import { Locale, pickTranslation } from '../common/utils/locale';
 export const productCardInclude = {
   translations: true,
   images: { orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }], take: 1 },
+  units: { orderBy: { createdAt: 'asc' }, take: 1 },
   categories: {
     where: { category: { deletedAt: null, isActive: true } },
     include: { category: { include: { translations: true } } },
@@ -16,6 +17,14 @@ export type ProductCardSource = Prisma.ProductGetPayload<{ include: typeof produ
 
 export function isAvailable(product: { trackInventory: boolean; stockQuantity: number }) {
   return !product.trackInventory || product.stockQuantity > 0;
+}
+
+/** "0.5 л" from a unit row; trailing zeros of the decimal are dropped. */
+export function unitLabel(
+  unit: { quantityValue: Prisma.Decimal; quantityUnit: string } | undefined
+) {
+  if (!unit) return null;
+  return `${unit.quantityValue.toNumber()} ${unit.quantityUnit}`.trim();
 }
 
 /** Product card for catalog lists, cart and favorites (TZ §6.3). */
@@ -35,6 +44,8 @@ export function toProductCard(product: ProductCardSource, locale: Locale) {
     /** null when stock is not tracked for this product. */
     availableQuantity: product.trackInventory ? product.stockQuantity : null,
     image: image ? { url: image.url, alt: image.alt } : null,
+    /** Weight or volume of the first unit, e.g. "0.5 л"; null when the product has none. */
+    size: unitLabel(product.units[0]),
     categories: product.categories.map(({ category }) => ({
       id: category.id,
       slug: category.slug,
