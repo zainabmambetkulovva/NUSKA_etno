@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -10,13 +10,86 @@ import { switchLocalePath } from '@/components/layout/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
-import { useLogout } from '@/hooks/use-auth';
+import { useLogout, useLogoutAll, useMe } from '@/hooks/use-auth';
 import { locales, localeNames } from '@/i18n/config';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { cn } from '@/lib/cn';
+import { formatDate } from '@/lib/format';
 import { useToast } from '@/stores/toast';
+
+interface DeviceSession {
+  id: string;
+  device: string;
+  createdAt: string;
+  lastUsedAt: string;
+  current: boolean;
+}
+
+/** E-mail status, signed-in devices and «sign out everywhere». */
+function SecurityCard() {
+  const { t, locale } = useI18n();
+  const router = useRouter();
+  const me = useMe();
+  const toast = useToast((s) => s.show);
+  const sessions = useQuery({
+    queryKey: ['auth-sessions'],
+    queryFn: () => api<DeviceSession[]>('/auth/sessions'),
+  });
+  const logoutAll = useLogoutAll();
+
+  return (
+    <section className="card space-y-4 p-6" aria-labelledby="security-title">
+      <h2 id="security-title" className="font-serif text-xl">
+        {t.account.security}
+      </h2>
+      <p className="flex items-center justify-between gap-3 text-sm">
+        <span className="text-ink-muted">{t.account.emailStatus}</span>
+        <span className={cn('font-medium', me.data?.emailVerified ? 'text-brand' : 'text-danger')}>
+          {me.data?.email} ·{' '}
+          {me.data?.emailVerified ? t.account.emailConfirmed : t.account.emailNotConfirmed}
+        </span>
+      </p>
+      <div>
+        <p className="mb-2 text-sm text-ink-muted">{t.account.devices}</p>
+        <ul className="divide-y divide-cream-dark/60 rounded-xl border border-cream-dark/60 bg-white text-sm">
+          {(sessions.data ?? []).map((session) => (
+            <li key={session.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+              <span className="font-medium">
+                {session.device}
+                {session.current && (
+                  <span className="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-xs text-brand">
+                    {t.account.thisDevice}
+                  </span>
+                )}
+              </span>
+              <span className="text-xs text-ink-soft">
+                {t.account.lastActive}: {formatDate(session.lastUsedAt, locale)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      {logoutAll.error && <ErrorBox>{errorMessage(logoutAll.error, t.errors)}</ErrorBox>}
+      <Button
+        variant="secondary"
+        loading={logoutAll.isPending}
+        onClick={() => {
+          if (!window.confirm(t.account.logoutAllConfirm)) return;
+          logoutAll.mutate(undefined, {
+            onSuccess: () => {
+              toast(t.account.logoutAllDone);
+              router.push(`/${locale}/login`);
+            },
+          });
+        }}
+      >
+        {t.account.logoutAll}
+      </Button>
+    </section>
+  );
+}
 
 export default function SettingsPage() {
   const { t, locale } = useI18n();
@@ -102,6 +175,8 @@ export default function SettingsPage() {
           {t.common.save}
         </Button>
       </form>
+
+      <SecurityCard />
 
       <Button
         variant="danger"

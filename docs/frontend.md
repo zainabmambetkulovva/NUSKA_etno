@@ -277,3 +277,15 @@ never overwritten.
 - Catalog: cards show the weight or volume (`size`); on phones and tablets the filters are a
   panel sliding in from the left (`catalog/filter-drawer.tsx`, one set of fields), so the
   products are on the first screen; choosing a filter closes the panel.
+
+## Accounts and security (master brief, stage 5)
+
+- Register: first name, last name, e-mail, phone (optional), password, **password again** and
+  **«I accept the terms of use and the privacy policy»**. Both are checked in the browser and
+  on the server (`passwordConfirm` must equal `password`, `acceptTerms` must be `true`); the
+  server stores `users.terms_accepted_at` (migration `20261115090000_terms_accepted`). A new
+  account created with Google records it too — the notice is shown under the Google button.
+- Account → Settings → **Security**: e-mail status, the devices signed in (browser and system
+  only, no IP addresses; `GET /auth/sessions`) and **«Sign out on all devices»**
+  (`POST /auth/logout-all` deletes every session, this one included).
+- E-mails go through Resend when `RESEND_API_KEY` is set (see environment-variables.md).

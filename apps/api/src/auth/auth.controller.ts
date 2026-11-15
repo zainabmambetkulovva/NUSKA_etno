@@ -163,6 +163,25 @@ export class AuthController {
     }
   }
 
+  /** Signed-in devices of the current user (account security page). */
+  @Get('sessions')
+  sessions(@CurrentUser() user: AuthenticatedUser) {
+    return this.auth.listSessions(user.id, user.sessionId);
+  }
+
+  /** Signs out everywhere, this device included. */
+  @Throttle(STRICT_LIMIT)
+  @Post('logout-all')
+  @HttpCode(HttpStatus.OK)
+  async logoutAll(
+    @CurrentUser() user: AuthenticatedUser,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const result = await this.auth.logoutAll(user.id);
+    this.cookies.clear(res);
+    return result;
+  }
+
   @Public()
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)

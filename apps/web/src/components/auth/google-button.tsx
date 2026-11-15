@@ -41,6 +41,13 @@ export function GoogleButton({ next }: { next: string }) {
         </svg>
         {t.auth.google}
       </a>
+      {/* a new account created with Google accepts the terms (stored on the server) */}
+      <p className="-mt-2 text-center text-xs text-ink-soft">
+        {t.auth.googleTerms}{' '}
+        <a href={`/${locale}/terms`} target="_blank" className="underline">
+          ↗
+        </a>
+      </p>
       <div className="flex items-center gap-3 text-xs text-ink-soft">
         <span className="h-px flex-1 bg-cream-dark" />
         {t.auth.or}

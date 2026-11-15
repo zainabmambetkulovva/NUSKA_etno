@@ -36,6 +36,8 @@ describe('Auth & users (e2e)', () => {
       .send({
         email: 'New@Example.com',
         password: 'Secret123',
+        passwordConfirm: 'Secret123',
+        acceptTerms: true,
         firstName: 'Айгуль',
         phone: '0555 12-34-56',
         locale: 'ky',
@@ -53,10 +55,40 @@ describe('Auth & users (e2e)', () => {
     expect(cookies.find((c) => c.startsWith('nuska_access='))).toMatch(/HttpOnly/);
     expect(cookies.find((c) => c.startsWith('nuska_refresh='))).toMatch(/Path=\/api\/auth/);
     expect(sentMail[0].to).toBe('new@example.com');
+    // the moment the terms were accepted is kept
+    const stored = await ctx.prisma.user.findUniqueOrThrow({ where: { email: 'new@example.com' } });
+    expect(stored.termsAcceptedAt).toBeInstanceOf(Date);
+  });
+
+  it('requires the password typed twice and the accepted terms', async () => {
+    const body = {
+      email: 'terms@example.com',
+      password: 'Secret123',
+      passwordConfirm: 'Secret123',
+      acceptTerms: true,
+      firstName: 'T',
+    };
+    const mismatch = await http()
+      .post('/api/auth/register')
+      .send({ ...body, passwordConfirm: 'Secret124' })
+      .expect(422);
+    expect(mismatch.body.errors[0].field).toBe('passwordConfirm');
+    const noTerms = await http()
+      .post('/api/auth/register')
+      .send({ ...body, acceptTerms: false })
+      .expect(422);
+    expect(noTerms.body.errors[0].field).toBe('acceptTerms');
+    await http().post('/api/auth/register').send(body).expect(201);
   });
 
   it('rejects duplicate e-mails, weak passwords and unknown fields', async () => {
-    const body = { email: 'dup@example.com', password: 'Secret123', firstName: 'A' };
+    const body = {
+      email: 'dup@example.com',
+      password: 'Secret123',
+      passwordConfirm: 'Secret123',
+      acceptTerms: true,
+      firstName: 'A',
+    };
     await http().post('/api/auth/register').send(body).expect(201);
     const dup = await http()
       .post('/api/auth/register')
@@ -66,11 +98,16 @@ describe('Auth & users (e2e)', () => {
 
     await http()
       .post('/api/auth/register')
-      .send({ ...body, email: 'w@example.com', password: 'short' })
+      .send({ ...body, email: 'w@example.com', password: 'short', passwordConfirm: 'short' })
       .expect(422);
     await http()
       .post('/api/auth/register')
-      .send({ ...body, email: 'w@example.com', password: 'onlyletters' })
+      .send({
+        ...body,
+        email: 'w@example.com',
+        password: 'onlyletters',
+        passwordConfirm: 'onlyletters',
+      })
       .expect(422);
     const unknownField = await http()
       .post('/api/auth/register')
@@ -228,7 +265,13 @@ describe('Auth & users (e2e)', () => {
     const agent = request.agent(ctx.app.getHttpServer());
     await agent
       .post('/api/auth/register')
-      .send({ email: 'v@example.com', password: 'Secret123', firstName: 'V' })
+      .send({
+        email: 'v@example.com',
+        password: 'Secret123',
+        passwordConfirm: 'Secret123',
+        acceptTerms: true,
+        firstName: 'V',
+      })
       .expect(201);
     const token = decodeURIComponent(/token=([^\s]+)/.exec(sentMail[0].text)![1]);
 
@@ -236,6 +279,30 @@ describe('Auth & users (e2e)', () => {
     await http().post('/api/auth/email/verify').send({ token }).expect(204);
     expect((await agent.get('/api/users/me')).body.emailVerified).toBe(true);
     await http().post('/api/auth/email/verify').send({ token }).expect(400);
+  });
+
+  it('lists signed-in devices without IP addresses and signs out everywhere', async () => {
+    const user = await createUser(ctx.prisma);
+    const phone = request.agent(ctx.app.getHttpServer());
+    await phone
+      .post('/api/auth/login')
+      .set('User-Agent', 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130 Mobile')
+      .send({ email: user.email, password: PASSWORD })
+      .expect(200);
+    const laptop = await loginAs(ctx.app, user.email);
+
+    const list = (await phone.get('/api/auth/sessions').expect(200)).body;
+    expect(list).toHaveLength(2);
+    expect(list.find((s: { current: boolean }) => s.current).device).toBe('Chrome · Android');
+    expect(JSON.stringify(list)).not.toMatch(/ipAddress|127\.0\.0\.1/);
+
+    const res = await phone.post('/api/auth/logout-all').expect(200);
+    expect(res.body.count).toBe(2);
+    expect(await ctx.prisma.session.count({ where: { userId: user.id } })).toBe(0);
+    // the other device can no longer refresh its access
+    await laptop.post('/api/auth/refresh').expect(401);
+    // signed-out visitors cannot call it
+    await http().post('/api/auth/logout-all').expect(401);
   });
 
   it('changing the password keeps the current session and ends the others', async () => {

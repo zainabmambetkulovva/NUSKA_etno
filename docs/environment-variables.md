@@ -38,10 +38,24 @@ Template: `apps/api/.env.example`.
 | `COOKIE_SAMESITE` | `lax` | `lax`, `strict` or `none`. Keep `lax` when the site and API share a domain (e.g. `nuska.kg` and `api.nuska.kg`). `none` requires `COOKIE_SECURE=true` and weakens CSRF protection |
 | `COOKIE_DOMAIN` | – | Set to the parent domain (e.g. `.nuska.kg`) if the site and API are on different sub-domains |
 
-### E-mail (SMTP)
+### E-mail (Resend or SMTP)
 
-Used for e-mail verification and password reset. Without `SMTP_HOST`, outside
+Used for e-mail verification, password reset and the newsletter confirmation. The API uses
+**Resend** (HTTPS) when `RESEND_API_KEY` is set — recommended on Render, whose free plan
+blocks outgoing SMTP ports; otherwise SMTP when `SMTP_HOST` is set. Without either, outside
 production, messages (with links) are printed to the API log.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RESEND_API_KEY` | – | Resend API key (resend.com → API Keys) — **secret**, only in Render |
+| `MAIL_FROM` | `NUSKA_etno <no-reply@localhost>` | Sender, e.g. `NUSKA_etno <no-reply@your-domain>`; the domain must be verified in Resend (SPF/DKIM records) |
+
+Resend setup: create an account → **Domains → Add domain** → add the DNS records it shows at
+your domain registrar → wait for «Verified» → **API Keys → Create** → put the key in Render as
+`RESEND_API_KEY` and set `MAIL_FROM` with that domain → redeploy the API. Without a verified
+domain Resend only delivers to the account owner's own address.
+
+SMTP (alternative):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
@@ -131,3 +145,18 @@ In Google Cloud Console add the redirect URI `https://<your-site>/api/auth/googl
 (the address of the website, the request goes through the website to the API) and the site
 under "Authorized JavaScript origins". `WEB_URL` in Render must be the website address.
 Without these variables the "Continue with Google" button is not shown.
+
+Step by step (Google Cloud Console):
+1. console.cloud.google.com → create a project «NUSKA_etno».
+2. **APIs & Services → OAuth consent screen**: External; app name NUSKA_etno; support e-mail;
+   scopes `openid`, `email`, `profile`; publish the app (otherwise only test users can sign in).
+3. **Credentials → Create credentials → OAuth client ID → Web application**.
+   - Authorized JavaScript origins: `https://<site>` (and `http://localhost:3000` for development).
+   - Authorized redirect URIs: `https://<site>/api/auth/google/callback`
+     (and `http://localhost:3000/api/auth/google/callback`).
+4. Copy the client ID and secret into Render (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`),
+   check `WEB_URL` = `https://<site>`, redeploy the API. The button appears by itself.
+
+Account linking: signing in with Google finds the account by Google id, or by the same e-mail
+(Google confirms the e-mail, so the account is linked and marked verified). A new Google account
+records the acceptance of the terms (the notice is shown under the button).

@@ -23,25 +23,43 @@ function RegisterForm() {
   const router = useRouter();
   const next = safeNext(useSearchParams().get('next'), locale, `/${locale}/account`);
   const register = useRegister();
-  const schema = z.object({
-    firstName: z.string().trim().min(1, t.validation.required).max(100),
-    lastName: z.string().trim().max(100).optional(),
-    email: z.string().trim().email(t.validation.email),
-    phone: z
-      .union([
-        z.literal(''),
-        z
-          .string()
-          .trim()
-          .regex(/^[+\d][\d\s\-()]{7,20}$/, t.validation.phone),
-      ])
-      .optional(),
-    password: z
-      .string()
-      .min(8, t.validation.password)
-      .max(72)
-      .regex(/^(?=.*\p{L})(?=.*\d).+$/u, t.validation.password),
-  });
+  const schema = z
+    .object({
+      firstName: z.string().trim().min(1, t.validation.required).max(100),
+      lastName: z.string().trim().max(100).optional(),
+      email: z.string().trim().email(t.validation.email),
+      phone: z
+        .union([
+          z.literal(''),
+          z
+            .string()
+            .trim()
+            .regex(/^[+\d][\d\s\-()]{7,20}$/, t.validation.phone),
+        ])
+        .optional(),
+      password: z
+        .string()
+        .min(8, t.validation.password)
+        .max(72)
+        .regex(/^(?=.*\p{L})(?=.*\d).+$/u, t.validation.password),
+      passwordConfirm: z.string(),
+      acceptTerms: z.boolean(),
+    })
+    // both checks run together, so all problems are shown after one click
+    .superRefine((values, ctx) => {
+      if (values.password !== values.passwordConfirm)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['passwordConfirm'],
+          message: t.auth.passwordMismatch,
+        });
+      if (!values.acceptTerms)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['acceptTerms'],
+          message: t.auth.acceptTermsRequired,
+        });
+    });
   const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
   const errors = form.formState.errors;
   const emailTaken = register.error instanceof ApiError && register.error.code === 'EMAIL_TAKEN';
@@ -64,7 +82,12 @@ function RegisterForm() {
         noValidate
         onSubmit={form.handleSubmit((values) =>
           register.mutate(
-            { ...values, lastName: values.lastName || undefined, phone: values.phone || undefined },
+            {
+              ...values,
+              acceptTerms: true,
+              lastName: values.lastName || undefined,
+              phone: values.phone || undefined,
+            },
             { onSuccess: () => router.push(next) }
           )
         )}
@@ -135,6 +158,41 @@ function RegisterForm() {
             />
           )}
         </Field>
+        <Field label={t.auth.passwordConfirm} error={errors.passwordConfirm?.message}>
+          {(id, d) => (
+            <Input
+              id={id}
+              aria-describedby={d}
+              type="password"
+              autoComplete="new-password"
+              {...form.register('passwordConfirm')}
+            />
+          )}
+        </Field>
+        <div>
+          <label className="flex items-start gap-2.5 text-sm text-ink-muted">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+              aria-invalid={Boolean(errors.acceptTerms)}
+              {...form.register('acceptTerms')}
+            />
+            <span>
+              {t.auth.acceptTermsBefore}
+              <Link href={`/${locale}/terms`} target="_blank" className="text-brand underline">
+                {t.auth.acceptTermsTerms}
+              </Link>
+              {t.auth.acceptTermsAnd}
+              <Link href={`/${locale}/privacy`} target="_blank" className="text-brand underline">
+                {t.auth.acceptTermsPrivacy}
+              </Link>
+              {t.auth.acceptTermsAfter}
+            </span>
+          </label>
+          {errors.acceptTerms?.message && (
+            <p className="field-error">{errors.acceptTerms.message}</p>
+          )}
+        </div>
         {register.error && !emailTaken && (
           <ErrorBox>{errorMessage(register.error, t.errors)}</ErrorBox>
         )}

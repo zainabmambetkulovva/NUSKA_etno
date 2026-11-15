@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  Equals,
   IsEmail,
   IsIn,
   IsOptional,
@@ -8,6 +9,9 @@ import {
   Matches,
   MaxLength,
   MinLength,
+  registerDecorator,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 
 import { LOCALES, Locale } from '../../common/utils/locale';
@@ -33,7 +37,32 @@ export class PasswordFields {
   password!: string;
 }
 
+/** The value must equal another property of the same object (password confirmation). */
+function SameAs(property: string, options?: ValidationOptions) {
+  return (object: object, propertyName: string) =>
+    registerDecorator({
+      name: 'sameAs',
+      target: object.constructor,
+      propertyName,
+      constraints: [property],
+      options: { message: `${propertyName} must match ${property}`, ...options },
+      validator: {
+        validate: (value: unknown, args: ValidationArguments) =>
+          value === (args.object as Record<string, unknown>)[args.constraints[0] as string],
+      },
+    });
+}
+
 export class RegisterDto extends PasswordFields {
+  @ApiProperty({ description: 'The password typed again' })
+  @IsString()
+  @SameAs('password')
+  passwordConfirm!: string;
+
+  @ApiProperty({ description: 'The customer accepted the terms of use (must be true)' })
+  @Equals(true, { message: 'terms must be accepted' })
+  acceptTerms!: boolean;
+
   @ApiProperty()
   @Transform(toLower)
   @IsEmail()

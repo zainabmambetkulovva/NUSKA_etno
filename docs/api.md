@@ -32,10 +32,12 @@ All routes require authentication unless listed as public below. Admin routes re
 
 | Method | Path | Access | Notes |
 |---|---|---|---|
-| POST | `/auth/register` | public | `{ email, password, firstName, lastName?, phone?, locale? }`; sends a verification e-mail |
+| POST | `/auth/register` | public | `{ email, password, passwordConfirm, acceptTerms: true, firstName, lastName?, phone?, locale? }`; stores the terms acceptance time, sends a verification e-mail |
 | POST | `/auth/login` | public | `{ email, password }` |
 | POST | `/auth/refresh` | public (refresh cookie) | rotates tokens |
 | POST | `/auth/logout` | public (refresh cookie) | ends the current session |
+| GET | `/auth/sessions` | user | signed-in devices `{ id, device, createdAt, lastUsedAt, current }` (no IP addresses) |
+| POST | `/auth/logout-all` | user | ends every session of the user, this one included; `{ count }` |
 | POST | `/auth/password/forgot` | public | always `204` (does not reveal registered e-mails) |
 | POST | `/auth/password/reset` | public | `{ token, password }`; ends all sessions |
 | POST | `/auth/email/verify` | public | `{ token }` |

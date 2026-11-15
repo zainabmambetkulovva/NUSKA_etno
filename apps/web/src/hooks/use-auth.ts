@@ -63,6 +63,8 @@ export function useRegister() {
       firstName: string;
       lastName?: string;
       phone?: string;
+      passwordConfirm: string;
+      acceptTerms: true;
     }) => api<{ user: User }>('/auth/register', { method: 'POST', body: { ...body, locale } }),
     onSuccess: ({ user }) => afterSignIn(user),
   });
@@ -73,6 +75,18 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => api('/auth/logout', { method: 'POST' }),
     onSettled: () => {
+      queryClient.setQueryData(meKey, null);
+      queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== 'me' });
+    },
+  });
+}
+
+/** Signs out on every device (this one included) and forgets the cached account data. */
+export function useLogoutAll() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<{ count: number }>('/auth/logout-all', { method: 'POST' }),
+    onSuccess: () => {
       queryClient.setQueryData(meKey, null);
       queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== 'me' });
     },

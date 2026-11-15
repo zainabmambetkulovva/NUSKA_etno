@@ -72,6 +72,7 @@ export class AuthService {
           lastName: dto.lastName || null,
           phone,
           locale: dto.locale ?? DEFAULT_LOCALE,
+          termsAcceptedAt: new Date(),
         },
       });
     } catch (error) {
@@ -135,6 +136,8 @@ export class AuthService {
           firstName: profile.firstName ?? profile.email.split('@')[0].slice(0, 100),
           lastName: profile.lastName,
           emailVerifiedAt: new Date(),
+          // the Google button carries the notice that continuing accepts the terms
+          termsAcceptedAt: new Date(),
           locale: isLocale(locale) ? locale : DEFAULT_LOCALE,
         },
       });
@@ -201,6 +204,28 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  /** Signed-in devices of the user, newest first; `current` marks this one. No IP addresses. */
+  async listSessions(userId: string, currentSessionId: string) {
+    const sessions = await this.prisma.session.findMany({
+      where: { userId, expiresAt: { gt: new Date() } },
+      orderBy: { updatedAt: 'desc' },
+      select: { id: true, userAgent: true, createdAt: true, updatedAt: true },
+    });
+    return sessions.map((s) => ({
+      id: s.id,
+      device: describeDevice(s.userAgent),
+      createdAt: s.createdAt,
+      lastUsedAt: s.updatedAt,
+      current: s.id === currentSessionId,
+    }));
+  }
+
+  /** Signs the user out on every device (all refresh tokens are deleted). */
+  async logoutAll(userId: string) {
+    const { count } = await this.prisma.session.deleteMany({ where: { userId } });
+    return { count };
   }
 
   /** Ends the session identified by the refresh token (works even if the access token expired). */
@@ -324,4 +349,34 @@ export class AuthService {
       refreshTokenMaxAgeMs: this.refreshTtlMs,
     };
   }
+}
+
+/** "Chrome · Windows" from a user agent; only the browser and the system, nothing identifying. */
+export function describeDevice(userAgent: string | null): string {
+  if (!userAgent) return 'Unknown';
+  const browser = /Edg\//.test(userAgent)
+    ? 'Edge'
+    : /OPR\//.test(userAgent)
+      ? 'Opera'
+      : /YaBrowser\//.test(userAgent)
+        ? 'Yandex'
+        : /Chrome\//.test(userAgent)
+          ? 'Chrome'
+          : /Firefox\//.test(userAgent)
+            ? 'Firefox'
+            : /Safari\//.test(userAgent)
+              ? 'Safari'
+              : 'Browser';
+  const system = /Android/.test(userAgent)
+    ? 'Android'
+    : /iPhone|iPad|iPod/.test(userAgent)
+      ? 'iOS'
+      : /Windows/.test(userAgent)
+        ? 'Windows'
+        : /Mac OS X|Macintosh/.test(userAgent)
+          ? 'macOS'
+          : /Linux/.test(userAgent)
+            ? 'Linux'
+            : '';
+  return system ? `${browser} · ${system}` : browser;
 }
