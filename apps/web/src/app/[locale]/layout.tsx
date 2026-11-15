@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import type { Metadata, Viewport } from 'next';
 
 import type { CategoryNode } from '@nuska/types';
-import { Caveat, Inter, Lora } from 'next/font/google';
 
 import { AiWidget } from '@/components/ai/ai-widget';
 import { BackToTop } from '@/components/layout/back-to-top';
@@ -14,27 +13,14 @@ import { serverApiSafe } from '@/lib/api/server';
 import { alternates, resolveLocale, siteUrl } from '@/lib/locale-params';
 import { AppProviders } from '@/providers/app-providers';
 
+// Fonts ship with the site (Fontsource, OFL): the build needs no request to Google Fonts.
+// Each file covers latin, cyrillic and cyrillic-ext (the Kyrgyz letters Ң ң, Ө ө, Ү ү);
+// the browser downloads only the ranges a page uses.
+import '@fontsource-variable/inter/index.css';
+import '@fontsource-variable/lora/index.css';
+import '@fontsource/caveat/500.css';
+import '@fontsource/caveat/600.css';
 import '../../styles/globals.css';
-
-// cyrillic-ext contains the Kyrgyz letters Ң ң, Ө ө, Ү ү.
-const sans = Inter({
-  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
-  variable: '--font-sans',
-  display: 'swap',
-});
-const serif = Lora({
-  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
-  variable: '--font-serif',
-  display: 'swap',
-});
-
-// Handwritten accent ("С любовью из Кыргызстана"); Caveat has the Kyrgyz letters too.
-const script = Caveat({
-  subsets: ['latin', 'cyrillic', 'cyrillic-ext'],
-  weight: ['500', '600'],
-  variable: '--font-script',
-  display: 'swap',
-});
 
 export const viewport: Viewport = { themeColor: '#1E3A23' };
 
@@ -71,7 +57,7 @@ export default async function LocaleLayout({
   const t = await getDictionary(locale);
   const categories = await serverApiSafe<CategoryNode[]>('/categories', locale, []);
   return (
-    <html lang={locale} className={`${sans.variable} ${serif.variable} ${script.variable}`}>
+    <html lang={locale}>
       <body className="flex min-h-screen flex-col">
         <a
           href="#main"

@@ -5,6 +5,9 @@
 @layer base {
   :root {
     color-scheme: light;
+    --font-sans: 'Inter Variable';
+    --font-serif: 'Lora Variable';
+    --font-script: 'Caveat';
   }
   html {
     -webkit-tap-highlight-color: transparent;

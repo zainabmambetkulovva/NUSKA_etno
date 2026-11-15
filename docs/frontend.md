@@ -289,3 +289,11 @@ never overwritten.
   only, no IP addresses; `GET /auth/sessions`) and **«Sign out on all devices»**
   (`POST /auth/logout-all` deletes every session, this one included).
 - E-mails go through Resend when `RESEND_API_KEY` is set (see environment-variables.md).
+
+## Fonts
+
+Inter, Lora and Caveat ship with the site from the Fontsource packages (OFL licence), imported in
+`app/[locale]/layout.tsx` and named in `styles/globals.css` (`--font-sans`, `--font-serif`,
+`--font-script`). The build no longer downloads anything from Google Fonts (that download failed
+twice in CI). Each font covers latin, cyrillic and cyrillic-ext (Kyrgyz Ң Ө Ү); the browser loads
+only the ranges a page needs.
