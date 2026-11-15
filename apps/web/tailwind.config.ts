@@ -1,83 +1,157 @@
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
-  darkMode: 'class',
-  content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+  content: ['./src/**/*.{ts,tsx}'],
   theme: {
+    container: {
+      center: true,
+      padding: { DEFAULT: '1rem', md: '1.5rem', lg: '2rem' },
+      screens: { '2xl': '1280px' },
+    },
     extend: {
       colors: {
+        // Brand identity (TZ §2.3): Deep Green #355B3E and Cream Yellow #F4E9B9.
         brand: {
           DEFAULT: '#355B3E',
-          dark: '#2a4732',
-          light: '#4d7a55',
+          dark: '#27452F',
+          light: '#4D7A55',
+          50: '#EEF3EF',
+          100: '#D6E3D9',
         },
-        cream: {
-          DEFAULT: '#F4E9B9',
-          dark: '#e5d8a6',
-          light: '#fff9e6',
-        },
-        neutral: {
-          DEFAULT: '#8B8B8B',
-          dark: '#666666',
-          light: '#CCCCCC',
-        },
-        text: {
-          DEFAULT: '#1a1a1a',
-          muted: '#666666',
-          light: '#FFFFFF',
-        },
-        background: {
-          DEFAULT: '#F9F8F4',
-          card: '#FFFFFF',
+        cream: { DEFAULT: '#F4E9B9', dark: '#E8D99A', light: '#FBF6E3', 50: '#FDFBF2' },
+        // Supporting palette (used sparingly).
+        milk: '#FFFDF5',
+        beige: '#E8D9B8',
+        ink: { DEFAULT: '#3B3025', muted: '#6E5D4E', soft: '#9A8B7C' },
+        olive: { DEFAULT: '#75815C', light: '#A3A97C' },
+        gold: { DEFAULT: '#C7A76C', light: '#E2CFA4' },
+        danger: '#B4442F',
+        // Rich palette of the home page design: deep forest, honey gold, warm sand, wood, ruby.
+        forest: { DEFAULT: '#1E3A23', dark: '#132717', light: '#2D4F32' },
+        honey: { DEFAULT: '#D9A85B', light: '#EFCB8A', dark: '#B07A35' },
+        sand: { DEFAULT: '#F5E6CE', light: '#FBF2E4' },
+        wood: '#8A5A33',
+        ruby: '#A3362B',
+        // Palette of the NUSKA_etno mockup (master brief): forest green buttons and footer,
+        // warm cream and beige surroundings, gold only as a refined accent.
+        nk: {
+          forest: '#355B3E',
+          deep: '#2A4831',
+          night: '#22392A',
+          cream: '#FAF8EF',
+          beige: '#E8D9BD',
+          gold: '#C7A66A',
+          brown: '#73543A',
+          sage: '#DCE4D4',
+          ink: '#2B2A22',
+          muted: '#5E584A',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Georgia', 'serif'],
-      },
-      borderRadius: {
-        sm: '4px',
-        DEFAULT: '8px',
-        lg: '12px',
-        xl: '16px',
-        full: '50%',
-      },
-      spacing: {
-        '18': '4.5rem',
-        '22': '5.5rem',
-        '32': '8rem',
-        '48': '12rem',
-        '64': '16rem',
+        sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        script: ['var(--font-script)', 'cursive'],
       },
       boxShadow: {
-        DEFAULT: '0 2px 8px rgba(0, 0, 0, 0.08)',
-        lg: '0 4px 16px rgba(0, 0, 0, 0.12)',
-        xl: '0 8px 24px rgba(0, 0, 0, 0.16)',
-        '3d': '4px 4px 0px #355B3E',
+        soft: '0 2px 12px rgba(58, 42, 30, 0.06)',
+        card: '0 10px 30px -12px rgba(53, 91, 62, 0.25)',
+        lift: '0 24px 48px -20px rgba(53, 91, 62, 0.35)',
+      },
+      borderRadius: { xl: '1rem', '2xl': '1.5rem' },
+      keyframes: {
+        'fade-up': {
+          from: { opacity: '0', transform: 'translateY(12px)' },
+          to: { opacity: '1', transform: 'none' },
+        },
+        bump: { '0%,100%': { transform: 'scale(1)' }, '50%': { transform: 'scale(1.25)' } },
+        draw: { from: { strokeDashoffset: '1' }, to: { strokeDashoffset: '0' } },
+        float: {
+          '0%,100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        'spin-slow': { to: { transform: 'rotate(360deg)' } },
+        sway: {
+          '0%,100%': { transform: 'rotate(var(--sway-from, -4deg)) translateY(0)' },
+          '50%': { transform: 'rotate(var(--sway-to, 4deg)) translateY(-8px)' },
+        },
+        'leaf-drift': {
+          '0%,100%': { transform: 'translate3d(0,0,0) rotate(var(--sway-from, -6deg))' },
+          '30%': {
+            transform:
+              'translate3d(6px,-9px,0) rotate(calc((var(--sway-from, -6deg) + var(--sway-to, 6deg)) / 2))',
+          },
+          '60%': { transform: 'translate3d(-4px,-4px,0) rotate(var(--sway-to, 6deg))' },
+        },
+        // one card lights up for 2 s of an 8 s round (4 cards, each delayed by 2 s)
+        'border-glow': {
+          '0%,26%,100%': {
+            'border-color': 'rgba(255,255,255,0.10)',
+            'box-shadow':
+              '0 24px 40px -24px rgba(15,25,10,0.8), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 0 0 rgba(231,199,127,0)',
+          },
+          '10%,16%': {
+            'border-color': 'rgba(231,199,127,0.95)',
+            'box-shadow':
+              '0 24px 40px -24px rgba(15,25,10,0.8), inset 0 1px 0 rgba(255,255,255,0.08), 0 0 28px 2px rgba(231,199,127,0.55)',
+          },
+        },
+        'ping-slow': {
+          '0%': { transform: 'scale(1)', opacity: '0.8' },
+          '80%,100%': { transform: 'scale(1.7)', opacity: '0' },
+        },
+        pop: {
+          '0%': { transform: 'scale(1)' },
+          '35%': { transform: 'scale(1.35)' },
+          '70%': { transform: 'scale(0.92)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        shake: {
+          '0%,100%': { transform: 'rotate(0)' },
+          '20%': { transform: 'rotate(-12deg)' },
+          '40%': { transform: 'rotate(10deg)' },
+          '60%': { transform: 'rotate(-6deg)' },
+          '80%': { transform: 'rotate(4deg)' },
+        },
+        'shadow-breathe': {
+          '0%,100%': { transform: 'translateX(-50%) scale(1)', opacity: '0.9' },
+          '50%': { transform: 'translateX(-50%) scale(0.82)', opacity: '0.55' },
+        },
+        drift: {
+          '0%,100%': { transform: 'translate3d(0,0,0)' },
+          '50%': { transform: 'translate3d(var(--drift, 40px),-6px,0)' },
+        },
+        glide: {
+          '0%': { transform: 'translate3d(0,0,0) rotate(-2deg)' },
+          '25%': { transform: 'translate3d(-60px,14px,0) rotate(3deg)' },
+          '50%': { transform: 'translate3d(-120px,-4px,0) rotate(-1deg)' },
+          '75%': { transform: 'translate3d(-60px,-18px,0) rotate(-4deg)' },
+          '100%': { transform: 'translate3d(0,0,0) rotate(-2deg)' },
+        },
+        flap: {
+          '0%,100%': { transform: 'scaleY(1)' },
+          '50%': { transform: 'scaleY(0.55)' },
+        },
+        'ken-burns': { from: { transform: 'scale(1)' }, to: { transform: 'scale(1.08)' } },
+        marquee: { from: { transform: 'translateX(0)' }, to: { transform: 'translateX(-50%)' } },
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.5s ease-out',
-        'slide-down': 'slideDown 0.5s ease-out',
-        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        slideUp: {
-          '0%': { transform: 'translateY(20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        slideDown: {
-          '0%': { transform: 'translateY(-20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
+        'fade-up': 'fade-up .5s ease-out both',
+        bump: 'bump .35s ease-out',
+        draw: 'draw 2.4s ease-in-out infinite alternate',
+        float: 'float 5s ease-in-out infinite',
+        'spin-slow': 'spin-slow 40s linear infinite',
+        sway: 'sway 7s ease-in-out infinite',
+        'leaf-drift': 'leaf-drift 8s ease-in-out infinite',
+        drift: 'drift var(--drift-duration, 26s) ease-in-out infinite',
+        'ping-slow': 'ping-slow 2.4s cubic-bezier(0,0,0.2,1) infinite',
+        pop: 'pop .45s ease-out',
+        'shadow-breathe': 'shadow-breathe 5.5s ease-in-out infinite',
+        shake: 'shake .5s ease-in-out',
+        glide: 'glide 18s ease-in-out infinite',
+        flap: 'flap 1.6s ease-in-out infinite',
+        'border-glow': 'border-glow 8s ease-in-out infinite',
+        'ken-burns': 'ken-burns 24s ease-out both',
+        marquee: 'marquee var(--marquee-duration, 40s) linear infinite',
       },
     },
   },

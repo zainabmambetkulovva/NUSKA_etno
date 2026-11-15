@@ -1,280 +1,204 @@
-# 🏔️ NUSKA_etno
+# NUSKA_etno — Premium Kyrgyz Ethno E-commerce
 
-> Премиальный интернет-магазин натуральных и традиционных кыргызских продуктов
+Премиальный интернет-магазин натуральных и традиционных кыргызских продуктов.
 
-[![Next.js](https://img.shields.io/badge/Next.js-15.0-black)](https://nextjs.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-10.0-red)](https://nestjs.com/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-6.1-2D3748)](https://www.prisma.io/)
-[![Docker](https://img.shields.io/badge/Docker-Ready-blue)](https://www.docker.com/)
+## 📋 Содержание
 
----
+- [О проекте](#-о-проекте)
+- [Технологии](#-технологии)
+- [Структура проекта](#-структура-проекта)
+- [Установка](#-установка)
+- [Команды](#-команды)
+- [Переменные окружения](#-переменные-окружения)
+- [Документация](#-документация)
 
 ## 🎯 О проекте
 
-NUSKA_etno — это современная e-commerce платформа для продажи традиционных кыргызских продуктов:
-- 🥛 **Навет** (нават) — традиционные молочные сладости
-- 🧀 **Курут** — кыргызский сушеный сыр
-- 🧈 **Быштак** — домашний сыр
+NUSKA_etno — современный интернет-магазин, объединяющий кыргызское национальное наследие с передовыми технологиями электронной коммерции.
 
-### ✨ Ключевые особенности
+**Основные возможности:**
+- Каталог натуральных продуктов
+- Система авторизации и личного кабинета
+- Корзина и оформление заказов
+- Самовывоз
+- Административная панель
+- Мультиязычность (KG/RU)
+- 3D-сцены и интерактивные элементы
 
-- 🌐 **Двуязычность**: KG/RU
-- 🎨 **Премиум дизайн**: Современный UI с кыргызскими мотивами
-- 🔐 **Google OAuth**: Быстрая авторизация
-- 📦 **Самовывоз**: Пункты выдачи по Бишкеку
-- 💳 **Онлайн оплата**: Интеграция с Finix
-- ☁️ **AWS S3**: Хранение изображений продуктов
-- 🐳 **Docker**: Готов к деплою
+## 💻 Технологии
 
----
+### Frontend
+- Next.js (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS
+- Framer Motion (все анимации: появление, параллакс, переходы страниц)
+- Three.js + React Three Fiber + drei
+- Zustand
+- TanStack Query
+- React Hook Form + Zod
+- Собственные словари KY/RU (без i18next)
 
-## 🏗️ Архитектура
+### Backend
+- Node.js
+- NestJS
+- TypeScript
+- Prisma ORM
+- PostgreSQL (Neon)
+- JWT Authentication
+- Passport.js
 
-### Monorepo структура
+### DevOps
+- pnpm Workspaces
+
+## 📁 Структура проекта
 
 ```
 NUSKA_etno/
 ├── apps/
-│   ├── web/           # Frontend (Next.js 15 + React 19)
-│   └── api/           # Backend (NestJS + Prisma)
+│   ├── web/          # Next.js Frontend
+│   └── api/          # NestJS Backend
 ├── packages/
-│   ├── types/         # Shared TypeScript types
-│   ├── validators/    # Shared validation schemas
-│   └── config/        # Shared configurations
-├── docker/            # Docker configurations
-└── docs/              # Documentation
+│   ├── types/        # Общие TypeScript-типы
+│   ├── validators/   # Общие Zod-схемы валидации
+│   └── config/       # Общие конфигурации
+├── docs/             # Документация
+├── TZ.md             # Техническое задание
+├── DATABASE.md       # Спецификация базы данных
+└── package.json
 ```
 
-### Tech Stack
+## 🚀 Установка
 
-**Frontend:**
-- Next.js 15 (App Router)
-- React 19
-- TypeScript 5.7
-- Tailwind CSS 3.4
-- Framer Motion (animations)
-- Three.js + React Three Fiber (3D)
-- Zustand (state management)
-- React Query (data fetching)
+### Требования
 
-**Backend:**
-- NestJS 10
-- Prisma ORM 6.1
-- PostgreSQL (Neon)
-- JWT Authentication
-- Passport (Google OAuth)
-- AWS SDK (S3)
-- Swagger (API docs)
+- Node.js >= 20.0.0
+- pnpm >= 9 (`corepack enable` — версия берётся из `packageManager`)
+- PostgreSQL 16+ (Neon)
 
----
+### Шаги установки
 
-## 🚀 Быстрый старт
-
-### 1. Клонирование репозитория
-
+1. Клонируйте репозиторий
+2. Установите зависимости:
 ```bash
-git clone https://github.com/zainabmambetkulovva/NUSKA_etno.git
-cd NUSKA_etno
+pnpm install
 ```
 
-### 2. Установка зависимостей
-
+3. Настройте переменные окружения:
 ```bash
-npm install
-```
-
-### 3. Настройка переменных окружения
-
-```bash
-# Backend
 cp apps/api/.env.example apps/api/.env
-# Заполните переменные в apps/api/.env
-
-# Frontend
-cp apps/web/.env.local.example apps/web/.env.local
-# Заполните переменные в apps/web/.env.local
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-### 4. Настройка базы данных
+4. Заполните в `apps/api/.env` как минимум `DATABASE_URL`, `DIRECT_URL` и `JWT_SECRET`.
 
+5. Примените миграции:
 ```bash
-npm run db:generate   # Генерация Prisma Client
-npm run db:migrate    # Запуск миграций
-npm run db:seed       # Заполнение тестовыми данными
+pnpm db:deploy
 ```
 
-### 5. Запуск проекта
-
+6. Заполните базу тестовыми данными:
 ```bash
-npm run dev
+pnpm db:seed
 ```
+Если `SEED_ADMIN_PASSWORD` / `SEED_CUSTOMER_PASSWORD` не заданы, seed сгенерирует
+пароли и выведет их один раз.
 
-Откройте в браузере:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
-- **API Docs**: http://localhost:4000/api/docs
+## 📜 Команды
 
----
-
-## 🐳 Docker
-
+### Development
 ```bash
-# Сборка и запуск
-docker-compose up --build
-
-# Запуск в фоновом режиме
-docker-compose up -d
-
-# Остановка
-docker-compose down
+pnpm dev              # Запустить все приложения
+pnpm dev:web          # Запустить Frontend (порт 3000)
+pnpm dev:api          # Запустить Backend (порт 4000, маршруты /api, Swagger /api/docs)
 ```
 
----
+### Production
+```bash
+pnpm build            # Собрать все приложения
+pnpm build:web        # Собрать Frontend
+pnpm build:api        # Собрать Backend
+```
+
+### Linting & Type Checking
+```bash
+pnpm lint             # Проверка ESLint
+pnpm lint:fix         # Исправление ошибок ESLint
+pnpm typecheck        # Проверка TypeScript
+pnpm typecheck:web    # Проверка TypeScript Frontend
+pnpm typecheck:api    # Проверка TypeScript Backend
+pnpm format           # Форматирование кода
+pnpm format:check     # Проверка форматирования
+```
+
+### Tests
+```bash
+pnpm --filter @nuska/api test       # Unit-тесты
+TEST_DATABASE_URL=postgresql://postgres@localhost:5432/nuska_test pnpm --filter @nuska/api test:e2e
+```
+Браузерные тесты сайта (Playwright) — см. [docs/frontend.md](docs/frontend.md#browser-tests-playwright):
+```bash
+pnpm --filter @nuska/web test:e2e
+```
+E2E-тесты API очищают базу `TEST_DATABASE_URL` — используйте отдельную базу с `test` в названии.
+
+### Database
+```bash
+pnpm db:generate      # Сгенерировать Prisma Client
+pnpm db:migrate       # Создать новую миграцию из изменений схемы (dev)
+pnpm db:deploy        # Применить существующие миграции (Neon / production)
+pnpm db:studio        # Открыть Prisma Studio
+pnpm db:seed          # Заполнить базу тестовыми данными
+```
+
+## 🔑 Переменные окружения
+
+### Backend (.env)
+
+```env
+# Environment
+NODE_ENV=development
+PORT=4000
+
+# CORS
+CORS_ORIGINS=http://localhost:3000
+
+# Database (Neon PostgreSQL): pooled URL for the app, direct URL for migrations
+DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx-pooler.REGION.aws.neon.tech/DBNAME?sslmode=require"
+DIRECT_URL="postgresql://USER:PASSWORD@ep-xxxx.REGION.aws.neon.tech/DBNAME?sslmode=require"
+
+# JWT (openssl rand -base64 48)
+JWT_SECRET=
+JWT_EXPIRES_IN=15m
+
+# Password hashing
+BCRYPT_ROUNDS=12
+```
+
+Полный список — в `apps/api/.env.example` и [docs/environment-variables.md](docs/environment-variables.md).
 
 ## 📚 Документация
 
-- [📖 Setup Guide](./SETUP_GUIDE.md) - Подробное руководство по установке
-- [🗄️ Database Schema](./DATABASE.md) - Описание схемы БД
-- [📋 Technical Specification](./TZ.md) - Техническое задание
+- [Техническое задание](TZ.md)
+- [Спецификация базы данных](DATABASE.md)
+- [Решения по реализации БД](docs/database-notes.md)
+- [Обзор API](docs/api.md)
+- [Frontend](docs/frontend.md)
+- [Запуск в интернет — бесплатные сервисы (Vercel, Render, Neon, Supabase, Brevo)](docs/deployment.md)
+- [Project Structure](docs/project-structure.md)
+- [Installation Guide](docs/installation.md)
+- [Environment Variables](docs/environment-variables.md)
 
----
+## 🎨 Бренд
 
-## 🎨 UI Components
-
-✅ **Header** - Навигация, переключение языка, авторизация
-✅ **HeroSection** - 3D вращающаяся композиция продуктов
-✅ **WhyChooseUs** - 4 причины выбрать NUSKA
-✅ **PriceSection** - Анимированные карточки цен
-✅ **ReviewsSection** - Премиум карусель с отзывами
-✅ **Footer** - Контакты, ссылки, соцсети
-
----
-
-## 🔑 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Регистрация
-- `POST /api/auth/login` - Вход
-- `GET /api/auth/google` - Google OAuth
-- `POST /api/auth/logout` - Выход
-
-### Products
-- `GET /api/products` - Список продуктов
-- `GET /api/products/:id` - Детали продукта
-- `POST /api/products` - Создание (admin)
-- `PUT /api/products/:id` - Обновление (admin)
-
-### Cart
-- `GET /api/cart` - Корзина пользователя
-- `POST /api/cart/items` - Добавить в корзину
-- `DELETE /api/cart/items/:id` - Удалить из корзины
-
-### Orders
-- `POST /api/orders` - Создать заказ
-- `GET /api/orders` - История заказов
-- `GET /api/orders/:id` - Детали заказа
-
-**Полная документация**: http://localhost:4000/api/docs
-
----
-
-## 🌍 Переменные окружения
-
-### Backend (`apps/api/.env`)
-
-```env
-DATABASE_URL=postgresql://...
-JWT_SECRET=your-secret-key
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-AWS_ACCESS_KEY_ID=your-aws-key
-AWS_SECRET_ACCESS_KEY=your-aws-secret
-AWS_S3_BUCKET=nuska-etno-uploads
-```
-
-### Frontend (`apps/web/.env.local`)
-
-```env
-NEXT_PUBLIC_API_URL=http://localhost:4000
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret
-```
-
----
-
-## 📦 Доступные команды
-
-```bash
-# Разработка
-npm run dev              # Запуск dev-серверов
-npm run build            # Сборка для продакшн
-npm run start            # Запуск продакшн версии
-
-# База данных
-npm run db:generate      # Генерация Prisma Client
-npm run db:migrate       # Запуск миграций
-npm run db:seed          # Заполнение данными
-npm run db:studio        # Prisma Studio GUI
-
-# Качество кода
-npm run lint             # ESLint
-npm run format           # Prettier
-npm run typecheck        # TypeScript проверка
-```
-
----
-
-## 🛠️ Статус разработки
-
-### ✅ Готово
-
-- [x] Monorepo структура
-- [x] Backend API (14 модулей)
-- [x] Frontend UI компоненты
-- [x] Prisma схема (24 модели)
-- [x] Google OAuth интеграция
-- [x] AWS S3 file storage
-- [x] Docker configuration
-- [x] Tailwind CSS setup
-- [x] i18n (KG/RU)
-
-### 🚧 В разработке
-
-- [ ] Login/Register страницы
-- [ ] Catalog страница
-- [ ] Product Detail страница
-- [ ] Cart & Checkout flow
-- [ ] User Profile
-- [ ] Admin Panel
-- [ ] Finix Payment интеграция
-- [ ] Email уведомления
-- [ ] Unit & E2E тесты
-
----
-
-## 👥 Команда
-
-**GitHub**: https://github.com/zainabmambetkulovva/NUSKA_etno
-
----
+**Цвета:**
+- Deep Green: `#355B3E`
+- Cream Yellow: `#F4E9B9`
 
 ## 📞 Контакты
 
-- 📱 **WhatsApp**: [+996 701 111 024](https://wa.me/996701111024)
-- 💬 **Telegram**: [@nuska_etnokatalog](https://t.me/nuska_etnokatalog)
-- 📺 **YouTube**: [@nuskaetno](https://youtube.com/@nuskaetno?si=oCiBT0GwrmoR7wV0)
-- 📧 **Email**: info@nuska-etno.kg
+Для вопросов и предложений обращайтесь к команде разработки.
 
 ---
 
-## 📄 Лицензия
-
-MIT License - смотрите [LICENSE](./LICENSE)
-
----
-
-<div align="center">
-  <p>Создано с ❤️ для кыргызских традиций</p>
-  <p><strong>NUSKA_etno</strong> © 2024</p>
-</div>
+**NUSKA_etno** — Вкус кыргызских традиций в современном цифровом формате.

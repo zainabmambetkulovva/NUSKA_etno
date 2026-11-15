@@ -1,36 +1,31 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Role } from '../auth/decorators/role.decorator';
-import { UserRole } from '@prisma/client';
+import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
+import { ChangePasswordDto } from '../auth/dto/auth.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { AuthenticatedUser } from '../common/types/authenticated-user';
+
+import { UpdateProfileDto } from './dto/users.dto';
+import { UsersService } from './users.service';
+
+@ApiTags('users')
+@Controller('users/me')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly users: UsersService) {}
 
   @Get()
-  @Role(UserRole.ADMIN)
-  findAll() {
-    return this.usersService.findAll();
+  me(@CurrentUser() user: AuthenticatedUser) {
+    return this.users.getProfile(user.id);
   }
 
-  @Get(':id')
-  @Role(UserRole.ADMIN, UserRole.USER)
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+  @Patch()
+  update(@CurrentUser() user: AuthenticatedUser, @Body() dto: UpdateProfileDto) {
+    return this.users.updateProfile(user.id, dto);
   }
 
-  @Patch(':id')
-  @Role(UserRole.ADMIN, UserRole.USER)
-  update(@Param('id') id: string, @Body() updateUserData: any) {
-    return this.usersService.update(id, updateUserData);
-  }
-
-  @Delete(':id')
-  @Role(UserRole.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  @Post('password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async changePassword(@CurrentUser() user: AuthenticatedUser, @Body() dto: ChangePasswordDto) {
+    await this.users.changePassword(user.id, user.sessionId, dto);
   }
 }
