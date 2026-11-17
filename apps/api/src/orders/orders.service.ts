@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OrderStatus, Prisma } from '@prisma/client';
+import { DeliveryMethod, OrderStatus, PaymentMethod, Prisma } from '@prisma/client';
 
 import { AuditService } from '../audit/audit.service';
 import { CartService } from '../cart/cart.service';
@@ -71,6 +71,12 @@ export class OrdersService {
    */
   async create(userId: string, dto: CreateOrderDto, requestLocale: Locale) {
     const locale = dto.locale ?? requestLocale;
+    // No online payment provider is connected yet: orders are paid on receipt.
+    if (dto.paymentMethod === PaymentMethod.ONLINE)
+      throw AppError.badRequest(
+        'ONLINE_PAYMENT_UNAVAILABLE',
+        'Online payment is not available yet'
+      );
     const customerPhone = normalizePhone(dto.customerPhone);
     if (!customerPhone) throw AppError.badRequest('INVALID_PHONE', 'Phone number is not valid');
 
@@ -113,10 +119,13 @@ export class OrdersService {
           }
         }
 
-        const pickup = await tx.pickupLocation.findFirst({
-          where: { id: dto.pickupLocationId, isActive: true },
-        });
-        if (!pickup)
+        const delivery = dto.deliveryMethod === DeliveryMethod.DELIVERY;
+        const pickup = delivery
+          ? null
+          : await tx.pickupLocation.findFirst({
+              where: { id: dto.pickupLocationId, isActive: true },
+            });
+        if (!delivery && !pickup)
           throw AppError.badRequest(
             'PICKUP_LOCATION_UNAVAILABLE',
             'Pickup location is not available'
@@ -143,10 +152,14 @@ export class OrdersService {
             customerName: dto.customerName,
             customerPhone,
             customerEmail: dto.customerEmail ?? null,
-            pickupLocationId: pickup.id,
-            pickupLocationName: pickup.name,
-            pickupLocationAddress: pickup.address,
-            pickupTime,
+            deliveryMethod: delivery ? DeliveryMethod.DELIVERY : DeliveryMethod.PICKUP,
+            deliveryCity: delivery ? dto.deliveryCity! : null,
+            deliveryAddress: delivery ? dto.deliveryAddress! : null,
+            paymentMethod: PaymentMethod.CASH,
+            pickupLocationId: pickup?.id ?? null,
+            pickupLocationName: pickup?.name ?? null,
+            pickupLocationAddress: pickup?.address ?? null,
+            pickupTime: delivery ? null : pickupTime,
             customerComment: dto.customerComment || null,
             items: { create: items },
             statusHistory: {
@@ -398,12 +411,21 @@ function toOrderView(order: OrderDetailSource) {
     total: money(order.totalAmount),
     locale: order.locale,
     customer: { name: order.customerName, phone: order.customerPhone, email: order.customerEmail },
-    pickup: {
-      locationId: order.pickupLocationId,
-      name: order.pickupLocationName,
-      address: order.pickupLocationAddress,
-      time: order.pickupTime,
-    },
+    deliveryMethod: order.deliveryMethod,
+    paymentMethod: order.paymentMethod,
+    delivery:
+      order.deliveryMethod === DeliveryMethod.DELIVERY
+        ? { city: order.deliveryCity, address: order.deliveryAddress }
+        : null,
+    pickup:
+      order.deliveryMethod === DeliveryMethod.PICKUP
+        ? {
+            locationId: order.pickupLocationId,
+            name: order.pickupLocationName,
+            address: order.pickupLocationAddress,
+            time: order.pickupTime,
+          }
+        : null,
     comment: order.customerComment,
     items: order.items.map((item) => {
       const productVisible =

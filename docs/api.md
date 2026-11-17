@@ -57,7 +57,7 @@ Rate limits: 100 requests/min per IP overall; 5/min for login, register and pass
 | PATCH / DELETE | `/cart/items/:productId` | set quantity / remove |
 | DELETE | `/cart` | clear |
 | POST | `/cart/merge` | `{ items: [{ productId, quantity }] }` — guest cart after login |
-| POST | `/orders` | `{ pickupLocationId, customerName, customerPhone, customerEmail?, pickupTime?, customerComment? }` — items come from the server cart |
+| POST | `/orders` | `{ deliveryMethod: 'DELIVERY' \| 'PICKUP' (default PICKUP), deliveryCity + deliveryAddress (DELIVERY) or pickupLocationId + pickupTime? (PICKUP), paymentMethod? (only CASH = on receipt for now), customerName, customerPhone, customerEmail?, customerComment? }` — items come from the server cart; the delivery price is not calculated (the manager tells it) |
 | GET | `/orders`, `/orders/:id` | own orders only |
 | POST | `/orders/:id/cancel` | only while `PENDING` |
 | POST | `/orders/:id/repeat` | puts available products back into the cart |

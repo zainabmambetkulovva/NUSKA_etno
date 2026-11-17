@@ -83,6 +83,61 @@ describe('Cart, checkout and orders (e2e)', () => {
     ]);
   });
 
+  it('delivers to an address without any pickup point; validates the address; refuses online payment for now', async () => {
+    const product = await createProduct(ctx.prisma, { priceAmount: 10000, stockQuantity: 5 });
+    const { user, agent } = await customerWithCart([{ productId: product.id, quantity: 2 }]);
+    const base = { customerName: 'Test Customer', customerPhone: '0555123456' };
+
+    const missing = await agent
+      .post('/api/orders')
+      .send({ ...base, deliveryMethod: 'DELIVERY', deliveryCity: 'Бишкек' })
+      .expect(422);
+    expect(missing.body.fields?.deliveryAddress ?? missing.body.message).toBeTruthy();
+    const online = await agent
+      .post('/api/orders')
+      .send({
+        ...base,
+        deliveryMethod: 'DELIVERY',
+        deliveryCity: 'Бишкек',
+        deliveryAddress: 'Орозбекова 136, кв. 5',
+        paymentMethod: 'ONLINE',
+      })
+      .expect(400);
+    expect(online.body.code).toBe('ONLINE_PAYMENT_UNAVAILABLE');
+
+    const res = await agent
+      .post('/api/orders?locale=ru')
+      .send({
+        ...base,
+        deliveryMethod: 'DELIVERY',
+        deliveryCity: ' Бишкек ',
+        deliveryAddress: 'Орозбекова 136, кв. 5',
+      })
+      .expect(201);
+    expect(res.body).toMatchObject({
+      status: 'PENDING',
+      deliveryMethod: 'DELIVERY',
+      paymentMethod: 'CASH',
+      delivery: { city: 'Бишкек', address: 'Орозбекова 136, кв. 5' },
+      pickup: null,
+      total: { amount: 20000 },
+    });
+
+    // the admin moves it on: the customer is told it is out for delivery, to that address
+    const admin = await createUser(ctx.prisma, UserRole.ADMIN);
+    const adminAgent = await loginAs(ctx.app, admin.email);
+    for (const status of ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP'])
+      await adminAgent
+        .patch(`/api/admin/orders/${res.body.id}/status`)
+        .send({ status })
+        .expect(200);
+    const ready = await ctx.prisma.notification.findFirstOrThrow({
+      where: { userId: user.id, type: 'ORDER_READY' },
+    });
+    expect(ready.title).toContain('передан в доставку');
+    expect(ready.message).toContain('Бишкек, Орозбекова 136, кв. 5');
+  });
+
   it('keeps the order unchanged when the product price changes later', async () => {
     const pickup = await createPickupLocation(ctx.prisma);
     const product = await createProduct(ctx.prisma, { priceAmount: 11500 });

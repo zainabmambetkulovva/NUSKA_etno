@@ -62,14 +62,14 @@ const BENEFIT_ICONS = [
 export function BenefitsBar({ t }: { t: Dictionary }) {
   return (
     <section
-      className="container relative z-20 -mt-6 lg:-mt-14"
+      className="container relative z-20 -mt-4 lg:-mt-14"
       aria-label={t.landing.productsEyebrow}
     >
       <ul className="grid grid-cols-2 gap-x-2 gap-y-4 rounded-[1.75rem] border border-white/80 bg-white/80 px-4 py-5 shadow-[0_24px_50px_-30px_rgba(80,60,30,0.6)] backdrop-blur-md sm:grid-cols-3 lg:grid-cols-5 lg:gap-0 lg:px-6">
         {t.landing.benefits.map((benefit, i) => (
           <li
             key={benefit.top}
-            className="flex items-center gap-3 lg:justify-center lg:border-l lg:border-nk-beige lg:px-3 lg:first:border-l-0"
+            className="flex items-center gap-3 odd:last:col-span-2 odd:last:justify-center sm:odd:last:col-span-1 sm:odd:last:justify-start lg:justify-center lg:border-l lg:border-nk-beige lg:px-3 lg:first:border-l-0 lg:odd:last:justify-center"
           >
             <span className="shrink-0 transition-transform duration-300 hover:scale-110">
               {BENEFIT_ICONS[i]}
@@ -129,7 +129,8 @@ export function CategoryArches({
           </Link>
         </Reveal>
 
-        <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5 [&::-webkit-scrollbar]:hidden">
+        {/* room above and below the scrolling row, so the lift on hover and the soft shadow are not cut */}
+        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:py-0 lg:grid-cols-5 [&::-webkit-scrollbar]:hidden">
           {categories.map((category, i) => {
             const photo = CATEGORY_PHOTOS[category.slug];
             return (
@@ -151,7 +152,7 @@ export function CategoryArches({
                             fill
                             quality={95}
                             sizes="(min-width: 1024px) 200px, 45vw"
-                            className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 group-hover:scale-110"
+                            className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_2%,#000_16%,#000_78%,transparent_96%),linear-gradient(to_bottom,transparent_6%,#000_20%,#000_92%,transparent_100%)] group-hover:scale-110"
                           />
                         ) : (
                           <span className="flex h-full flex-col items-center justify-center gap-2 pt-6">
@@ -263,7 +264,7 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
 
 // --------------------------------------------------- origin + bestsellers row
 
-/** «Из сердца Кыргызстана» (interactive map) beside «Хиты продаж» (carousel). */
+/** «Из сердца Кыргызстана» (large interactive map), then «Хиты продаж» (carousel) full width. */
 export function OriginAndBestsellers({
   t,
   locale,
@@ -277,16 +278,16 @@ export function OriginAndBestsellers({
 }) {
   return (
     <section className="relative py-14 lg:py-16" aria-labelledby="origin-title">
-      <div className="container grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)] xl:gap-10">
-        <Reveal className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-          <OriginMap products={products} compact className="mx-auto w-full min-w-0 max-w-[460px]" />
-          <div>
+      <div className="container space-y-14 lg:space-y-16">
+        <Reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-14">
+          <OriginMap products={products} compact className="mx-auto w-full min-w-0 max-w-[760px]" />
+          <div className="max-w-md">
             <TextReveal
               id="origin-title"
               text={t.landing.originTitle}
-              className="font-serif text-[1.9rem] leading-tight text-nk-ink"
+              className="font-serif text-[2.2rem] leading-tight text-nk-ink sm:text-[2.6rem]"
             />
-            <p className="mt-3 text-[15px] leading-relaxed text-nk-muted">{t.landing.originText}</p>
+            <p className="mt-4 text-base leading-relaxed text-nk-muted">{t.landing.originText}</p>
             <Link
               href={`/${locale}/origin`}
               className="btn-forest group mt-6 whitespace-nowrap px-6 py-3 text-sm"

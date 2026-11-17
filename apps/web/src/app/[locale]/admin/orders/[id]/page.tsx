@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { OrderStatusBadge } from '@/components/account/order-status-badge';
+import { OrderStatusBadge, orderStatusLabel } from '@/components/account/order-status-badge';
 import { AdminTitle } from '@/components/admin/admin-ui';
 import { OrnamentLoader } from '@/components/brand/ornament';
 import { Button } from '@/components/ui/button';
@@ -53,7 +53,7 @@ export default function AdminOrderPage() {
       <Link href={`/${locale}/admin/orders`} className="text-sm text-brand hover:underline">
         ← {t.admin.orders}
       </Link>
-      <AdminTitle action={<OrderStatusBadge status={o.status} />}>
+      <AdminTitle action={<OrderStatusBadge status={o.status} method={o.deliveryMethod} />}>
         {t.account.order} {formatOrderNumber(o.orderNumber)}
       </AdminTitle>
 
@@ -76,11 +76,19 @@ export default function AdminOrderPage() {
           <p className="text-ink-soft">
             {t.admin.email}: {o.user.email}
           </p>
-          <p className="pt-2">
-            <span className="text-ink-soft">{t.account.pickup}:</span> {o.pickup.name},{' '}
-            {o.pickup.address}
-          </p>
-          {o.pickup.time && (
+          {o.delivery && (
+            <p className="pt-2">
+              <span className="text-ink-soft">{t.checkout.deliveryTo}:</span> {o.delivery.city},{' '}
+              {o.delivery.address}
+            </p>
+          )}
+          {o.pickup && (
+            <p className="pt-2">
+              <span className="text-ink-soft">{t.account.pickup}:</span> {o.pickup.name},{' '}
+              {o.pickup.address}
+            </p>
+          )}
+          {o.pickup?.time && (
             <p>
               <span className="text-ink-soft">{t.account.pickupTime}:</span>{' '}
               {formatDate(o.pickup.time, locale, true)}
@@ -115,7 +123,7 @@ export default function AdminOrderPage() {
                       change.mutate(status)
                     }
                   >
-                    {t.orderStatus[status]}
+                    {orderStatusLabel(t, status, o.deliveryMethod)}
                   </Button>
                 ))}
               </div>
@@ -125,7 +133,9 @@ export default function AdminOrderPage() {
           <ol className="space-y-2 border-l-2 border-brand/30 pl-4 text-sm">
             {o.statusHistory.map((h, i) => (
               <li key={i}>
-                <span className="font-medium">{t.orderStatus[h.newStatus]}</span>
+                <span className="font-medium">
+                  {orderStatusLabel(t, h.newStatus, o.deliveryMethod)}
+                </span>
                 <span className="text-ink-soft">
                   {' '}
                   · {formatDate(h.createdAt, locale, true)}

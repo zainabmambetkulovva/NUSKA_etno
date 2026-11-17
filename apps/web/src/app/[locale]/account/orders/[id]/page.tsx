@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
-import { OrderStatusBadge } from '@/components/account/order-status-badge';
+import { OrderStatusBadge, orderStatusLabel } from '@/components/account/order-status-badge';
 import { OrnamentLoader } from '@/components/brand/ornament';
 import { ProductImage } from '@/components/product/product-image';
 import { Button } from '@/components/ui/button';
@@ -149,20 +149,30 @@ export default function OrderPage() {
           <h2 className="font-serif text-2xl">
             {t.account.order} {formatOrderNumber(o.orderNumber)}
           </h2>
-          <OrderStatusBadge status={o.status} />
+          <OrderStatusBadge status={o.status} method={o.deliveryMethod} />
         </div>
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-ink-soft">{t.account.date}</dt>
             <dd>{formatDate(o.createdAt, locale, true)}</dd>
           </div>
-          <div>
-            <dt className="text-ink-soft">{t.account.pickup}</dt>
-            <dd>
-              {o.pickup.name}, {o.pickup.address}
-            </dd>
-          </div>
-          {o.pickup.time && (
+          {o.delivery && (
+            <div>
+              <dt className="text-ink-soft">{t.checkout.deliveryTo}</dt>
+              <dd>
+                {o.delivery.city}, {o.delivery.address}
+              </dd>
+            </div>
+          )}
+          {o.pickup && (
+            <div>
+              <dt className="text-ink-soft">{t.account.pickup}</dt>
+              <dd>
+                {o.pickup.name}, {o.pickup.address}
+              </dd>
+            </div>
+          )}
+          {o.pickup?.time && (
             <div>
               <dt className="text-ink-soft">{t.account.pickupTime}</dt>
               <dd>{formatDate(o.pickup.time, locale, true)}</dd>
@@ -247,7 +257,9 @@ export default function OrderPage() {
                 className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full bg-brand"
                 aria-hidden
               />
-              <div className="font-medium">{t.orderStatus[h.newStatus]}</div>
+              <div className="font-medium">
+                {orderStatusLabel(t, h.newStatus, o.deliveryMethod)}
+              </div>
               <div className="text-sm text-ink-soft">
                 {formatDate(h.createdAt, locale, true)}
                 {h.comment ? ` — ${h.comment}` : ''}

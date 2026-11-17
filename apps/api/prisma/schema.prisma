@@ -70,6 +70,13 @@ enum PaymentStatus {
   CANCELLED
 }
 
+enum DeliveryMethod {
+  /// courier delivery to the customer's address
+  DELIVERY
+  /// the customer collects the order at a pickup point
+  PICKUP
+}
+
 enum PaymentMethod {
   CASH
   ONLINE
@@ -400,15 +407,15 @@ model Cart {
 }
 
 model CartItem {
-  id        String   @id @default(uuid()) @db.Uuid
-  cartId    String   @map("cart_id") @db.Uuid
-  productId String   @map("product_id") @db.Uuid
+  id         String   @id @default(uuid()) @db.Uuid
+  cartId     String   @map("cart_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
   /// > 0 (CHECK constraint).
-  quantity  Int      @default(1)
+  quantity   Int      @default(1)
   /// Price (tyiyn) when the customer put the product in the cart; shows "the price changed".
-  priceAtAdd Int?    @map("price_at_add")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  priceAtAdd Int?     @map("price_at_add")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -465,33 +472,39 @@ model PickupLocation {
 /// Customer contacts and the pickup point are stored as a snapshot.
 /// Stock is deducted when the order is created and returned when it is cancelled.
 model Order {
-  id                    String      @id @default(uuid()) @db.Uuid
+  id                    String         @id @default(uuid()) @db.Uuid
   /// Human-readable sequential number shown to customers.
-  orderNumber           Int         @unique @default(autoincrement()) @map("order_number")
-  userId                String      @map("user_id") @db.Uuid
-  status                OrderStatus @default(PENDING)
+  orderNumber           Int            @unique @default(autoincrement()) @map("order_number")
+  userId                String         @map("user_id") @db.Uuid
+  status                OrderStatus    @default(PENDING)
   /// Amounts in tyiyn, >= 0 (CHECK constraint).
-  subtotalAmount        Int         @map("subtotal_amount")
-  totalAmount           Int         @map("total_amount")
-  currency              String      @default("KGS") @db.Char(3)
+  subtotalAmount        Int            @map("subtotal_amount")
+  totalAmount           Int            @map("total_amount")
+  currency              String         @default("KGS") @db.Char(3)
   /// Locale the order was placed in; used for notifications about it.
-  locale                String      @default("ky") @db.VarChar(5)
-  customerName          String      @map("customer_name")
-  customerPhone         String      @map("customer_phone")
-  customerEmail         String?     @map("customer_email")
-  pickupLocationId      String      @map("pickup_location_id") @db.Uuid
-  pickupLocationName    String      @map("pickup_location_name")
-  pickupLocationAddress String      @map("pickup_location_address")
-  pickupTime            DateTime?   @map("pickup_time")
-  customerComment       String?     @map("customer_comment")
-  confirmedAt           DateTime?   @map("confirmed_at")
-  completedAt           DateTime?   @map("completed_at")
-  cancelledAt           DateTime?   @map("cancelled_at")
-  createdAt             DateTime    @default(now()) @map("created_at")
-  updatedAt             DateTime    @updatedAt @map("updated_at")
+  locale                String         @default("ky") @db.VarChar(5)
+  customerName          String         @map("customer_name")
+  customerPhone         String         @map("customer_phone")
+  customerEmail         String?        @map("customer_email")
+  deliveryMethod        DeliveryMethod @default(PICKUP) @map("delivery_method")
+  /// Delivery: city / settlement and street, house, apartment (DELIVERY only).
+  deliveryCity          String?        @map("delivery_city") @db.VarChar(100)
+  deliveryAddress       String?        @map("delivery_address") @db.VarChar(500)
+  /// How the customer pays: CASH = cash or transfer on receipt; ONLINE = payment provider.
+  paymentMethod         PaymentMethod  @default(CASH) @map("payment_method")
+  pickupLocationId      String?        @map("pickup_location_id") @db.Uuid
+  pickupLocationName    String?        @map("pickup_location_name")
+  pickupLocationAddress String?        @map("pickup_location_address")
+  pickupTime            DateTime?      @map("pickup_time")
+  customerComment       String?        @map("customer_comment")
+  confirmedAt           DateTime?      @map("confirmed_at")
+  completedAt           DateTime?      @map("completed_at")
+  cancelledAt           DateTime?      @map("cancelled_at")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
 
   user           User                 @relation(fields: [userId], references: [id], onDelete: Restrict)
-  pickupLocation PickupLocation       @relation(fields: [pickupLocationId], references: [id], onDelete: Restrict)
+  pickupLocation PickupLocation?      @relation(fields: [pickupLocationId], references: [id], onDelete: Restrict)
   items          OrderItem[]
   statusHistory  OrderStatusHistory[]
   payments       Payment[]

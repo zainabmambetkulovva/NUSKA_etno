@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { OrderStatus } from '@prisma/client';
+import { DeliveryMethod, OrderStatus, PaymentMethod } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
   IsDateString,
@@ -11,6 +11,7 @@ import {
   IsUUID,
   MaxLength,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 
 import { PaginationQueryDto } from '../../common/dto/pagination-query.dto';
@@ -20,9 +21,40 @@ const trim = ({ value }: { value: unknown }) => (typeof value === 'string' ? val
 
 /** Items are taken from the user's server-side cart, never from the request body. */
 export class CreateOrderDto {
-  @ApiProperty()
+  @ApiPropertyOptional({ enum: DeliveryMethod, default: DeliveryMethod.PICKUP })
+  @IsOptional()
+  @IsEnum(DeliveryMethod)
+  deliveryMethod?: DeliveryMethod;
+
+  @ApiPropertyOptional({ description: 'Required for PICKUP' })
+  @ValidateIf((o: CreateOrderDto) => (o.deliveryMethod ?? DeliveryMethod.PICKUP) === 'PICKUP')
   @IsUUID()
-  pickupLocationId!: string;
+  pickupLocationId?: string;
+
+  @ApiPropertyOptional({ description: 'City or settlement; required for DELIVERY' })
+  @ValidateIf((o: CreateOrderDto) => o.deliveryMethod === 'DELIVERY')
+  @Transform(trim)
+  @IsString()
+  @MinLength(2)
+  @MaxLength(100)
+  deliveryCity?: string;
+
+  @ApiPropertyOptional({ description: 'Street, house, apartment; required for DELIVERY' })
+  @ValidateIf((o: CreateOrderDto) => o.deliveryMethod === 'DELIVERY')
+  @Transform(trim)
+  @IsString()
+  @MinLength(5)
+  @MaxLength(500)
+  deliveryAddress?: string;
+
+  @ApiPropertyOptional({
+    enum: PaymentMethod,
+    default: PaymentMethod.CASH,
+    description: 'ONLINE is refused until an online payment provider is connected',
+  })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
 
   @ApiProperty()
   @Transform(trim)

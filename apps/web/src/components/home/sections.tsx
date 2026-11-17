@@ -132,7 +132,7 @@ const PODIUM = [
   {
     key: 'kymyz',
     plate: { left: 45.4, top: 66, width: 11.4, height: 18.4 },
-    photo: { src: 'kymyz.png', w: 137, h: 470, cx: 372, bottom: 187, height: 172, rotate: 0 },
+    photo: { src: 'kymyz.webp', w: 669, h: 2000, cx: 372, bottom: 187, height: 176, rotate: 0 },
   },
   {
     key: 'keremet-shypaa',
@@ -216,10 +216,22 @@ export function PricesPodium({
       style={{ backgroundColor: GREEN }}
       aria-labelledby="prices-title"
     >
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(74,110,58,0.45),transparent_60%)]"
-        aria-hidden
-      />
+      {/* mountain pasture behind the podium, darkened so the title and prices stay readable */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden>
+        <Image
+          src="/images/hero-bg.webp"
+          alt=""
+          fill
+          unoptimized
+          className="object-cover object-[50%_20%]"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(to bottom, rgba(18,32,18,0.72) 0%, rgba(18,32,18,0.38) 30%, rgba(18,32,18,0.3) 50%, rgba(31,51,27,0.75) 72%, ${GREEN} 92%)`,
+          }}
+        />
+      </div>
       <Leaf className="absolute left-[5%] top-24 h-9 w-14 [--sway-from:-150deg] [--sway-to:-138deg]" />
       <Leaf
         className="absolute right-[6%] top-28 h-9 w-14 [--sway-from:-30deg] [--sway-to:-18deg]"
@@ -318,7 +330,7 @@ export function PricesPodium({
       </div>
 
       <ul
-        className="grid grid-cols-2 gap-2 px-4 pb-8 pt-2 sm:hidden"
+        className="relative grid grid-cols-2 gap-2 px-4 pb-8 pt-2 sm:hidden"
         style={{ backgroundColor: CREAM }}
       >
         {plates.map((plate) => (
