@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import { Agent, fetch as undiciFetch, type RequestInit as UndiciRequestInit } from 'undici';
 
 /**
  * Same-origin proxy to the NestJS API. The browser only talks to the website,
@@ -14,6 +15,17 @@ const API_URL = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replac
 const PROXY_SECRET = process.env.API_PROXY_SECRET;
 /** Slightly above the API's 4 MB image limit (multipart overhead); below Vercel's 4.5 MB body limit. */
 const MAX_BODY_BYTES = 4.4 * 1024 * 1024;
+
+/**
+ * Connections to the API are reused only for 2 s. The API host's load balancer
+ * closes idle connections without telling the client; a request sent on such a
+ * connection fails with "other side closed". That hit the Google callback: the
+ * visitor spends 10–30 s choosing an account, and the connection opened by the
+ * start of the sign-in was dead by then.
+ */
+const agent = new Agent({ keepAliveTimeout: 2_000, keepAliveMaxTimeout: 2_000 });
+/** Pauses before trying a request again after a network error. */
+const RETRY_DELAYS = [150, 600];
 
 const HOP_BY_HOP = new Set([
   'connection',
@@ -72,30 +84,30 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
     hasBody && (request.headers.get('content-type') ?? '').startsWith('multipart/form-data');
   const body = hasBody && !streamed ? await request.arrayBuffer() : undefined;
   const send = () =>
-    fetch(target, {
+    undiciFetch(target, {
       method: request.method,
       headers,
-      body: streamed ? request.body : body,
+      body: streamed ? (request.body as UndiciRequestInit['body']) : body,
       redirect: 'manual',
-      cache: 'no-store',
-      // Required by Node's fetch to stream a request body (multipart uploads).
+      dispatcher: agent,
+      // Required to stream a request body (multipart uploads).
       ...(streamed ? { duplex: 'half' } : {}),
-    } as RequestInit);
+    });
 
-  let upstream: Response;
-  try {
-    upstream = await send();
-  } catch (error) {
-    // A pooled keep-alive connection that the API host already closed fails at once;
-    // the same request on a fresh connection then goes through (it never reached the API).
-    console.warn(`[api proxy] ${request.method} /${path.join('/')}: ${describe(error)}; retrying`);
-    if (streamed) return unavailable();
-    await new Promise((resolve) => setTimeout(resolve, 250));
+  let upstream: Awaited<ReturnType<typeof send>> | undefined;
+  for (let attempt = 0; !upstream; attempt++) {
     try {
       upstream = await send();
-    } catch (retryError) {
-      console.error(`[api proxy] ${request.method} /${path.join('/')}: ${describe(retryError)}`);
-      return unavailable();
+    } catch (error) {
+      // A connection the API host already closed fails at once; the request never
+      // reached the API, so it is sent again on a fresh connection.
+      const where = `[api proxy] ${request.method} /${path.join('/')}`;
+      if (streamed || attempt >= RETRY_DELAYS.length) {
+        console.error(`${where}: ${describe(error)}`);
+        return unavailable();
+      }
+      console.warn(`${where}: ${describe(error)}; retrying`);
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS[attempt]));
     }
   }
   if (!hasBody && [502, 503, 504].includes(upstream.status)) {
@@ -119,7 +131,8 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
   for (const cookie of upstream.headers.getSetCookie())
     responseHeaders.append('set-cookie', cookie);
 
-  return new Response(upstream.status === 204 || upstream.status === 304 ? null : upstream.body, {
+  const responseBody = upstream.status === 204 || upstream.status === 304 ? null : upstream.body;
+  return new Response(responseBody as BodyInit | null, {
     status: upstream.status,
     headers: responseHeaders,
   });
