@@ -333,6 +333,17 @@ selects (Chromium 135+, `appearance: base-select`) also show the open list as a
 rounded cream panel with a forest highlight and a gold check; other browsers
 keep their own list.
 
+## Connections to the API
+
+The proxy (`app/api/[...path]/route.ts`) talks to the API through its own
+connection pool (`undici` Agent) that reuses a connection only for 2 s. The
+API host's load balancer closes idle connections silently; a request sent on
+such a connection failed with "other side closed" and the visitor saw
+`{"code":"NETWORK","message":"API is unavailable"}` — most often on the Google
+callback, because choosing an account takes 10–30 s. Network errors are also
+retried twice (150 ms, 600 ms) before giving up; failures are logged as
+`[api proxy] METHOD /path: …` in the Vercel function logs.
+
 ## When the API host is asleep
 
 The API runs on Render's free plan, which sleeps after ~15 minutes without
