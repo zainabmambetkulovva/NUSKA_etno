@@ -10,6 +10,7 @@ import { BISHKEK, KG_REGIONS, KG_VIEWBOX, type RegionId } from './kg-regions';
 
 import { useI18n } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/cn';
+import { formatMoney } from '@/lib/format';
 import { EVERYWHERE, NO_REGION, PINNED, productsOfRegion, type OriginKey } from '@/lib/origin';
 import { companyPhoto } from '@/lib/product-photos';
 
@@ -19,12 +20,19 @@ function useProductLinks(products: ProductCard[]) {
   const { t, locale } = useI18n();
   return (key: OriginKey) => {
     const name = t.landing.productNames[key];
-    const product = products
+    const variants = products
       .filter((p) => p.slug === key || p.slug.startsWith(`${key}-`))
-      .sort((a, b) => a.price.amount - b.price.amount)[0];
+      .sort((a, b) => a.price.amount - b.price.amount);
+    const product = variants[0];
+    const price = product ? formatMoney(product.price, locale, t.common.som) : null;
     return {
       key,
       name,
+      /** live catalog data for the popup; null when the product is not in the catalog */
+      price: price && variants.length > 1 ? t.home.pricesFrom.replace('{price}', price) : price,
+      size: product?.size ?? null,
+      shelfLife: product?.shelfLife ?? null,
+      image: product?.image?.url ?? null,
       href: product
         ? `/${locale}/product/${product.slug}`
         : `/${locale}/search?q=${encodeURIComponent(name)}`,
@@ -33,7 +41,7 @@ function useProductLinks(products: ProductCard[]) {
   };
 }
 
-function ProductChip({ item }: { item: ReturnType<ReturnType<typeof useProductLinks>> }) {
+function ProductChip({ item }: { item: ProductLink }) {
   return (
     <Link
       href={item.href}
@@ -48,6 +56,86 @@ function ProductChip({ item }: { item: ReturnType<ReturnType<typeof useProductLi
       </span>
       {item.name}
     </Link>
+  );
+}
+
+type ProductLink = ReturnType<ReturnType<typeof useProductLinks>>;
+
+/**
+ * Small window over a pin: the products of the region with photo, price,
+ * weight / volume and shelf life (only what the catalog knows).
+ */
+function PinPopup({
+  region,
+  items,
+  anchor,
+}: {
+  region: string;
+  items: ProductLink[];
+  anchor: [number, number];
+}) {
+  const { t } = useI18n();
+  const [vw, vh] = KG_VIEWBOX.split(' ').slice(2).map(Number);
+  const left = (anchor[0] / vw) * 100;
+  const top = (anchor[1] / vh) * 100;
+  // the window opens below the pin (only the lowest pins open it above), so the header never covers it
+  const below = top < 75;
+  return (
+    <div
+      className="pointer-events-auto absolute z-20 w-[min(17rem,80vw)]"
+      style={{
+        left: `${left}%`,
+        top: `${top}%`,
+        // above or below the pin; kept inside the map near its edges
+        transform: `translate(${left < 25 ? '-12%' : left > 75 ? '-88%' : '-50%'}, ${below ? '0.9rem' : 'calc(-100% - 2.4rem)'})`,
+      }}
+      role="tooltip"
+    >
+      <div className="rounded-2xl border border-nk-beige bg-white/95 p-3 text-left shadow-[0_24px_48px_-20px_rgba(60,40,15,0.55)] backdrop-blur motion-safe:animate-fade-up">
+        <p className="px-1 text-xs font-semibold uppercase tracking-wider text-nk-brown">
+          {region}
+        </p>
+        <ul className="mt-2 space-y-1.5">
+          {items.slice(0, 3).map((item) => (
+            <li key={item.key}>
+              <Link
+                href={item.href}
+                className="flex items-center gap-3 rounded-xl p-1.5 transition hover:bg-nk-cream"
+              >
+                <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[radial-gradient(ellipse_at_50%_60%,#FFF8EA,#F0D9B0)]">
+                  {(item.photo ?? item.image) && (
+                    <Image
+                      src={(item.photo ?? item.image)!}
+                      alt=""
+                      fill
+                      sizes="56px"
+                      className="object-contain p-1"
+                    />
+                  )}
+                </span>
+                <span className="min-w-0 text-sm leading-snug">
+                  <span className="block font-serif text-[15px] font-semibold text-nk-ink">
+                    {item.name}
+                  </span>
+                  {(item.price || item.size) && (
+                    <span className="block text-nk-ink">
+                      {item.price && <span className="font-semibold">{item.price}</span>}
+                      {item.price && item.size && <span className="text-nk-muted"> · </span>}
+                      {item.size && <span className="text-nk-muted">{item.size}</span>}
+                    </span>
+                  )}
+                  {item.shelfLife && (
+                    <span className="block text-xs text-nk-muted">
+                      {t.product.shelfLife}: {item.shelfLife}
+                    </span>
+                  )}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -70,8 +158,14 @@ export function OriginMap({
   const [selected, setSelected] = useState<RegionId>('naryn');
   const [hovered, setHovered] = useState<RegionId | null>(null);
   const link = useProductLinks(products);
+  const [touched, setTouched] = useState(false);
   const shown = hovered ?? selected;
   const here = productsOfRegion(shown).map(link);
+  const anchor = KG_REGIONS.find((region) => region.id === shown)?.anchor;
+  const popup =
+    touched && anchor && PINNED.has(shown) && here.length > 0 ? (
+      <PinPopup region={t.landing.regions[shown]} items={here} anchor={anchor} />
+    ) : null;
 
   const map = (
     <svg
@@ -102,11 +196,10 @@ export function OriginMap({
             tabIndex={0}
             aria-label={t.landing.regions[region.id]}
             aria-pressed={region.id === selected}
-            onMouseEnter={() => setHovered(region.id)}
-            onMouseLeave={() => setHovered(null)}
-            onFocus={() => setHovered(region.id)}
+            onMouseEnter={() => (setHovered(region.id), setTouched(true))}
+            onFocus={() => (setHovered(region.id), setTouched(true))}
             onBlur={() => setHovered(null)}
-            onClick={() => setSelected(region.id)}
+            onClick={() => (setSelected(region.id), setTouched(true))}
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
@@ -162,7 +255,11 @@ export function OriginMap({
   if (compact)
     return (
       <div className={className}>
-        {map}
+        {/* the region stays chosen while the pointer moves from it onto the popup */}
+        <div className="relative" onMouseLeave={() => (setHovered(null), setTouched(false))}>
+          {map}
+          {popup}
+        </div>
         <p className="mt-4 min-h-[2.5rem] text-center text-base text-nk-muted" aria-live="polite">
           <span className="font-semibold text-nk-ink">{t.landing.regions[shown]}</span>
           {here.length > 0 ? `: ${here.map((item) => item.name).join(', ')}` : ''}
@@ -178,7 +275,10 @@ export function OriginMap({
       )}
     >
       <div>
-        {map}
+        <div className="relative" onMouseLeave={() => (setHovered(null), setTouched(false))}>
+          {map}
+          {popup}
+        </div>
         <p className="mt-3 text-center text-sm text-nk-muted">{t.landing.originHint}</p>
       </div>
       <div

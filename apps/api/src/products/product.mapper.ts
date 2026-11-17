@@ -46,6 +46,8 @@ export function toProductCard(product: ProductCardSource, locale: Locale) {
     image: image ? { url: image.url, alt: image.alt } : null,
     /** Weight or volume of the first unit, e.g. "0.5 л"; null when the product has none. */
     size: unitLabel(product.units[0]),
+    /** Shelf life as the company states it (shown on the origin map); null when not given. */
+    shelfLife: translation?.shelfLife ?? null,
     categories: product.categories.map(({ category }) => ({
       id: category.id,
       slug: category.slug,

@@ -10,7 +10,6 @@ import { OriginMap } from './origin-map';
 import { LogoMark } from '@/components/brand/logo';
 import { Branch } from '@/components/brand/nature-decor';
 import { ImageReveal } from '@/components/motion/image-reveal';
-import { Parallax } from '@/components/motion/parallax';
 import { TextReveal } from '@/components/motion/text-reveal';
 import { Tilt } from '@/components/motion/tilt';
 import {
@@ -212,10 +211,8 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#F4E5CB]/50 to-transparent" />
           </ImageReveal>
-          <Parallax
-            speed={22}
-            className="absolute bottom-0 right-[8%] h-[96%] aspect-[1086/1448] sm:right-[14%]"
-          >
+          {/* she stands on the bottom edge of the picture (no parallax: it lifted her off it) */}
+          <div className="absolute bottom-0 right-[8%] aspect-[1086/1448] h-[96%] sm:right-[14%]">
             <Image
               src="/images/home/brand-girl.webp"
               alt={t.landing.aboutImageAlt}
@@ -223,7 +220,7 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
               unoptimized
               className="object-contain object-bottom"
             />
-          </Parallax>
+          </div>
         </Reveal>
 
         <div className="container grid grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:pl-4 lg:pr-[max(2rem,calc((100vw-1280px)/2+2rem))]">
