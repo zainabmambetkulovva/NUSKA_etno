@@ -10,13 +10,22 @@ const API_URL = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replac
  */
 export async function serverApi<T>(path: string, locale: string, revalidate = 60): Promise<T> {
   const separator = path.includes('?') ? '&' : '?';
-  const response = await fetch(`${API_URL}/api${path}${separator}locale=${locale}`, {
-    headers: {
-      Accept: 'application/json',
-      ...(process.env.API_PROXY_SECRET ? { 'x-proxy-secret': process.env.API_PROXY_SECRET } : {}),
-    },
-    next: { revalidate, tags: ['catalog'] },
-  });
+  const request = () =>
+    fetch(`${API_URL}/api${path}${separator}locale=${locale}`, {
+      headers: {
+        Accept: 'application/json',
+        ...(process.env.API_PROXY_SECRET ? { 'x-proxy-secret': process.env.API_PROXY_SECRET } : {}),
+      },
+      next: { revalidate, tags: ['catalog'] },
+    });
+  let response: Response;
+  try {
+    response = await request();
+  } catch {
+    // a dropped keep-alive connection: one more try on a fresh one
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    response = await request();
+  }
   if (!response.ok) throw await toApiError(response);
   return (await response.json()) as T;
 }

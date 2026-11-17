@@ -35,6 +35,19 @@ function clientIp(request: NextRequest) {
   return forwarded || request.headers.get('x-real-ip') || '127.0.0.1';
 }
 
+function unavailable() {
+  return Response.json(
+    { statusCode: 502, code: 'NETWORK', message: 'API is unavailable' },
+    { status: 502 }
+  );
+}
+
+/** "fetch failed (ECONNRESET: other side closed)" — the cause tells what happened. */
+function describe(error: unknown) {
+  const cause = (error as { cause?: { code?: string; message?: string } }).cause;
+  return `${(error as Error).message}${cause ? ` (${cause.code ?? ''}: ${cause.message ?? ''})` : ''}`;
+}
+
 async function proxy(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   const { path } = await params;
   const target = `${API_URL}/api/${path.map(encodeURIComponent).join('/')}${request.nextUrl.search}`;
@@ -53,22 +66,37 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       { status: 413 }
     );
   }
-  let upstream: Response;
-  try {
-    upstream = await fetch(target, {
+  // Uploads are streamed; other bodies (JSON forms) are small and read first, so the
+  // request can be sent again if the connection drops.
+  const streamed =
+    hasBody && (request.headers.get('content-type') ?? '').startsWith('multipart/form-data');
+  const body = hasBody && !streamed ? await request.arrayBuffer() : undefined;
+  const send = () =>
+    fetch(target, {
       method: request.method,
       headers,
-      body: hasBody ? request.body : undefined,
+      body: streamed ? request.body : body,
       redirect: 'manual',
       cache: 'no-store',
       // Required by Node's fetch to stream a request body (multipart uploads).
-      ...(hasBody ? { duplex: 'half' } : {}),
+      ...(streamed ? { duplex: 'half' } : {}),
     } as RequestInit);
-  } catch {
-    return Response.json(
-      { statusCode: 502, code: 'NETWORK', message: 'API is unavailable' },
-      { status: 502 }
-    );
+
+  let upstream: Response;
+  try {
+    upstream = await send();
+  } catch (error) {
+    // A pooled keep-alive connection that the API host already closed fails at once;
+    // the same request on a fresh connection then goes through (it never reached the API).
+    console.warn(`[api proxy] ${request.method} /${path.join('/')}: ${describe(error)}; retrying`);
+    if (streamed) return unavailable();
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    try {
+      upstream = await send();
+    } catch (retryError) {
+      console.error(`[api proxy] ${request.method} /${path.join('/')}: ${describe(retryError)}`);
+      return unavailable();
+    }
   }
 
   const responseHeaders = new Headers();

@@ -62,6 +62,23 @@
     @apply w-full rounded-xl border border-cream-dark bg-white px-3.5 py-2.5 text-ink placeholder:text-ink-soft
       transition focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:bg-cream-50;
   }
+  /* Dropdowns (select) in the site's style: cream surface, forest chevron. */
+  select.field-input {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23355B3E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 16px;
+  }
+  select.field-input:hover:not(:disabled) {
+    @apply border-nk-forest/50;
+  }
+  select.field-input option {
+    background: #faf8ef;
+    color: #2b2a22;
+  }
   .field-error {
     @apply mt-1 text-sm text-danger;
   }
@@ -86,4 +103,88 @@
 /* The home page ends with a deep green band that flows straight into the footer. */
 main:has([data-flush-footer]) + footer {
   margin-top: 0;
+}
+
+/*
+ * Browsers that support customisable selects (Chromium 135+) also get the open
+ * list in the site's style: rounded cream panel, forest highlight, gold check.
+ * Other browsers keep their own list with the styled closed field above.
+ */
+@supports (appearance: base-select) {
+  select.field-input,
+  select.field-input::picker(select) {
+    appearance: base-select;
+  }
+  select.field-input {
+    background-image: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  select.field-input::picker-icon {
+    content: '';
+    width: 16px;
+    height: 16px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23355B3E' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")
+      center / 16px no-repeat;
+    transition: rotate 0.2s ease;
+  }
+  select.field-input:open::picker-icon {
+    rotate: 180deg;
+  }
+  select.field-input::picker(select) {
+    margin-top: 6px;
+    padding: 6px;
+    border: 1px solid #e8d9bd;
+    border-radius: 1rem;
+    background: #faf8ef;
+    box-shadow: 0 24px 48px -24px rgba(43, 42, 34, 0.45);
+    opacity: 0;
+    translate: 0 -4px;
+    transition:
+      opacity 0.16s ease,
+      translate 0.16s ease,
+      overlay 0.16s allow-discrete,
+      display 0.16s allow-discrete;
+  }
+  select.field-input:open::picker(select) {
+    opacity: 1;
+    translate: 0 0;
+  }
+  @starting-style {
+    select.field-input:open::picker(select) {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+  select.field-input option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.65rem;
+    background: transparent;
+    color: #2b2a22;
+    font-size: 0.925rem;
+    cursor: pointer;
+    transition: background-color 0.12s ease;
+  }
+  select.field-input option:hover,
+  select.field-input option:focus-visible {
+    background: #dce4d4;
+    outline: none;
+  }
+  select.field-input option:checked {
+    background: #355b3e;
+    color: #fff;
+    font-weight: 600;
+  }
+  select.field-input option::checkmark {
+    color: #c7a66a;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    select.field-input::picker(select) {
+      transition: none;
+    }
+  }
 }

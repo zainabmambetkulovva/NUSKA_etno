@@ -20,6 +20,7 @@ import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { cn } from '@/lib/cn';
+import { resolveContacts } from '@/lib/contacts';
 import { formatMoney } from '@/lib/format';
 import { useToast } from '@/stores/toast';
 
@@ -34,6 +35,13 @@ export default function CheckoutPage() {
     queryKey: ['pickup-locations', locale],
     queryFn: () => api<PickupLocation[]>('/pickup-locations', { locale }),
   });
+  const noPickup = !pickup.isLoading && (pickup.data ?? []).length === 0;
+  // why "Place order" is disabled, said next to the button
+  const blockedReason = noPickup
+    ? t.checkout.blockedPickup
+    : !cart.loading && cart.lines.length > 0 && !cart.canCheckout
+      ? t.checkout.blockedCart
+      : null;
 
   const schema = z.object({
     customerName: z.string().trim().min(1, t.validation.required).max(150),
@@ -163,7 +171,18 @@ export default function CheckoutPage() {
             {pickup.isLoading ? (
               <OrnamentLoader label={t.common.loading} />
             ) : (pickup.data ?? []).length === 0 ? (
-              <p className="text-ink-soft">{t.checkout.noPickup}</p>
+              <div className="space-y-3 rounded-xl border border-gold/40 bg-cream-50 p-4 text-sm">
+                <p className="font-medium text-ink">{t.checkout.noPickup}</p>
+                <p className="text-ink-soft">{t.checkout.noPickupHelp}</p>
+                <a
+                  href={resolveContacts(null).whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-forest inline-flex"
+                >
+                  {t.checkout.writeWhatsApp}
+                </a>
+              </div>
             ) : (
               <div className="space-y-3" role="radiogroup" aria-label={t.checkout.pickup}>
                 {pickup.data!.map((point) => (
@@ -263,10 +282,16 @@ export default function CheckoutPage() {
             size="lg"
             className="w-full"
             loading={place.isPending}
-            disabled={!cart.canCheckout || (pickup.data ?? []).length === 0}
+            disabled={!cart.canCheckout || pickup.isLoading || noPickup}
+            aria-describedby={blockedReason ? 'checkout-blocked' : undefined}
           >
             {t.checkout.place}
           </Button>
+          {blockedReason && (
+            <p id="checkout-blocked" className="text-center text-xs text-danger" role="status">
+              {blockedReason}
+            </p>
+          )}
         </aside>
       </form>
     </div>

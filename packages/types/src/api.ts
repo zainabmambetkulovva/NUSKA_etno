@@ -131,10 +131,21 @@ export interface Cart {
     product: ProductCard;
     lineTotal: number;
     issue: CartIssue;
+    /** Stock left; null when the product's stock is not tracked. */
+    available: number | null;
+    /** The price when the product was put in the cart, if it has changed since. */
+    previousPrice: Money | null;
   }[];
   itemsCount: number;
   subtotal: Money;
   canCheckout: boolean;
+  /** Some prices changed since the products were put in the cart. */
+  priceChanged: boolean;
+}
+
+/** A guest cart checked by the server; `missing` lists products that no longer exist. */
+export interface CartPreview extends Cart {
+  missing: string[];
 }
 
 export interface PickupLocation {

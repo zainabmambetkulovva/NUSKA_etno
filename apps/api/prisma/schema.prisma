@@ -405,6 +405,8 @@ model CartItem {
   productId String   @map("product_id") @db.Uuid
   /// > 0 (CHECK constraint).
   quantity  Int      @default(1)
+  /// Price (tyiyn) when the customer put the product in the cart; shows "the price changed".
+  priceAtAdd Int?    @map("price_at_add")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

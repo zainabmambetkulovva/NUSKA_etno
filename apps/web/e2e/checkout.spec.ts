@@ -46,3 +46,22 @@ test('checkout requires signing in', async ({ page }) => {
   await page.goto('/ky/checkout');
   await expect(page).toHaveURL(/\/ky\/login\?next=/);
 });
+
+test('without pickup points the checkout says why the order button is disabled', async ({
+  page,
+}) => {
+  test.skip(!customer.password, 'Set SEED_CUSTOMER_PASSWORD');
+  await page.route('**/api/pickup-locations*', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: '[]' })
+  );
+  await page.goto('/ky/product/kattama');
+  await page.locator('main').getByRole('button', { name: ky.product.addToCart }).first().click();
+  await login(page, customer, '/ky/checkout');
+  await expect(page.getByText(ky.checkout.noPickupHelp)).toBeVisible();
+  await expect(page.getByText(ky.checkout.blockedPickup)).toBeVisible();
+  await expect(page.getByRole('link', { name: ky.checkout.writeWhatsApp })).toHaveAttribute(
+    'href',
+    /^https:\/\/wa\.me\/\d+$/
+  );
+  await expect(page.getByRole('button', { name: ky.checkout.place })).toBeDisabled();
+});

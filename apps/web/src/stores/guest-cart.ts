@@ -16,6 +16,8 @@ interface GuestCartState {
   add: (product: ProductCard, quantity: number) => void;
   setQuantity: (productId: string, quantity: number) => void;
   remove: (productId: string) => void;
+  /** Replaces the snapshot with the current product (accepts its new price). */
+  refresh: (product: ProductCard) => void;
   clear: () => void;
 }
 
@@ -48,6 +50,10 @@ export const useGuestCart = create<GuestCartState>()(
           ),
         }),
       remove: (productId) => set({ items: get().items.filter((i) => i.productId !== productId) }),
+      refresh: (product) =>
+        set({
+          items: get().items.map((i) => (i.productId === product.id ? { ...i, product } : i)),
+        }),
       clear: () => set({ items: [] }),
     }),
     { name: 'nuska-guest-cart', version: 1, storage: createJSONStorage(() => localStorage) }
