@@ -58,13 +58,34 @@ const TEMPLATES: Record<OrderStatus, Template> = {
   },
 };
 
+/** Texts that differ when the order is delivered to the customer's address. */
+const DELIVERY_TEMPLATES: Partial<Record<OrderStatus, Template>> = {
+  READY_FOR_PICKUP: {
+    type: NotificationType.ORDER_READY,
+    title: {
+      ru: (n) => `Заказ №${n} передан в доставку`,
+      ky: (n) => `№${n} буйрутма жеткирүүгө берилди`,
+    },
+    message: {
+      ru: (address) => `Курьер привезёт заказ по адресу: ${address}.`,
+      ky: (address) => `Курьер буйрутмаңызды бул дарекке алып барат: ${address}.`,
+    },
+  },
+  COMPLETED: {
+    type: NotificationType.ORDER_COMPLETED,
+    title: { ru: (n) => `Заказ №${n} доставлен`, ky: (n) => `№${n} буйрутма жеткирилди` },
+    message: { ru: () => 'Спасибо за покупку!', ky: () => 'Сатып алганыңыз үчүн рахмат!' },
+  },
+};
+
 export function orderNotification(
   status: OrderStatus,
   locale: Locale,
   orderNumber: number,
-  address: string
+  address: string,
+  delivery = false
 ) {
-  const template = TEMPLATES[status];
+  const template = (delivery && DELIVERY_TEMPLATES[status]) || TEMPLATES[status];
   return {
     type: template.type,
     title: template.title[locale](String(orderNumber)),

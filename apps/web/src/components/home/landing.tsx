@@ -62,14 +62,14 @@ const BENEFIT_ICONS = [
 export function BenefitsBar({ t }: { t: Dictionary }) {
   return (
     <section
-      className="container relative z-20 -mt-6 lg:-mt-14"
+      className="container relative z-20 -mt-4 lg:-mt-14"
       aria-label={t.landing.productsEyebrow}
     >
       <ul className="grid grid-cols-2 gap-x-2 gap-y-4 rounded-[1.75rem] border border-white/80 bg-white/80 px-4 py-5 shadow-[0_24px_50px_-30px_rgba(80,60,30,0.6)] backdrop-blur-md sm:grid-cols-3 lg:grid-cols-5 lg:gap-0 lg:px-6">
         {t.landing.benefits.map((benefit, i) => (
           <li
             key={benefit.top}
-            className="flex items-center gap-3 lg:justify-center lg:border-l lg:border-nk-beige lg:px-3 lg:first:border-l-0"
+            className="flex items-center gap-3 odd:last:col-span-2 odd:last:justify-center sm:odd:last:col-span-1 sm:odd:last:justify-start lg:justify-center lg:border-l lg:border-nk-beige lg:px-3 lg:first:border-l-0 lg:odd:last:justify-center"
           >
             <span className="shrink-0 transition-transform duration-300 hover:scale-110">
               {BENEFIT_ICONS[i]}
@@ -129,7 +129,8 @@ export function CategoryArches({
           </Link>
         </Reveal>
 
-        <ul className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-3 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 lg:grid-cols-5 [&::-webkit-scrollbar]:hidden">
+        {/* room above and below the scrolling row, so the lift on hover and the soft shadow are not cut */}
+        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:py-0 lg:grid-cols-5 [&::-webkit-scrollbar]:hidden">
           {categories.map((category, i) => {
             const photo = CATEGORY_PHOTOS[category.slug];
             return (
@@ -151,7 +152,7 @@ export function CategoryArches({
                             fill
                             quality={95}
                             sizes="(min-width: 1024px) 200px, 45vw"
-                            className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 group-hover:scale-110"
+                            className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_2%,#000_16%,#000_78%,transparent_96%),linear-gradient(to_bottom,transparent_6%,#000_20%,#000_92%,transparent_100%)] group-hover:scale-110"
                           />
                         ) : (
                           <span className="flex h-full flex-col items-center justify-center gap-2 pt-6">

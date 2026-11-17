@@ -22,6 +22,8 @@ test('guest cart → login → checkout → admin confirms → customer sees the
   // The guest cart was merged into the account.
   await expect(shopper.getByText('Каттама').first()).toBeVisible();
   await shopper.getByLabel(ky.checkout.phone).fill('0555 12 34 56');
+  await shopper.getByLabel(ky.checkout.city).fill('Бишкек');
+  await shopper.getByLabel(ky.checkout.address).fill('Орозбеков көч., 136');
   await shopper.getByRole('button', { name: ky.checkout.place }).click();
   await shopper.waitForURL('**/ky/checkout/success?order=**');
   await expect(shopper.getByRole('heading', { name: ky.checkout.successTitle })).toBeVisible();
@@ -47,7 +49,7 @@ test('checkout requires signing in', async ({ page }) => {
   await expect(page).toHaveURL(/\/ky\/login\?next=/);
 });
 
-test('without pickup points the checkout says why the order button is disabled', async ({
+test('the shop works by delivery: without pickup points the order goes to an address, paid on receipt', async ({
   page,
 }) => {
   test.skip(!customer.password, 'Set SEED_CUSTOMER_PASSWORD');
@@ -57,11 +59,20 @@ test('without pickup points the checkout says why the order button is disabled',
   await page.goto('/ky/product/kattama');
   await page.locator('main').getByRole('button', { name: ky.product.addToCart }).first().click();
   await login(page, customer, '/ky/checkout');
-  await expect(page.getByText(ky.checkout.noPickupHelp)).toBeVisible();
-  await expect(page.getByText(ky.checkout.blockedPickup)).toBeVisible();
-  await expect(page.getByRole('link', { name: ky.checkout.writeWhatsApp })).toHaveAttribute(
-    'href',
-    /^https:\/\/wa\.me\/\d+$/
-  );
-  await expect(page.getByRole('button', { name: ky.checkout.place })).toBeDisabled();
+
+  // no choice of pickup, the delivery form and «pay on receipt» are shown
+  await expect(page.getByText(ky.checkout.methodPickup)).toHaveCount(0);
+  await expect(page.getByText(ky.checkout.payOnReceipt)).toBeVisible();
+  await expect(page.getByText(ky.checkout.deliveryByManager)).toBeVisible();
+  await page.getByLabel(ky.checkout.phone).fill('0555 12 34 56');
+
+  // the address is required
+  await page.getByRole('button', { name: ky.checkout.place }).click();
+  await expect(page.getByText(ky.validation.required).first()).toBeVisible();
+
+  await page.getByLabel(ky.checkout.city).fill('Бишкек');
+  await page.getByLabel(ky.checkout.address).fill('Орозбеков көч., 136, 5-батир');
+  await page.getByRole('button', { name: ky.checkout.place }).click();
+  await page.waitForURL('**/ky/checkout/success?order=**');
+  await expect(page.getByText('Бишкек, Орозбеков көч., 136, 5-батир')).toBeVisible();
 });

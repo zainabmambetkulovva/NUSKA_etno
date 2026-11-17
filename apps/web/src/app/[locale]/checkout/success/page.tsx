@@ -51,7 +51,7 @@ function Success() {
             <p className="text-sm text-ink-soft">{t.checkout.orderNumber}</p>
             <p className="font-serif text-2xl font-semibold">{formatOrderNumber(o.orderNumber)}</p>
           </div>
-          <OrderStatusBadge status={o.status} />
+          <OrderStatusBadge status={o.status} method={o.deliveryMethod} />
         </div>
         <ul className="divide-y divide-cream-dark/60">
           {o.items.map((item) => (
@@ -69,13 +69,23 @@ function Success() {
         </div>
         <div className="flex gap-3 rounded-xl bg-cream-50 p-4 text-sm">
           <PinIcon className="mt-0.5 shrink-0 text-brand" />
-          <div>
-            <p className="font-medium">{o.pickup.name}</p>
-            <p className="text-ink-muted">{o.pickup.address}</p>
-            {o.pickup.time && (
-              <p className="text-ink-soft">{formatDate(o.pickup.time, locale, true)}</p>
-            )}
-          </div>
+          {o.delivery ? (
+            <div>
+              <p className="font-medium">{t.checkout.deliveryTo}</p>
+              <p className="text-ink-muted">
+                {o.delivery.city}, {o.delivery.address}
+              </p>
+              <p className="text-ink-soft">{t.checkout.deliveryNote}</p>
+            </div>
+          ) : o.pickup ? (
+            <div>
+              <p className="font-medium">{o.pickup.name}</p>
+              <p className="text-ink-muted">{o.pickup.address}</p>
+              {o.pickup.time && (
+                <p className="text-ink-soft">{formatDate(o.pickup.time, locale, true)}</p>
+              )}
+            </div>
+          ) : null}
         </div>
         <p className="text-sm text-ink-soft">{t.checkout.paymentNote}</p>
       </div>

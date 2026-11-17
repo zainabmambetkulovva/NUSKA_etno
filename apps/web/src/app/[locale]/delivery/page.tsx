@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import type { SiteContent } from '@nuska/types';
 import Link from 'next/link';
 
-import { BagIcon, ArrowRightIcon, PinIcon, TruckIcon } from '@/components/ui/icons';
+import { BagIcon, ArrowRightIcon, TruckIcon } from '@/components/ui/icons';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
@@ -39,12 +39,6 @@ export default async function DeliveryPage({ params }: { params: Promise<{ local
 
   const cards = [
     {
-      icon: <PinIcon width={26} height={26} />,
-      title: page.pickupTitle,
-      text: page.pickupText,
-      link: { href: `/${locale}/pickup`, label: page.pickupLink, external: false },
-    },
-    {
       icon: <TruckIcon width={26} height={26} />,
       title: page.deliveryTitle,
       text: page.deliveryText,
@@ -70,7 +64,7 @@ export default async function DeliveryPage({ params }: { params: Promise<{ local
         <h1 className="font-serif text-4xl text-nk-ink md:text-5xl">{page.title}</h1>
         <p className="mt-4 text-lg text-nk-muted">{page.lead}</p>
       </header>
-      <ul className="mx-auto mt-12 grid max-w-5xl gap-5 md:grid-cols-2">
+      <ul className="mx-auto mt-12 grid max-w-6xl gap-5 md:grid-cols-3">
         {cards.map((card, i) => (
           <li key={card.title}>
             <Reveal delay={i * 0.06} className="h-full">

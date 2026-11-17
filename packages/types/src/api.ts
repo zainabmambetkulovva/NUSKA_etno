@@ -185,6 +185,8 @@ export interface OrderItem {
   review: { id: string; status: ReviewStatus } | null;
 }
 
+export type DeliveryMethod = 'DELIVERY' | 'PICKUP';
+
 export interface Order {
   id: string;
   orderNumber: number;
@@ -193,7 +195,12 @@ export interface Order {
   total: Money;
   locale: Locale;
   customer: { name: string; phone: string; email: string | null };
-  pickup: { locationId: string; name: string; address: string; time: string | null };
+  deliveryMethod: DeliveryMethod;
+  paymentMethod: PaymentMethod;
+  /** DELIVERY orders: where the courier brings the order. */
+  delivery: { city: string; address: string } | null;
+  /** PICKUP orders: the chosen pickup point. */
+  pickup: { locationId: string; name: string; address: string; time: string | null } | null;
   comment: string | null;
   items: OrderItem[];
   statusHistory: StatusHistoryEntry[];
@@ -231,6 +238,9 @@ export interface AdminOrderListItem {
   currency: string;
   customerName: string;
   customerPhone: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryCity: string | null;
+  deliveryAddress: string | null;
   createdAt: string;
   user: { id: string; email: string; firstName: string | null; lastName: string | null };
   _count: { items: number };

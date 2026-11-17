@@ -122,7 +122,7 @@ export default function AdminOrdersPage() {
                   {formatMoney(o.totalAmount, locale, t.common.som)}
                 </Td>
                 <Td>
-                  <OrderStatusBadge status={o.status} />
+                  <OrderStatusBadge status={o.status} method={o.deliveryMethod} />
                 </Td>
               </tr>
             ))}

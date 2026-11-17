@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { OrderStatus } from '@prisma/client';
+import { DeliveryMethod, OrderStatus } from '@prisma/client';
 
 import { AppError } from '../common/errors';
 import { DEFAULT_LOCALE, isLocale } from '../common/utils/locale';
@@ -25,17 +25,19 @@ export class NotificationsService {
       userId: string;
       orderNumber: number;
       locale: string;
-      pickupLocationAddress: string;
+      deliveryMethod: DeliveryMethod;
+      deliveryCity: string | null;
+      deliveryAddress: string | null;
+      pickupLocationAddress: string | null;
     },
     status: OrderStatus
   ) {
     const locale = isLocale(order.locale) ? order.locale : DEFAULT_LOCALE;
-    const content = orderNotification(
-      status,
-      locale,
-      order.orderNumber,
-      order.pickupLocationAddress
-    );
+    const delivery = order.deliveryMethod === DeliveryMethod.DELIVERY;
+    const address = delivery
+      ? [order.deliveryCity, order.deliveryAddress].filter(Boolean).join(', ')
+      : (order.pickupLocationAddress ?? '');
+    const content = orderNotification(status, locale, order.orderNumber, address, delivery);
     return db.notification.create({
       data: { userId: order.userId, relatedOrderId: order.id, locale, ...content },
     });

@@ -180,12 +180,33 @@ export function Hero({
         aria-hidden
       />
 
-      {/* the picture: a band under the text on phones, the whole background on desktop */}
-      <div className="relative order-2 h-[var(--hero-h)] overflow-hidden lg:absolute lg:inset-0 lg:h-auto">
-        <HeroLayer className="absolute -inset-4" depth={-0.6} zoom={0.1} origin="66% 88%">
+      {/* phones and tablets: the picture as a rounded card under the text, with the packages */}
+      <div className="container relative order-2 pb-2 lg:hidden">
+        <div className="relative h-[clamp(240px,66vw,420px)] overflow-hidden rounded-[2rem] border-[3px] border-white/80 shadow-[0_28px_50px_-30px_rgba(80,55,25,0.8)]">
+          {/* only the lower part of the picture: the logo painted in its sky stays out */}
           <Image
             src="/images/home/hero.png"
             alt={t.home.heroImageAlt}
+            width={1672}
+            height={941}
+            priority
+            unoptimized
+            className="absolute bottom-0 left-[-82%] h-auto w-[215%] max-w-none"
+          />
+          <div
+            className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent"
+            aria-hidden
+          />
+          <ProductComposition className="absolute bottom-[4%] left-[3%] aspect-[360/300] w-[46%] max-w-[260px]" />
+        </div>
+      </div>
+
+      {/* desktop: the whole background */}
+      <div className="relative order-2 hidden h-[var(--hero-h)] overflow-hidden lg:absolute lg:inset-0 lg:block lg:h-auto">
+        <HeroLayer className="absolute -inset-4" depth={-0.6} zoom={0.1} origin="66% 88%">
+          <Image
+            src="/images/home/hero.png"
+            alt=""
             width={1672}
             height={941}
             priority
@@ -236,7 +257,7 @@ export function Hero({
       <Branch className="-left-6 top-20 hidden xl:block" />
 
       <HeroLayer
-        className="container relative z-10 order-1 pb-10 pt-[100px] lg:flex lg:h-full lg:items-center lg:pb-16 lg:pt-[80px]"
+        className="container relative z-10 order-1 pb-8 pt-[96px] lg:flex lg:h-full lg:items-center lg:pb-16 lg:pt-[80px]"
         depth={0.25}
         lift={120}
         fade

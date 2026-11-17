@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { Order, PickupLocation } from '@nuska/types';
+import type { DeliveryMethod, Order, PickupLocation } from '@nuska/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -12,7 +12,7 @@ import { z } from 'zod';
 import { OrnamentLoader } from '@/components/brand/ornament';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/field';
-import { ClockIcon, PinIcon } from '@/components/ui/icons';
+import { ClockIcon, PinIcon, TruckIcon } from '@/components/ui/icons';
 import { EmptyState, ErrorBox } from '@/components/ui/misc';
 import { useMe } from '@/hooks/use-auth';
 import { cartKey, useCart } from '@/hooks/use-cart';
@@ -20,7 +20,6 @@ import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { cn } from '@/lib/cn';
-import { resolveContacts } from '@/lib/contacts';
 import { formatMoney } from '@/lib/format';
 import { useToast } from '@/stores/toast';
 
@@ -35,30 +34,48 @@ export default function CheckoutPage() {
     queryKey: ['pickup-locations', locale],
     queryFn: () => api<PickupLocation[]>('/pickup-locations', { locale }),
   });
-  const noPickup = !pickup.isLoading && (pickup.data ?? []).length === 0;
+  const pickupPoints = pickup.data ?? [];
   // why "Place order" is disabled, said next to the button
-  const blockedReason = noPickup
-    ? t.checkout.blockedPickup
-    : !cart.loading && cart.lines.length > 0 && !cart.canCheckout
-      ? t.checkout.blockedCart
-      : null;
+  const blockedReason =
+    !cart.loading && cart.lines.length > 0 && !cart.canCheckout ? t.checkout.blockedCart : null;
 
-  const schema = z.object({
-    customerName: z.string().trim().min(1, t.validation.required).max(150),
-    customerPhone: z
-      .string()
-      .trim()
-      .regex(/^[+\d][\d\s\-()]{7,20}$/, t.validation.phone),
-    customerEmail: z.union([z.literal(''), z.string().trim().email(t.validation.email)]),
-    pickupLocationId: z.string().min(1, t.validation.required),
-    pickupTime: z.string().optional(),
-    customerComment: z.string().max(1000).optional(),
-  });
+  const schema = z
+    .object({
+      customerName: z.string().trim().min(1, t.validation.required).max(150),
+      customerPhone: z
+        .string()
+        .trim()
+        .regex(/^[+\d][\d\s\-()]{7,20}$/, t.validation.phone),
+      customerEmail: z.union([z.literal(''), z.string().trim().email(t.validation.email)]),
+      deliveryMethod: z.enum(['DELIVERY', 'PICKUP']),
+      deliveryCity: z.string().trim().max(100),
+      deliveryAddress: z.string().trim().max(500),
+      pickupLocationId: z.string(),
+      pickupTime: z.string().optional(),
+      customerComment: z.string().max(1000).optional(),
+    })
+    .superRefine((v, ctx) => {
+      const need = (path: 'deliveryCity' | 'deliveryAddress' | 'pickupLocationId', min: number) =>
+        v[path].trim().length < min &&
+        ctx.addIssue({ code: 'custom', path: [path], message: t.validation.required });
+      if (v.deliveryMethod === 'DELIVERY') {
+        need('deliveryCity', 2);
+        need('deliveryAddress', 5);
+      } else need('pickupLocationId', 1);
+    });
   type FormValues = z.infer<typeof schema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { customerName: '', customerPhone: '', customerEmail: '', pickupLocationId: '' },
+    defaultValues: {
+      customerName: '',
+      customerPhone: '',
+      customerEmail: '',
+      deliveryMethod: 'DELIVERY',
+      deliveryCity: '',
+      deliveryAddress: '',
+      pickupLocationId: '',
+    },
   });
 
   useEffect(() => {
@@ -83,11 +100,19 @@ export default function CheckoutPage() {
         method: 'POST',
         locale,
         body: {
-          pickupLocationId: values.pickupLocationId,
+          deliveryMethod: values.deliveryMethod,
+          ...(values.deliveryMethod === 'DELIVERY'
+            ? { deliveryCity: values.deliveryCity, deliveryAddress: values.deliveryAddress }
+            : {
+                pickupLocationId: values.pickupLocationId,
+                pickupTime: values.pickupTime
+                  ? new Date(values.pickupTime).toISOString()
+                  : undefined,
+              }),
+          paymentMethod: 'CASH',
           customerName: values.customerName,
           customerPhone: values.customerPhone,
           customerEmail: values.customerEmail || undefined,
-          pickupTime: values.pickupTime ? new Date(values.pickupTime).toISOString() : undefined,
           customerComment: values.customerComment || undefined,
           locale,
         },
@@ -111,6 +136,8 @@ export default function CheckoutPage() {
   }
 
   const errors = form.formState.errors;
+  const method: DeliveryMethod = form.watch('deliveryMethod');
+  const optional = <span className="text-ink-soft">({t.common.optional})</span>;
   return (
     <div className="container py-10">
       <h1 className="mb-8 text-4xl font-semibold">{t.checkout.title}</h1>
@@ -167,79 +194,127 @@ export default function CheckoutPage() {
           </section>
 
           <section className="card space-y-4 p-6">
-            <h2 className="font-serif text-xl">{t.checkout.pickup}</h2>
-            {pickup.isLoading ? (
-              <OrnamentLoader label={t.common.loading} />
-            ) : (pickup.data ?? []).length === 0 ? (
-              <div className="space-y-3 rounded-xl border border-gold/40 bg-cream-50 p-4 text-sm">
-                <p className="font-medium text-ink">{t.checkout.noPickup}</p>
-                <p className="text-ink-soft">{t.checkout.noPickupHelp}</p>
-                <a
-                  href={resolveContacts(null).whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-forest inline-flex"
-                >
-                  {t.checkout.writeWhatsApp}
-                </a>
-              </div>
-            ) : (
-              <div className="space-y-3" role="radiogroup" aria-label={t.checkout.pickup}>
-                {pickup.data!.map((point) => (
+            <h2 className="font-serif text-xl">{t.checkout.howToReceive}</h2>
+            {/* pickup is offered only when the shop has pickup points */}
+            {pickupPoints.length > 0 && (
+              <div className="grid gap-3 sm:grid-cols-2" role="radiogroup">
+                {(['DELIVERY', 'PICKUP'] as const).map((value) => (
                   <label
-                    key={point.id}
+                    key={value}
                     className={cn(
-                      'flex cursor-pointer gap-3 rounded-xl border p-4 transition',
-                      form.watch('pickupLocationId') === point.id
+                      'flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition',
+                      method === value
                         ? 'border-brand bg-brand-50'
                         : 'border-cream-dark hover:border-brand/50'
                     )}
                   >
                     <input
                       type="radio"
-                      value={point.id}
-                      className="mt-1 accent-brand"
-                      {...form.register('pickupLocationId')}
+                      value={value}
+                      className="accent-brand"
+                      {...form.register('deliveryMethod')}
                     />
-                    <span className="space-y-1">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <PinIcon width={16} height={16} /> {point.name}
-                      </span>
-                      <span className="block text-sm text-ink-muted">{point.address}</span>
-                      {point.openingHours && (
-                        <span className="flex items-center gap-1.5 text-xs text-ink-soft">
-                          <ClockIcon width={14} height={14} /> {point.openingHours}
-                        </span>
-                      )}
+                    <span className="font-medium">
+                      {value === 'DELIVERY' ? t.checkout.methodDelivery : t.checkout.methodPickup}
                     </span>
                   </label>
                 ))}
               </div>
             )}
-            {errors.pickupLocationId && (
-              <p className="field-error">{errors.pickupLocationId.message}</p>
+
+            {method === 'DELIVERY' ? (
+              <>
+                <p className="flex items-center gap-2 text-sm text-ink-muted">
+                  <TruckIcon width={18} height={18} className="text-brand" />
+                  {t.checkout.methodDeliveryText}
+                </p>
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+                  <Field label={t.checkout.city} error={errors.deliveryCity?.message}>
+                    {(id, d) => (
+                      <Input
+                        id={id}
+                        aria-describedby={d}
+                        autoComplete="address-level2"
+                        placeholder={t.checkout.cityPlaceholder}
+                        {...form.register('deliveryCity')}
+                      />
+                    )}
+                  </Field>
+                  <Field
+                    label={t.checkout.address}
+                    hint={t.checkout.addressHint}
+                    error={errors.deliveryAddress?.message}
+                  >
+                    {(id, d) => (
+                      <Input
+                        id={id}
+                        aria-describedby={d}
+                        autoComplete="street-address"
+                        placeholder={t.checkout.addressPlaceholder}
+                        {...form.register('deliveryAddress')}
+                      />
+                    )}
+                  </Field>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-3" role="radiogroup" aria-label={t.checkout.pickup}>
+                  {pickupPoints.map((point) => (
+                    <label
+                      key={point.id}
+                      className={cn(
+                        'flex cursor-pointer gap-3 rounded-xl border p-4 transition',
+                        form.watch('pickupLocationId') === point.id
+                          ? 'border-brand bg-brand-50'
+                          : 'border-cream-dark hover:border-brand/50'
+                      )}
+                    >
+                      <input
+                        type="radio"
+                        value={point.id}
+                        className="mt-1 accent-brand"
+                        {...form.register('pickupLocationId')}
+                      />
+                      <span className="space-y-1">
+                        <span className="flex items-center gap-1.5 font-medium">
+                          <PinIcon width={16} height={16} /> {point.name}
+                        </span>
+                        <span className="block text-sm text-ink-muted">{point.address}</span>
+                        {point.openingHours && (
+                          <span className="flex items-center gap-1.5 text-xs text-ink-soft">
+                            <ClockIcon width={14} height={14} /> {point.openingHours}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                {errors.pickupLocationId && (
+                  <p className="field-error">{errors.pickupLocationId.message}</p>
+                )}
+                <Field
+                  label={
+                    <>
+                      {t.checkout.pickupTime} {optional}
+                    </>
+                  }
+                >
+                  {(id, d) => (
+                    <Input
+                      id={id}
+                      aria-describedby={d}
+                      type="datetime-local"
+                      {...form.register('pickupTime')}
+                    />
+                  )}
+                </Field>
+              </>
             )}
             <Field
               label={
                 <>
-                  {t.checkout.pickupTime}{' '}
-                  <span className="text-ink-soft">({t.common.optional})</span>
-                </>
-              }
-            >
-              {(id, d) => (
-                <Input
-                  id={id}
-                  aria-describedby={d}
-                  type="datetime-local"
-                  {...form.register('pickupTime')}
-                />
-              )}
-            </Field>
-            <Field
-              label={
-                <>
-                  {t.checkout.comment} <span className="text-ink-soft">({t.common.optional})</span>
+                  {t.checkout.comment} {optional}
                 </>
               }
             >
@@ -252,6 +327,34 @@ export default function CheckoutPage() {
                 />
               )}
             </Field>
+          </section>
+
+          <section className="card space-y-3 p-6">
+            <h2 className="font-serif text-xl">{t.checkout.payment}</h2>
+            <label className="flex items-start gap-3 rounded-xl border border-brand bg-brand-50 p-4">
+              <input type="radio" checked readOnly className="mt-1 accent-brand" />
+              <span>
+                <span className="block font-medium">{t.checkout.payOnReceipt}</span>
+                <span className="text-sm text-ink-muted">{t.checkout.payOnReceiptText}</span>
+              </span>
+            </label>
+            <div
+              className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-cream-dark p-4 text-ink-soft"
+              aria-disabled
+            >
+              <span className="flex items-center gap-3">
+                <input
+                  type="radio"
+                  disabled
+                  className="accent-brand"
+                  aria-label={t.checkout.payOnline}
+                />
+                {t.checkout.payOnline}
+              </span>
+              <span className="rounded-full bg-cream-50 px-2.5 py-0.5 text-xs">
+                {t.checkout.payOnlineSoon}
+              </span>
+            </div>
           </section>
         </div>
 
@@ -269,12 +372,29 @@ export default function CheckoutPage() {
               </li>
             ))}
           </ul>
-          <div className="flex items-baseline justify-between border-t border-cream-dark/60 pt-4">
-            <span className="font-medium">{t.checkout.total}</span>
+          <dl className="space-y-1.5 border-t border-cream-dark/60 pt-4 text-sm">
+            <div className="flex justify-between gap-3">
+              <dt className="text-ink-muted">{t.checkout.subtotal}</dt>
+              <dd>{formatMoney(cart.subtotal, locale, t.common.som)}</dd>
+            </div>
+            {method === 'DELIVERY' && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-ink-muted">{t.checkout.delivery}</dt>
+                <dd>{t.checkout.deliveryByManager}</dd>
+              </div>
+            )}
+          </dl>
+          <div className="flex items-baseline justify-between">
+            <span className="font-medium">
+              {method === 'DELIVERY' ? t.checkout.totalWithoutDelivery : t.checkout.total}
+            </span>
             <span className="text-2xl font-semibold text-brand-dark">
               {formatMoney(cart.subtotal, locale, t.common.som)}
             </span>
           </div>
+          {method === 'DELIVERY' && (
+            <p className="text-xs text-ink-soft">{t.checkout.deliveryNote}</p>
+          )}
           <p className="text-xs text-ink-soft">{t.checkout.paymentNote}</p>
           {place.error && <ErrorBox>{errorMessage(place.error, t.errors)}</ErrorBox>}
           <Button
@@ -282,7 +402,7 @@ export default function CheckoutPage() {
             size="lg"
             className="w-full"
             loading={place.isPending}
-            disabled={!cart.canCheckout || pickup.isLoading || noPickup}
+            disabled={!cart.canCheckout}
             aria-describedby={blockedReason ? 'checkout-blocked' : undefined}
           >
             {t.checkout.place}

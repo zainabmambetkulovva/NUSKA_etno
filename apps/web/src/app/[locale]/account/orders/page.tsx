@@ -43,7 +43,7 @@ export default function OrdersPage() {
               </div>
               <div className="text-sm text-ink-soft">{formatDate(order.createdAt, locale)}</div>
             </div>
-            <OrderStatusBadge status={order.status} />
+            <OrderStatusBadge status={order.status} method={order.deliveryMethod} />
             <div className="flex-1 truncate text-sm text-ink-muted">
               {order.items.map((i) => `${i.name} × ${i.quantity}`).join(', ')}
             </div>
