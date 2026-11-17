@@ -84,6 +84,8 @@ export interface ProductCard {
   image: ImageRef | null;
   /** Weight or volume, e.g. "0.5 л"; null when not known. */
   size: string | null;
+  /** Shelf life as the company states it; null when not given. */
+  shelfLife: string | null;
   categories: CategoryRef[];
 }
 
@@ -93,8 +95,6 @@ export interface ProductDetail extends ProductCard {
   /** Benefits, one list item each. */
   benefits: string[];
   storageInstructions: string | null;
-  /** Shelf life as the company states it. */
-  shelfLife: string | null;
   /** Nutrition facts, one item each. */
   nutrition: string[];
   /** Confirmed origin, or null. */

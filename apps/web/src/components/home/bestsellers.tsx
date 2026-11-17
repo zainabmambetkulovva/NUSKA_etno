@@ -170,7 +170,7 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="-mx-1 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-1 pb-4 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-4 -my-8 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto scroll-smooth px-4 py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="region"
           aria-roledescription="carousel"
           aria-label={t.landing.bestTitle}

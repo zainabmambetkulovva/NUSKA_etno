@@ -23,7 +23,7 @@ export function Marquee({
   return (
     <div
       className={cn(
-        'group relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)]',
+        'group relative -my-6 overflow-hidden py-6 [mask-image:linear-gradient(to_right,transparent,#000_8%,#000_92%,transparent)]',
         className
       )}
       role={label ? 'region' : undefined}

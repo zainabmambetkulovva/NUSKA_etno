@@ -104,8 +104,9 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
       />
       <YurtLine className="pointer-events-none absolute bottom-16 right-6 hidden h-28 w-40 text-nk-gold/45 lg:block" />
 
-      <div className="container relative grid gap-10 pb-10 pt-14 md:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr_1.45fr] lg:gap-8">
-        <div className="md:col-span-2 lg:col-span-1">
+      {/* phones: the link columns two per row; desktop: one row */}
+      <div className="container relative grid grid-cols-2 gap-x-6 gap-y-10 pb-10 pt-14 lg:grid-cols-[1.35fr_1fr_1fr_1fr_1.45fr] lg:gap-8">
+        <div className="col-span-2 lg:col-span-1">
           <Logo href={l('')} tone="gold" />
           <p className="mt-4 font-serif text-lg text-[#F3EAD3]">{t.footer.tagline}</p>
           <ul className="mt-6 flex gap-2.5" aria-label={t.footer.follow}>
@@ -127,7 +128,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
         </div>
 
         {columns.map((column) => (
-          <nav key={column.title} aria-label={column.title}>
+          <nav key={column.title} aria-label={column.title} className="min-w-0">
             <h2 className="mb-4 font-sans text-base font-semibold text-white">{column.title}</h2>
             <ul className="space-y-2.5">
               {column.links.map((link) => (
@@ -144,7 +145,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
           </nav>
         ))}
 
-        <div className="md:col-span-2 lg:col-span-1">
+        <div className="col-span-2 lg:col-span-1">
           <h2 className="mb-4 font-sans text-base font-semibold text-white">
             {t.newsletter.title}
           </h2>

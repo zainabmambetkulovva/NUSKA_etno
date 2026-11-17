@@ -10,6 +10,8 @@ import { Agent, fetch as undiciFetch, type RequestInit as UndiciRequestInit } fr
  * visitor's address, so the first entry is trustworthy there.
  */
 export const dynamic = 'force-dynamic';
+/** The API host on a free plan needs up to a minute to wake up; wait for it. */
+export const maxDuration = 60;
 
 const API_URL = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replace(/\/$/, '');
 const PROXY_SECRET = process.env.API_PROXY_SECRET;
@@ -26,6 +28,8 @@ const MAX_BODY_BYTES = 4.4 * 1024 * 1024;
 const agent = new Agent({ keepAliveTimeout: 2_000, keepAliveMaxTimeout: 2_000 });
 /** Pauses before trying a request again after a network error. */
 const RETRY_DELAYS = [150, 600];
+/** Pauses between read requests while the API host is starting (about 45 s in all). */
+const WAKE_DELAYS = [1_000, 2_000, 4_000, 8_000, 12_000, 18_000];
 
 const HOP_BY_HOP = new Set([
   'connection',
@@ -110,16 +114,19 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS[attempt]));
     }
   }
-  if (!hasBody && [502, 503, 504].includes(upstream.status)) {
-    // the API host was asleep (free plan) and is starting: read requests try once more
+  // The API host was asleep (free plan) and is starting: read requests keep trying
+  // for up to ~45 s (they change nothing, so repeating them is safe).
+  for (const wait of hasBody ? [] : WAKE_DELAYS) {
+    if (![502, 503, 504].includes(upstream.status)) break;
     await upstream.body?.cancel();
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, wait));
     try {
       upstream = await send();
     } catch {
-      return unavailable();
+      // still starting: the next pause decides
     }
   }
+  if (!hasBody && [502, 503, 504].includes(upstream.status)) return unavailable();
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {

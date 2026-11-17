@@ -5,7 +5,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 
-/** "Continue with Google": shown only when Google sign-in is configured on the server. */
+/**
+ * "Continue with Google". Hidden only when the server says Google sign-in is
+ * not configured; while the API is still waking up (or does not answer) the
+ * button stays, so it never disappears because of a slow server.
+ */
 export function GoogleButton({ next }: { next: string }) {
   const { t, locale } = useI18n();
   const providers = useQuery({
@@ -13,7 +17,7 @@ export function GoogleButton({ next }: { next: string }) {
     queryFn: () => api<{ google: boolean }>('/auth/providers'),
     staleTime: 10 * 60_000,
   });
-  if (!providers.data?.google) return null;
+  if (providers.data && !providers.data.google) return null;
   const href = `/api/auth/google?locale=${locale}&next=${encodeURIComponent(next)}`;
   return (
     <div className="space-y-4">

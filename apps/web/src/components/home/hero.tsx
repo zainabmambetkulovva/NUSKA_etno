@@ -14,67 +14,21 @@ import type { Dictionary } from '@/i18n/dictionaries/ky';
 const VISIBLE = 0.62;
 const RATIO = 1672 / 941;
 
-/** Wooden stump with a red felt carpet, the podium of the product composition. */
-function Stump({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 360 150" className={className} aria-hidden>
-      <defs>
-        <radialGradient id="stump-top" cx="50%" cy="45%" r="60%">
-          <stop offset="0" stopColor="#E7C08A" />
-          <stop offset="0.65" stopColor="#C9955C" />
-          <stop offset="1" stopColor="#9C6A3B" />
-        </radialGradient>
-        <linearGradient id="stump-side" x1="0" x2="1">
-          <stop offset="0" stopColor="#5E3B22" />
-          <stop offset="0.45" stopColor="#8C5D36" />
-          <stop offset="1" stopColor="#4E301B" />
-        </linearGradient>
-        <pattern id="felt" width="28" height="22" patternUnits="userSpaceOnUse">
-          <path
-            d="M14 4c-4 0-6 3-6 5s2 4 4 4 3-2 2-3M14 4c4 0 6 3 6 5s-2 4-4 4-3-2-2-3M4 18h20"
-            fill="none"
-            stroke="#E9C77F"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-          />
-        </pattern>
-      </defs>
-      <ellipse cx="180" cy="128" rx="170" ry="20" fill="rgba(60,40,20,0.28)" />
-      <path d="M22 44v62c0 20 71 36 158 36s158-16 158-36V44Z" fill="url(#stump-side)" />
-      <path
-        d="M22 70c40 22 92 30 158 30s118-8 158-30v36c0 20-71 36-158 36S22 126 22 106Z"
-        fill="#9B2A24"
-      />
-      <path
-        d="M22 70c40 22 92 30 158 30s118-8 158-30v36c0 20-71 36-158 36S22 126 22 106Z"
-        fill="url(#felt)"
-        opacity=".75"
-      />
-      <path
-        d="M22 72c40 22 92 30 158 30s118-8 158-30"
-        stroke="#E9C77F"
-        strokeWidth="2"
-        fill="none"
-      />
-      <ellipse cx="180" cy="44" rx="158" ry="34" fill="url(#stump-top)" />
-      <g fill="none" stroke="#9E6B3A" strokeOpacity=".45">
-        <ellipse cx="180" cy="44" rx="120" ry="25" />
-        <ellipse cx="180" cy="44" rx="86" ry="18" />
-        <ellipse cx="180" cy="44" rx="52" ry="11" />
-        <ellipse cx="180" cy="44" rx="20" ry="4.5" />
-      </g>
-    </svg>
-  );
-}
-
+/**
+ * The packages on the wooden stump (public/images/home/stump-wood.webp, drawn
+ * in code by scripts/podium), each on its own spot so none covers another:
+ * jupka left, keremet shypaa at the back, sary mai right, the navat bowl at
+ * the front. Positions are % of the 360 × 300 composition box (the stand
+ * points printed by `render.cjs` with the stump scene).
+ */
 const PRODUCTS = [
   {
     src: '/images/products/zhupka.png',
     w: 480,
     h: 733,
-    left: 4,
-    bottom: 46,
-    height: 62,
+    left: 19.2,
+    bottom: 33.7,
+    height: 34,
     z: 1,
     rotate: 0,
   },
@@ -82,9 +36,9 @@ const PRODUCTS = [
     src: '/images/products/keremet-shypaa.png',
     w: 681,
     h: 1263,
-    left: 30,
-    bottom: 48,
-    height: 86,
+    left: 39.7,
+    bottom: 38.6,
+    height: 46,
     z: 1,
     rotate: -19.6,
   },
@@ -92,19 +46,19 @@ const PRODUCTS = [
     src: '/images/products/sary-mai.png',
     w: 825,
     h: 1148,
-    left: 50,
-    bottom: 40,
-    height: 58,
-    z: 2,
+    left: 62.8,
+    bottom: 33.7,
+    height: 29,
+    z: 1,
     rotate: 0,
   },
   {
     src: '/images/products/navat.png',
     w: 723,
     h: 566,
-    left: 70,
-    bottom: 38,
-    height: 36,
+    left: 43.9,
+    bottom: 27.4,
+    height: 11.5,
     z: 3,
     rotate: 0,
   },
@@ -115,14 +69,18 @@ function ProductComposition({ className }: { className?: string }) {
   return (
     <div className={className} aria-hidden>
       <div className="relative h-full w-full">
-        <Stump className="absolute inset-x-0 bottom-0 w-full" />
-        {PRODUCTS.map((product, i) => (
+        <Image
+          src="/images/home/stump-wood.webp"
+          alt=""
+          fill
+          unoptimized
+          className="object-contain"
+        />
+        {PRODUCTS.map((product) => (
           <div
             key={product.src}
-            className="absolute motion-safe:animate-float"
+            className="absolute"
             style={{
-              animationDelay: `${-i * 1.3}s`,
-              animationDuration: `${4.6 + i * 0.7}s`,
               left: `${product.left}%`,
               bottom: `${product.bottom}%`,
               height: `${product.height}%`,
@@ -197,7 +155,7 @@ export function Hero({
             className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent"
             aria-hidden
           />
-          <ProductComposition className="absolute bottom-[4%] left-[3%] aspect-[360/300] w-[46%] max-w-[260px]" />
+          <ProductComposition className="absolute bottom-[2%] left-[1%] aspect-[360/300] w-[56%] max-w-[300px]" />
         </div>
       </div>
 
@@ -245,7 +203,7 @@ export function Hero({
         zoom={0.22}
         origin="64% 92%"
       >
-        <ProductComposition className="absolute bottom-[9%] left-[52%] aspect-[360/300] w-[clamp(250px,22vw,380px)]" />
+        <ProductComposition className="absolute bottom-[9%] left-[52%] aspect-[360/300] w-[clamp(300px,27vw,470px)]" />
       </HeroLayer>
       <HeroLayer
         className="pointer-events-none absolute inset-0 hidden lg:block"

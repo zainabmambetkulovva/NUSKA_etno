@@ -110,50 +110,74 @@ export function WhyUs({ t }: { t: Dictionary }) {
 // ---------------------------------------------------------------- 03 prices
 
 /**
- * The podium: for each wooden block the catalog product standing on it
- * (matched by slug, sizes included), the place of its price plate and the
- * place of the company's product photo. Everything is in design pixels of
- * the 726 × 282 podium picture and is turned into % below, so the photos and
- * the plates scale together with the picture.
+ * The podium (public/images/home/podium-wood.webp) is drawn in code by
+ * scripts/podium: a three.js scene with procedural wood. For each block: the
+ * catalog product standing on it (matched by slug, sizes included), where the
+ * product stands (`cx`, `bottom`) and the front face that carries its price
+ * plate. Everything is in units of the 726 × 282 stage and turned into %
+ * below, so photos and plates scale with the picture. The numbers are the
+ * block positions printed by scripts/podium/render.cjs.
  */
 const PODIUM_W = 726;
 const PODIUM_H = 282;
 const PODIUM = [
   {
     key: 'zhupka',
-    plate: { left: 10.7, top: 56.4, width: 12.1, height: 19 },
-    photo: { src: 'zhupka.png', w: 480, h: 733, cx: 122, bottom: 160, height: 150, rotate: 0 },
+    block: { left: 118.3, right: 194.5, faceTop: 158.7, faceBottom: 216.6 },
+    photo: { src: 'zhupka.png', w: 480, h: 733, cx: 162.5, bottom: 150.1, height: 135, rotate: 0 },
   },
   {
     key: 'sary-mai',
-    plate: { left: 29.3, top: 64.2, width: 12.1, height: 18.4 },
-    photo: { src: 'sary-mai.png', w: 825, h: 1148, cx: 257, bottom: 179, height: 122, rotate: 0 },
+    block: { left: 214, right: 292, faceTop: 181.5, faceBottom: 229.3 },
+    photo: {
+      src: 'sary-mai.png',
+      w: 825,
+      h: 1148,
+      cx: 256.4,
+      bottom: 171.2,
+      height: 108,
+      rotate: 0,
+    },
   },
   {
     key: 'kymyz',
-    plate: { left: 45.4, top: 66, width: 11.4, height: 18.4 },
-    photo: { src: 'kymyz.webp', w: 669, h: 2000, cx: 372, bottom: 187, height: 176, rotate: 0 },
+    block: { left: 323.3, right: 402.7, faceTop: 199.8, faceBottom: 237 },
+    photo: { src: 'kymyz.webp', w: 669, h: 2000, cx: 363, bottom: 188.1, height: 168, rotate: 0 },
   },
   {
     key: 'keremet-shypaa',
-    plate: { left: 61.2, top: 60.7, width: 11.6, height: 18.4 },
+    block: { left: 434, right: 512, faceTop: 181.5, faceBottom: 229.3 },
     // the photo shows the bottle tilted; it is stood upright with a CSS rotation
     photo: {
       src: 'keremet-shypaa.png',
       w: 681,
       h: 1263,
-      cx: 487,
-      bottom: 175,
-      height: 166,
+      cx: 469.6,
+      bottom: 171.2,
+      height: 150,
       rotate: -19.6,
     },
   },
   {
     key: 'navat',
-    plate: { left: 77.9, top: 56.4, width: 11.7, height: 19 },
-    photo: { src: 'navat.png', w: 723, h: 566, cx: 608, bottom: 159, height: 98, rotate: 0 },
+    block: { left: 531.5, right: 607.7, faceTop: 158.7, faceBottom: 216.6 },
+    photo: { src: 'navat.png', w: 723, h: 566, cx: 563.5, bottom: 150.1, height: 78, rotate: 0 },
   },
 ] as const;
+
+/** The price plate leans on the front of its block and reaches the platform. */
+function plateBox(block: (typeof PODIUM)[number]['block']) {
+  const face = block.faceBottom - block.faceTop;
+  const width = (block.right - block.left) * 0.98;
+  const cx = (block.left + block.right) / 2;
+  const top = block.faceTop + face * 0.18;
+  return {
+    left: ((cx - width / 2) / PODIUM_W) * 100,
+    top: (top / PODIUM_H) * 100,
+    width: (width / PODIUM_W) * 100,
+    height: (Math.max(face * 0.72, 34) / PODIUM_H) * 100,
+  };
+}
 
 const SIZE = /\s+(\d+(?:[.,]\d+)?\s*(?:кг|л|г|мл)?)$/i;
 /** "Нават 0.5" → "Нават", "Керемет шыпаа — классика" → "Керемет шыпаа". */
@@ -192,7 +216,7 @@ export function PricesPodium({
       const index = CARDS.indexOf(slot.key);
       return {
         key: slot.key,
-        ...slot.plate,
+        ...plateBox(slot.block),
         name: t.home.productNames[index] ?? slot.key,
         price: null as string | null,
         href: `/${locale}/catalog`,
@@ -201,7 +225,7 @@ export function PricesPodium({
     const price = formatMoney(line.cheapest.price, locale, t.common.som);
     return {
       key: slot.key,
-      ...slot.plate,
+      ...plateBox(slot.block),
       name: line.name,
       price: line.many ? t.home.pricesFrom.replace('{price}', price) : price,
       href: `/${locale}/product/${line.cheapest.slug}`,
@@ -223,7 +247,7 @@ export function PricesPodium({
           alt=""
           fill
           unoptimized
-          className="object-cover object-[50%_20%]"
+          className="scale-105 object-cover object-[50%_20%] blur-[2px]"
         />
         <div
           className="absolute inset-0"
@@ -246,16 +270,14 @@ export function PricesPodium({
 
       <div className="relative mt-2 [container-type:inline-size]">
         <div className="relative aspect-[2400/932] w-full">
-          {/* the wooden podium of the design; above it the section background shows */}
-          <div className="absolute inset-x-0 bottom-0 h-[57.45%]">
-            <Image
-              src="/images/home/podium-base.webp"
-              alt=""
-              fill
-              sizes="100vw"
-              className="object-cover [mask-image:linear-gradient(to_bottom,transparent_2%,#000_20%)]"
-            />
-          </div>
+          {/* the wooden podium, drawn in code (scripts/podium); transparent above */}
+          <Image
+            src="/images/home/podium-wood.webp"
+            alt=""
+            fill
+            unoptimized
+            className="object-cover"
+          />
           {/* the company's product photos, exactly as sent, standing on the blocks */}
           {PODIUM.map(({ key, photo }, i) => (
             <div
@@ -301,7 +323,7 @@ export function PricesPodium({
             <Link
               key={plate.key}
               href={plate.href}
-              className="group absolute hidden flex-col items-center justify-center rounded-[1.2cqw] border border-transparent text-center text-white transition duration-300 hover:-translate-y-[0.5cqw] hover:border-[#E7C77F]/70 hover:bg-[#27391F]/70 hover:shadow-[0_0_2.2cqw_rgba(231,199,127,0.45)] motion-safe:animate-fade-up sm:flex"
+              className="group absolute hidden flex-col items-center justify-center rounded-[1cqw] border border-[#E7C77F]/45 bg-[linear-gradient(180deg,rgba(42,72,49,0.92),rgba(27,46,33,0.95))] text-center text-white shadow-[0_0.9cqw_1.6cqw_-0.4cqw_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-sm transition duration-300 hover:-translate-y-[0.4cqw] hover:border-[#E7C77F] hover:shadow-[0_0_2.2cqw_rgba(231,199,127,0.45)] motion-safe:animate-fade-up sm:flex"
               style={{
                 left: `${plate.left}%`,
                 top: `${plate.top}%`,
