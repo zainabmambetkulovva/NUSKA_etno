@@ -98,6 +98,16 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       return unavailable();
     }
   }
+  if (!hasBody && [502, 503, 504].includes(upstream.status)) {
+    // the API host was asleep (free plan) and is starting: read requests try once more
+    await upstream.body?.cancel();
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      upstream = await send();
+    } catch {
+      return unavailable();
+    }
+  }
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {

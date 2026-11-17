@@ -3,6 +3,8 @@ import 'server-only';
 import { toApiError } from './errors';
 
 const API_URL = (process.env.API_INTERNAL_URL || 'http://localhost:4000').replace(/\/$/, '');
+/** Gateway answers while the API host is waking up. */
+const WAKING = new Set([502, 503, 504]);
 
 /**
  * Server-side fetch of public data (catalog, content). Responses are cached
@@ -24,6 +26,11 @@ export async function serverApi<T>(path: string, locale: string, revalidate = 60
   } catch {
     // a dropped keep-alive connection: one more try on a fresh one
     await new Promise((resolve) => setTimeout(resolve, 250));
+    response = await request();
+  }
+  if (WAKING.has(response.status)) {
+    // the API host was asleep (free plan) and is starting: try once more
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     response = await request();
   }
   if (!response.ok) throw await toApiError(response);

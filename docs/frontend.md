@@ -332,3 +332,14 @@ site's style: cream field with a forest chevron. Browsers with customisable
 selects (Chromium 135+, `appearance: base-select`) also show the open list as a
 rounded cream panel with a forest highlight and a gold check; other browsers
 keep their own list.
+
+## When the API host is asleep
+
+The API runs on Render's free plan, which sleeps after ~15 minutes without
+requests and needs up to a minute to wake up. The website copes with it:
+server fetches and read requests through the proxy try once more after a
+gateway error (502/503/504), and the error page retries the page by itself a
+few times (3 → 25 s apart) and its «Попробовать снова» reloads the data from the
+server. To avoid the wait altogether, point a free uptime monitor (for example
+UptimeRobot, every 5–10 minutes) at `https://<api-host>/api/health/live` — it
+answers without touching the database — or move the API to a paid plan.

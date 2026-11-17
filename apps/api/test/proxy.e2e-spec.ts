@@ -23,6 +23,7 @@ describe('Access through the website proxy only (e2e)', () => {
       .set('x-proxy-secret', 'wrong-secret-of-the-same-length-000000000')
       .expect(403);
     await http().get('/api/health').expect(200);
+    await http().get('/api/health/live').expect(200);
     await http().get('/api/products').set(viaProxy('203.0.113.1')).expect(200);
   });
 

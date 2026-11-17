@@ -27,15 +27,15 @@ function safeEqual(a: string, b: string) {
  * When PROXY_SECRET is set, the API is reachable only through the Next.js
  * proxy (apps/web/src/app/api/[...path]/route.ts), which adds the secret and
  * the real client IP. Direct requests are refused, so the client IP used for
- * rate limiting cannot be spoofed. /api/health stays open for the platform's
- * health checks.
+ * rate limiting cannot be spoofed. /api/health and /api/health/live stay open for
+ * health checks and uptime monitors.
  */
 export function clientIpMiddleware(proxySecret: string | undefined) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (proxySecret) {
       const provided = req.header(PROXY_SECRET_HEADER) ?? '';
       if (!safeEqual(provided, proxySecret)) {
-        if (req.path === '/api/health') return next();
+        if (req.path === '/api/health' || req.path === '/api/health/live') return next();
         res
           .status(403)
           .json({ statusCode: 403, code: 'DIRECT_ACCESS_FORBIDDEN', message: 'Use the website' });
