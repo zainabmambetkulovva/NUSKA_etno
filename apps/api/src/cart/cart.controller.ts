@@ -11,14 +11,21 @@ import {
   Post,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { RequestLocale } from '../common/decorators/request-locale.decorator';
 import { AuthenticatedUser } from '../common/types/authenticated-user';
 import { Locale } from '../common/utils/locale';
 
 import { CartService } from './cart.service';
-import { AddCartItemDto, MergeCartDto, SetCartItemQuantityDto } from './dto/cart.dto';
+import {
+  AddCartItemDto,
+  MergeCartDto,
+  PreviewCartDto,
+  SetCartItemQuantityDto,
+} from './dto/cart.dto';
 
 @ApiTags('cart')
 @Controller('cart')
@@ -62,6 +69,22 @@ export class CartController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async clear(@CurrentUser() user: AuthenticatedUser) {
     await this.cart.clear(user.id);
+  }
+
+  /** Checks a guest cart against the catalog (no account needed). */
+  @Public()
+  @Throttle({ default: { limit: 60, ttl: 60_000 } })
+  @Post('preview')
+  @HttpCode(HttpStatus.OK)
+  preview(@Body() dto: PreviewCartDto, @RequestLocale() locale: Locale) {
+    return this.cart.preview(dto, locale);
+  }
+
+  /** Removes unavailable lines, lowers quantities to the stock and accepts the new prices. */
+  @Post('fix')
+  @HttpCode(HttpStatus.OK)
+  fix(@CurrentUser() user: AuthenticatedUser, @RequestLocale() locale: Locale) {
+    return this.cart.fix(user.id, locale);
   }
 
   @Post('merge')

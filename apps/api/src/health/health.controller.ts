@@ -25,4 +25,10 @@ export class HealthController {
     }
     return { status: 'healthy', database: 'up', timestamp: new Date().toISOString() };
   }
+
+  /** Liveness only (no database): used by the keep-awake ping. */
+  @Get('live')
+  live() {
+    return { status: 'live', timestamp: new Date().toISOString() };
+  }
 }

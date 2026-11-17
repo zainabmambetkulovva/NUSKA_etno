@@ -50,7 +50,7 @@ export const Select = forwardRef<HTMLSelectElement, ComponentProps<'select'>>(fu
   { className, ...props },
   ref
 ) {
-  return <select ref={ref} className={cn('field-input pr-8', className)} {...props} />;
+  return <select ref={ref} className={cn('field-input pr-10', className)} {...props} />;
 });
 
 export function Checkbox({

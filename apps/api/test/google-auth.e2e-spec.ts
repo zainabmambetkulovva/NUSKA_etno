@@ -72,7 +72,7 @@ describe('Sign in with Google (e2e)', () => {
       .get(`/api/auth/google/callback?code=abc&state=${state}`)
       .set('Cookie', cookie)
       .expect(302);
-    expect(res.headers.location).toBe('http://localhost:3000/ru/checkout');
+    expect(res.headers.location).toBe('/ru/checkout');
     const cookies = res.headers['set-cookie'] as unknown as string[];
     expect(cookies.some((c) => c.startsWith('nuska_access='))).toBe(true);
 
@@ -100,7 +100,7 @@ describe('Sign in with Google (e2e)', () => {
       .get(`/api/auth/google/callback?code=abc&state=${state}`)
       .set('Cookie', cookie)
       .expect(302);
-    expect(res.headers.location).toBe('http://localhost:3000/ky/account');
+    expect(res.headers.location).toBe('/ky/account');
     const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: existing.id } });
     expect(user.googleId).toBe('google-123');
     expect(user.passwordHash).not.toBeNull();
@@ -113,7 +113,7 @@ describe('Sign in with Google (e2e)', () => {
       .get('/api/auth/google/callback?code=abc&state=forged')
       .set('Cookie', cookie)
       .expect(302);
-    expect(bad.headers.location).toBe('http://localhost:3000/ru/login?error=google');
+    expect(bad.headers.location).toBe('/ru/login?error=google');
 
     tokenInfo.aud = 'someone-else';
     const second = await start();
@@ -121,7 +121,7 @@ describe('Sign in with Google (e2e)', () => {
       .get(`/api/auth/google/callback?code=abc&state=${second.state}`)
       .set('Cookie', second.cookie)
       .expect(302);
-    expect(foreign.headers.location).toBe('http://localhost:3000/ru/login?error=google');
+    expect(foreign.headers.location).toBe('/ru/login?error=google');
     expect(await ctx.prisma.user.count()).toBe(0);
 
     tokenInfo.aud = CLIENT_ID;
@@ -130,7 +130,7 @@ describe('Sign in with Google (e2e)', () => {
       .get(`/api/auth/google/callback?code=abc&state=${third.state}`)
       .set('Cookie', third.cookie)
       .expect(302);
-    expect(ok.headers.location).toBe('http://localhost:3000/ru/account');
+    expect(ok.headers.location).toBe('/ru/account');
   });
 
   it('does not sign in a disabled account', async () => {
@@ -142,6 +142,6 @@ describe('Sign in with Google (e2e)', () => {
       .get(`/api/auth/google/callback?code=abc&state=${state}`)
       .set('Cookie', cookie)
       .expect(302);
-    expect(res.headers.location).toBe('http://localhost:3000/ky/login?error=disabled');
+    expect(res.headers.location).toBe('/ky/login?error=disabled');
   });
 });

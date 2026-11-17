@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { ru } from './helpers';
 
-test('gift set builder: choose products, total from the server, 3D box, add to cart, save', async ({
+test('gift set builder: choose products, total from the server, 3D box, save to cart, buy now', async ({
   page,
 }) => {
   await page.goto('/ru/gift-builder');
@@ -27,15 +27,14 @@ test('gift set builder: choose products, total from the server, 3D box, add to c
     timeout: 30_000,
   });
 
-  await page.getByRole('button', { name: ru.gift.addToCart }).click();
+  await page.getByRole('button', { name: ru.gift.saveToCart }).click();
   await expect(page.locator('header a[href="/ru/cart"]')).toHaveAttribute('aria-label', /: 3/);
-
-  await page.getByLabel(ru.gift.name).fill('Для гостей');
-  await page.getByRole('button', { name: ru.gift.save }).click();
-  await expect(page.getByRole('heading', { name: ru.gift.savedSets })).toBeVisible();
-  await expect(page.getByText('Для гостей')).toBeVisible();
 
   // The draft survives a reload (kept in this browser).
   await page.reload();
   await expect(page.getByTestId('gift-total')).toContainText('640');
+
+  // "Buy now" puts the set in the cart and opens the checkout (guests sign in first).
+  await page.getByRole('button', { name: ru.gift.buyNow }).click();
+  await expect(page).toHaveURL(/\/ru\/(checkout|login)/);
 });

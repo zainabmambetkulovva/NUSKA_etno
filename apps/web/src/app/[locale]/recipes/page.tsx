@@ -1,24 +1,37 @@
 import type { Metadata } from 'next';
 
 import type { Page, ProductCard } from '@nuska/types';
-import Image from 'next/image';
 import Link from 'next/link';
 
+import { DISH_LAYERS } from '@/components/recipes/dish-layers';
+import { DishVisual } from '@/components/recipes/dish-visual';
 import { ClockIcon } from '@/components/ui/icons';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
 import { alternates, resolveLocale } from '@/lib/locale-params';
-import { companyPhoto } from '@/lib/product-photos';
 
-const DISH_PHOTOS: Record<string, string> = {
-  'besh-barmak': '/images/dishes/besh-barmak.png',
-  bal: '/images/dishes/bal.png',
-  navat: '/images/dishes/navat.png',
-  kymyz: '/images/dishes/kymyz.png',
-  'sary-mai': '/images/dishes/sary-mai.png',
-  zhupka: '/images/dishes/zhupka.png',
-};
+/** Three soft wavy lines under the slogan of a recipe. */
+function Waves() {
+  return (
+    <svg
+      viewBox="0 0 1200 60"
+      preserveAspectRatio="none"
+      className="absolute inset-x-0 top-1/2 h-14 w-full -translate-y-1/2 text-nk-gold/25"
+      aria-hidden
+    >
+      {[0, 1, 2].map((i) => (
+        <path
+          key={i}
+          d={`M0 ${18 + i * 12} C 150 ${4 + i * 12}, 300 ${32 + i * 12}, 450 ${18 + i * 12} S 750 ${4 + i * 12}, 900 ${18 + i * 12} S 1100 ${32 + i * 12}, 1200 ${18 + i * 12}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.5}
+        />
+      ))}
+    </svg>
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -35,9 +48,10 @@ export async function generateMetadata({
 }
 
 /**
- * Recipes: traditional Kyrgyz dishes made with the store's products. Each
- * recipe links its products to the catalog. Photos of the dishes are the
- * company's product photos until recipe photos are added.
+ * Recipes: traditional Kyrgyz dishes made with the store's products. Every
+ * recipe is a dark panel: the dish taken apart in 3D with the name of each
+ * part, a card with the steps, and a short slogan over wavy lines. The
+ * recipe's products link to the catalog.
  */
 export default async function RecipesPage({ params }: { params: Promise<{ locale: string }> }) {
   const locale = await resolveLocale(params);
@@ -82,81 +96,91 @@ export default async function RecipesPage({ params }: { params: Promise<{ locale
         ))}
       </nav>
 
-      <div className="mx-auto mt-12 max-w-5xl space-y-10">
-        {page.items.map((recipe) => {
-          const photo = DISH_PHOTOS[recipe.products[0]] ?? companyPhoto(recipe.products[0]) ?? null;
-          return (
-            <Reveal key={recipe.slug}>
-              <article
-                id={recipe.slug}
-                className="grid scroll-mt-28 gap-6 overflow-hidden rounded-[2rem] border border-nk-beige bg-white/85 p-6 shadow-[0_24px_48px_-34px_rgba(80,60,30,0.7)] md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:p-8"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.5rem] bg-[radial-gradient(ellipse_at_50%_60%,#FFF8EA,#F0D9B0)]">
-                  {photo && (
-                    <Image
-                      src={photo}
-                      alt=""
-                      fill
-                      quality={95}
-                      sizes="(min-width: 768px) 400px, 90vw"
-                      className="object-contain p-4"
-                    />
-                  )}
-                </div>
-                <div>
-                  <h2 className="font-serif text-3xl text-nk-ink">{recipe.title}</h2>
-                  <p className="mt-2 text-nk-muted">{recipe.text}</p>
-                  <p className="mt-3 inline-flex items-center gap-2 text-sm text-nk-brown">
-                    <ClockIcon width={16} height={16} />
-                    {page.time}: {recipe.time}
+      <div className="mx-auto mt-12 max-w-6xl space-y-12">
+        {page.items.map((recipe) => (
+          <Reveal key={recipe.slug}>
+            <article
+              id={recipe.slug}
+              aria-labelledby={`${recipe.slug}-title`}
+              className="relative scroll-mt-28 overflow-hidden rounded-[2rem] bg-nk-night text-nk-cream shadow-[0_40px_80px_-50px_rgba(34,57,42,0.9)]"
+            >
+              <div className="grid gap-4 p-3 sm:p-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:gap-6 lg:p-7">
+                {/* the dish taken apart */}
+                <section className="relative flex min-h-[27rem] flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-[radial-gradient(ellipse_at_50%_45%,#355B3E_0%,#2A4831_45%,#1B2E21_100%)] p-5 sm:min-h-[34rem] sm:p-7">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-nk-gold">
+                    {page.composition}
                   </p>
-                  <div className="mt-5 grid gap-6 sm:grid-cols-2">
-                    <div>
-                      <h3 className="text-sm font-semibold uppercase tracking-wider text-nk-forest">
-                        {page.ingredients}
-                      </h3>
-                      <ul className="mt-2 space-y-1.5 text-[15px] text-nk-ink">
-                        {recipe.ingredients.map((item) => (
-                          <li key={item} className="flex gap-2">
-                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-nk-gold" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold uppercase tracking-wider text-nk-forest">
-                        {page.steps}
-                      </h3>
-                      <ol className="mt-2 space-y-2 text-[15px] text-nk-ink">
-                        {recipe.steps.map((step, i) => (
-                          <li key={step} className="flex gap-2.5">
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-nk-forest text-xs font-semibold text-white">
-                              {i + 1}
-                            </span>
-                            {step}
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
+                  <h2
+                    id={`${recipe.slug}-title`}
+                    className="mt-2 font-serif text-3xl leading-tight text-white sm:text-4xl"
+                  >
+                    {recipe.title}
+                  </h2>
+                  <p className="mt-2 max-w-md text-sm text-nk-cream/75">{recipe.text}</p>
+                  <div className="relative mt-2 flex-1">
+                    <DishVisual
+                      layers={DISH_LAYERS[recipe.slug] ?? []}
+                      labels={recipe.layers}
+                      label={recipe.title}
+                    />
                   </div>
+                </section>
+
+                {/* how it is prepared */}
+                <section className="rounded-[1.5rem] bg-nk-cream p-5 text-nk-ink sm:p-7">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="font-serif text-2xl text-nk-ink">{page.howTo}</h3>
+                    <span className="inline-flex items-center gap-2 rounded-full bg-nk-sage/70 px-3 py-1 text-sm text-nk-forest">
+                      <ClockIcon width={16} height={16} />
+                      {page.time}: {recipe.time}
+                    </span>
+                  </div>
+                  <ol className="mt-5 space-y-3">
+                    {recipe.steps.map((step, i) => (
+                      <li key={step} className="flex gap-3 text-[15px] leading-relaxed">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-nk-forest text-xs font-semibold text-white">
+                          {i + 1}
+                        </span>
+                        <span className="pt-0.5">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <h4 className="mt-6 text-sm font-semibold uppercase tracking-wider text-nk-forest">
+                    {page.ingredients}
+                  </h4>
+                  <ul className="mt-2 grid gap-x-4 gap-y-1.5 text-[15px] sm:grid-cols-2">
+                    {recipe.ingredients.map((item) => (
+                      <li key={item} className="flex gap-2">
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-nk-gold" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                   <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-nk-beige pt-4">
                     <span className="text-sm text-nk-muted">{page.products}:</span>
                     {recipe.products.map(productLink).map((item) => (
                       <Link
                         key={item.key}
                         href={item.href}
-                        className="rounded-full bg-nk-sage/70 px-3.5 py-1.5 text-sm font-medium text-nk-forest transition hover:bg-nk-forest hover:text-white"
+                        className="rounded-full bg-nk-forest px-3.5 py-1.5 text-sm font-medium text-white transition hover:bg-nk-deep"
                       >
                         {item.name}
                       </Link>
                     ))}
                   </div>
-                </div>
-              </article>
-            </Reveal>
-          );
-        })}
+                </section>
+              </div>
+
+              {/* slogan over wavy lines */}
+              <footer className="relative px-6 pb-8 pt-3 text-center sm:px-10">
+                <Waves />
+                <p className="relative mx-auto max-w-3xl font-serif text-lg italic leading-relaxed text-nk-cream/90 sm:text-xl">
+                  {recipe.slogan}
+                </p>
+              </footer>
+            </article>
+          </Reveal>
+        ))}
       </div>
     </div>
   );

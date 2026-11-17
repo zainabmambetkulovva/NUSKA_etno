@@ -79,8 +79,9 @@ export class AuthController {
     }
     this.cookies.clearOAuth(res);
     const locale = saved && isLocale(saved.locale) ? saved.locale : 'ky';
-    const fail = (reason: string) =>
-      res.redirect(302, `${this.google.webUrl}/${locale}/login?error=${reason}`);
+    // Relative redirects: the visitor returns to the site address they started from
+    // (production or a preview), where the session cookies were just set.
+    const fail = (reason: string) => res.redirect(302, `/${locale}/login?error=${reason}`);
 
     if (!saved || !stateParam || saved.state !== stateParam || typeof code !== 'string')
       return fail('google');
@@ -88,7 +89,7 @@ export class AuthController {
       const profile = await this.google.profile(code, saved.verifier);
       const { tokens } = await this.auth.loginWithGoogle(profile, locale, clientMeta(req));
       this.cookies.set(res, tokens);
-      return res.redirect(302, `${this.google.webUrl}${this.google.safeNext(locale, saved.next)}`);
+      return res.redirect(302, this.google.safeNext(locale, saved.next));
     } catch (error) {
       const code = (error as { response?: { code?: string } }).response?.code;
       return fail(code === 'ACCOUNT_DISABLED' ? 'disabled' : 'google');

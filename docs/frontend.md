@@ -12,16 +12,16 @@ React Hook Form + Zod, Framer Motion.
 - Dates are formatted by hand for Kyrgyz (browsers have no Kyrgyz month names) and always in the
   shop time zone `Asia/Bishkek`.
 
-| Path | Page |
-|---|---|
-| `/` | Home: hero, why us, our prices, about us, our products, closing call |
-| `/catalog`, `/catalog/[category]` | Catalog: search, category (with sub-categories), sort, in-stock filter, pagination |
-| `/product/[slug]` | Product page, JSON-LD, reviews, related products |
-| `/cart`, `/checkout` | Cart (guest cart in localStorage, merged on login), checkout (signed-in only) |
-| `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` | Auth |
-| `/account/...` | Profile, orders (cancel, repeat, reviews), favorites, notifications, settings |
-| `/about`, `/pickup`, `/contacts` | Text from admin content blocks `about`, `pickup`, `contacts` |
-| `/admin/...` | Admin panel (role ADMIN; the API enforces it) |
+| Path                                                                          | Page                                                                               |
+| ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `/`                                                                           | Home: hero, why us, our prices, about us, our products, closing call               |
+| `/catalog`, `/catalog/[category]`                                             | Catalog: search, category (with sub-categories), sort, in-stock filter, pagination |
+| `/product/[slug]`                                                             | Product page, JSON-LD, reviews, related products                                   |
+| `/cart`, `/checkout`                                                          | Cart (guest cart in localStorage, merged on login), checkout (signed-in only)      |
+| `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email` | Auth                                                                               |
+| `/account/...`                                                                | Profile, orders (cancel, repeat, reviews), favorites, notifications, settings      |
+| `/about`, `/pickup`, `/contacts`                                              | Text from admin content blocks `about`, `pickup`, `contacts`                       |
+| `/admin/...`                                                                  | Admin panel (role ADMIN; the API enforces it)                                      |
 
 ## Data
 
@@ -75,7 +75,7 @@ Top to bottom (`app/[locale]/page.tsx`, `components/home/hero.tsx`, `components/
   values confirmed by the company.
 - **Origin map + bestsellers**: an interactive SVG map of the seven oblasts
   (`home/kg-regions.ts`, outlines from the MIT package `@react-map/kyrgyzstan`) with the
-  company's region list (`lib/origin.ts`: where a product is *traditionally made*, not the
+  company's region list (`lib/origin.ts`: where a product is _traditionally made_, not the
   production address); the full version is `/origin`. «Хиты продаж» is a carousel of catalog
   products (featured first, then the most ordered) with size, availability, ♥ and cart; it
   scrolls by drag, swipe, wheel and the arrows.
@@ -91,7 +91,6 @@ products), `/origin`, and `/contacts` rebuilt as contact cards. Colours of the m
 `nk-*` Tailwind tokens; `.btn-forest` is the dark green pill button.
 
 ## Earlier home page (kept blocks)
-
 
 The home page follows the full-page design the company sent, top to bottom:
 header → hero → "Why choose us?" → "Our prices" (podium) → about us → "Our products" →
@@ -165,10 +164,11 @@ promises → closing call → footer (the closing banner uses `cta.png`, a yurt 
   `POST /api/gift-sets/quote` on every change.
 - The 3D box shows each chosen product as a small model of its packaging (up to 3 copies
   per product, 15 models); drag to rotate. Without WebGL — a 2D box with labels.
-- "Add the set to the cart": guests — browser cart; signed-in users — `POST /api/cart/merge`
+- «Купить сейчас» adds the set to the cart and opens the checkout; «Сохранить в корзину»
+  only adds it. Guests — browser cart; signed-in users — `POST /api/cart/merge`
   (quantities capped by stock; skipped products are reported).
-- "Save the set": signed-in users — in the account (`/api/gift-sets`, up to 20);
-  guests — in this browser.
+- Sets saved earlier (account `/api/gift-sets` or this browser) are still listed and can be
+  loaded again.
 
 ## 3D packaging on the product page (TZ §6.4)
 
@@ -289,3 +289,57 @@ never overwritten.
   only, no IP addresses; `GET /auth/sessions`) and **«Sign out on all devices»**
   (`POST /auth/logout-all` deletes every session, this one included).
 - E-mails go through Resend when `RESEND_API_KEY` is set (see environment-variables.md).
+
+## Fonts
+
+Inter, Lora and Caveat ship with the site from the Fontsource packages (OFL licence), imported in
+`app/[locale]/layout.tsx` and named in `styles/globals.css` (`--font-sans`, `--font-serif`,
+`--font-script`). The build no longer downloads anything from Google Fonts (that download failed
+twice in CI). Each font covers latin, cyrillic and cyrillic-ext (Kyrgyz Ң Ө Ү); the browser loads
+only the ranges a page needs.
+
+## Cart and favorites (master brief, stage 6)
+
+- The cart is always checked by the API. A signed-in cart keeps the price at
+  the moment of adding (`priceAtAdd`); the guest cart (in the browser) is sent
+  to `POST /cart/preview`. Lines show «осталось N шт.», «нет в наличии» and the
+  old price when it changed; «Исправить корзину» (`POST /cart/fix` or the guest
+  store) removes unavailable lines, lowers quantities to the stock and accepts
+  the new prices. Delivery is «рассчитывается при оформлении» until delivery
+  zones and prices are known.
+- Checkout says why «Оформить заказ» is disabled: no pickup point yet (with a
+  WhatsApp link) or a cart that needs fixing. Pickup points are added in
+  Админка → Пункты самовывоза.
+- Gift set builder: «Купить сейчас» puts the set in the cart and opens the
+  checkout (payment is the next step; Finik comes with stage 7);
+  «Сохранить в корзину» only adds the set to the cart.
+
+## Recipes (`/recipes`)
+
+Every recipe is a dark forest panel: the dish taken apart in 3D
+(`components/three/dish-scene.tsx`, parts in `components/recipes/dish-layers.ts`)
+with the name of each part in a card beside it, a cream card with the steps,
+ingredients and the recipe's products, and a 2–3 sentence slogan over wavy
+lines. The parts are modelled in code (no downloads); the scene loads only near
+the screen, stops off screen, stands still with reduced motion and falls back to
+a flat picture without WebGL. Part names and slogans are in the dictionaries
+(`recipesPage.items[].layers`, `.slogan`).
+
+## Dropdowns
+
+`Select` (`components/ui/field.tsx`) and every `select.field-input` use the
+site's style: cream field with a forest chevron. Browsers with customisable
+selects (Chromium 135+, `appearance: base-select`) also show the open list as a
+rounded cream panel with a forest highlight and a gold check; other browsers
+keep their own list.
+
+## When the API host is asleep
+
+The API runs on Render's free plan, which sleeps after ~15 minutes without
+requests and needs up to a minute to wake up. The website copes with it:
+server fetches and read requests through the proxy try once more after a
+gateway error (502/503/504), and the error page retries the page by itself a
+few times (3 → 25 s apart) and its «Попробовать снова» reloads the data from the
+server. To avoid the wait altogether, point a free uptime monitor (for example
+UptimeRobot, every 5–10 minutes) at `https://<api-host>/api/health/live` — it
+answers without touching the database — or move the API to a paid plan.

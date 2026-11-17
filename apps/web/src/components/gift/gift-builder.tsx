@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { GiftSetQuote, Page, ProductCard, SavedGiftSet } from '@nuska/types';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { GiftBox } from './gift-box';
 
@@ -12,7 +13,6 @@ import { KochkorMuyuz, OrnamentLoader } from '@/components/brand/ornament';
 import { ProductImage } from '@/components/product/product-image';
 import { QuantityStepper } from '@/components/product/quantity-stepper';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/field';
 import { PlusIcon, TrashIcon } from '@/components/ui/icons';
 import { ErrorBox } from '@/components/ui/misc';
 import { useAddSetToCart } from '@/hooks/use-add-set';
@@ -37,7 +37,7 @@ export function GiftBuilder() {
   const toast = useToast((s) => s.show);
   const draft = useGiftSet();
   const [hydrated, setHydrated] = useState(false);
-  const [name, setName] = useState('');
+  const router = useRouter();
   useEffect(() => setHydrated(true), []);
   const items = hydrated ? draft.items : [];
 
@@ -72,24 +72,20 @@ export function GiftBuilder() {
   );
 
   const addSet = useAddSetToCart();
+  /** Puts the set in the cart; with `buy` it then opens the checkout (payment step). */
   const addToCart = {
     ...addSet,
-    mutate: () =>
+    mutate: (buy = false) =>
       quote.data &&
       addSet.mutate(quote.data.items, {
-        onSuccess: (r) => (r.skipped > 0 ? toast(t.gift.skipped, 'error') : toast(t.gift.added)),
+        onSuccess: (r) => {
+          if (r.skipped > 0) toast(t.gift.skipped, 'error');
+          else if (!buy) toast(t.gift.added);
+          if (buy) router.push(`/${locale}/checkout`);
+        },
       }),
   };
 
-  const save = useMutation({
-    mutationFn: async () => {
-      const setName = name.trim() || t.gift.defaultName;
-      if (!signedIn) return draft.saveLocal(setName);
-      await api('/gift-sets', { method: 'POST', locale, body: { name: setName, items } });
-      await queryClient.invalidateQueries({ queryKey: ['gift-sets'] });
-    },
-    onSuccess: () => (toast(t.gift.saved), setName('')),
-  });
   const removeSaved = useMutation({
     mutationFn: (id: string) => api(`/gift-sets/${id}`, { method: 'DELETE' }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['gift-sets'] }),
@@ -243,25 +239,25 @@ export function GiftBuilder() {
                 size="lg"
                 loading={addToCart.isPending}
                 disabled={!quote.data || quote.isFetching || quote.data.items.length === 0}
-                onClick={() => addToCart.mutate()}
+                onClick={() => addToCart.mutate(true)}
               >
-                {t.gift.addToCart}
+                {t.gift.buyNow}
               </Button>
+              <Button
+                className="w-full"
+                variant="outline"
+                disabled={
+                  addToCart.isPending ||
+                  !quote.data ||
+                  quote.isFetching ||
+                  quote.data.items.length === 0
+                }
+                onClick={() => addToCart.mutate(false)}
+              >
+                {t.gift.saveToCart}
+              </Button>
+              <p className="text-xs text-ink-soft">{t.gift.buyNote}</p>
               {addToCart.error && <ErrorBox>{errorMessage(addToCart.error, t.errors)}</ErrorBox>}
-              <form className="flex gap-2" onSubmit={(e) => (e.preventDefault(), save.mutate())}>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={100}
-                  placeholder={t.gift.defaultName}
-                  aria-label={t.gift.name}
-                />
-                <Button type="submit" variant="outline" loading={save.isPending}>
-                  {t.gift.save}
-                </Button>
-              </form>
-              {save.error && <ErrorBox>{errorMessage(save.error, t.errors)}</ErrorBox>}
-              {!signedIn && <p className="text-xs text-ink-soft">{t.gift.guestHint}</p>}
             </>
           )}
         </div>

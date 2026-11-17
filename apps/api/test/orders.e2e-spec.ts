@@ -1,4 +1,5 @@
-import { OrderStatus, UserRole } from '@prisma/client';
+import { OrderStatus, ProductStatus, UserRole } from '@prisma/client';
+import request from 'supertest';
 
 import {
   createPickupLocation,
@@ -334,6 +335,65 @@ describe('Cart, checkout and orders (e2e)', () => {
     );
     expect(quantities).toEqual({ [limited.id]: 3, [free.id]: 1 });
     expect(res.skipped).toHaveLength(1);
+  });
+
+  it('tells about a changed price and fixes the cart: sold-out lines removed, quantities lowered', async () => {
+    const pricey = await createProduct(ctx.prisma, { priceAmount: 10000, stockQuantity: 10 });
+    const scarce = await createProduct(ctx.prisma, { stockQuantity: 5 });
+    const gone = await createProduct(ctx.prisma, { stockQuantity: 5 });
+    const { agent } = await customerWithCart([
+      { productId: pricey.id, quantity: 1 },
+      { productId: scarce.id, quantity: 4 },
+      { productId: gone.id, quantity: 1 },
+    ]);
+    // after the products were put in the cart: price up, stock down, one sold out
+    await ctx.prisma.product.update({ where: { id: pricey.id }, data: { priceAmount: 12000 } });
+    await ctx.prisma.product.update({ where: { id: scarce.id }, data: { stockQuantity: 2 } });
+    await ctx.prisma.product.update({ where: { id: gone.id }, data: { stockQuantity: 0 } });
+
+    const before = (await agent.get('/api/cart').expect(200)).body;
+    const line = (id: string) =>
+      before.items.find((i: { productId: string }) => i.productId === id);
+    expect(line(pricey.id)).toMatchObject({ issue: null, previousPrice: { amount: 10000 } });
+    expect(line(scarce.id)).toMatchObject({ issue: 'INSUFFICIENT_STOCK', available: 2 });
+    expect(line(gone.id)).toMatchObject({ issue: 'INSUFFICIENT_STOCK', available: 0 });
+    expect(before).toMatchObject({ canCheckout: false, priceChanged: true });
+
+    const fixed = (await agent.post('/api/cart/fix').expect(200)).body;
+    expect(
+      fixed.items.map((i: { productId: string; quantity: number }) => [i.productId, i.quantity])
+    ).toEqual([
+      [pricey.id, 1],
+      [scarce.id, 2],
+    ]);
+    expect(fixed).toMatchObject({ canCheckout: true, priceChanged: false });
+    expect(fixed.subtotal.amount).toBe(12000 + 2 * 10000);
+  });
+
+  it('checks a guest cart against the catalog without an account', async () => {
+    const product = await createProduct(ctx.prisma, { priceAmount: 15000, stockQuantity: 3 });
+    const archived = await createProduct(ctx.prisma, { status: ProductStatus.ARCHIVED });
+    const res = (
+      await request(ctx.app.getHttpServer())
+        .post('/api/cart/preview')
+        .send({
+          items: [
+            { productId: product.id, quantity: 5, priceAmount: 14000 },
+            { productId: archived.id, quantity: 1 },
+            { productId: '00000000-0000-4000-8000-000000000000', quantity: 1 },
+          ],
+        })
+        .expect(200)
+    ).body;
+    expect(res.items[0]).toMatchObject({
+      issue: 'INSUFFICIENT_STOCK',
+      available: 3,
+      lineTotal: 75000,
+      previousPrice: { amount: 14000 },
+    });
+    expect(res.items[1].issue).toBe('UNAVAILABLE');
+    expect(res.missing).toEqual(['00000000-0000-4000-8000-000000000000']);
+    expect(res.canCheckout).toBe(false);
   });
 
   it('allows a review only for a completed purchase, once, and shows it after moderation', async () => {
