@@ -163,7 +163,7 @@ export function OriginMap({
     return (
       <div className={className}>
         {map}
-        <p className="mt-3 min-h-[2.5rem] text-center text-sm text-nk-muted" aria-live="polite">
+        <p className="mt-4 min-h-[2.5rem] text-center text-base text-nk-muted" aria-live="polite">
           <span className="font-semibold text-nk-ink">{t.landing.regions[shown]}</span>
           {here.length > 0 ? `: ${here.map((item) => item.name).join(', ')}` : ''}
         </p>

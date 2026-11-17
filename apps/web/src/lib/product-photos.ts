@@ -7,7 +7,7 @@
 const PHOTOS: Record<string, string> = {
   navat: '/images/products/navat.png',
   'besh-barmak': '/images/products/besh-barmak.png',
-  kymyz: '/images/products/kymyz.png',
+  kymyz: '/images/products/kymyz.webp',
   zhupka: '/images/products/zhupka.png',
   'sary-mai': '/images/products/sary-mai.png',
   'keremet-shypaa': '/images/products/keremet-shypaa.png',

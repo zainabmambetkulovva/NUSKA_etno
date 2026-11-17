@@ -263,7 +263,7 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
 
 // --------------------------------------------------- origin + bestsellers row
 
-/** «Из сердца Кыргызстана» (interactive map) beside «Хиты продаж» (carousel). */
+/** «Из сердца Кыргызстана» (large interactive map), then «Хиты продаж» (carousel) full width. */
 export function OriginAndBestsellers({
   t,
   locale,
@@ -277,16 +277,16 @@ export function OriginAndBestsellers({
 }) {
   return (
     <section className="relative py-14 lg:py-16" aria-labelledby="origin-title">
-      <div className="container grid grid-cols-1 gap-12 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,1.35fr)] xl:gap-10">
-        <Reveal className="grid grid-cols-1 items-center gap-6 sm:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-          <OriginMap products={products} compact className="mx-auto w-full min-w-0 max-w-[460px]" />
-          <div>
+      <div className="container space-y-14 lg:space-y-16">
+        <Reveal className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:gap-14">
+          <OriginMap products={products} compact className="mx-auto w-full min-w-0 max-w-[760px]" />
+          <div className="max-w-md">
             <TextReveal
               id="origin-title"
               text={t.landing.originTitle}
-              className="font-serif text-[1.9rem] leading-tight text-nk-ink"
+              className="font-serif text-[2.2rem] leading-tight text-nk-ink sm:text-[2.6rem]"
             />
-            <p className="mt-3 text-[15px] leading-relaxed text-nk-muted">{t.landing.originText}</p>
+            <p className="mt-4 text-base leading-relaxed text-nk-muted">{t.landing.originText}</p>
             <Link
               href={`/${locale}/origin`}
               className="btn-forest group mt-6 whitespace-nowrap px-6 py-3 text-sm"

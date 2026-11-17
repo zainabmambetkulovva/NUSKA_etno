@@ -32,18 +32,18 @@ function BestsellerCard({ product }: { product: ProductCard }) {
           alt={product.image?.alt}
           name={product.name}
           placeholderLabel={t.product.photoSoon}
-          className="aspect-[5/4] [&_img]:object-contain [&_img]:p-3 [&_img]:transition-transform [&_img]:duration-500 group-hover:[&_img]:scale-105"
+          className="aspect-[4/3.4] [&_img]:object-contain [&_img]:p-4 [&_img]:transition-transform [&_img]:duration-500 group-hover:[&_img]:scale-105"
         />
       </Link>
       <StarIcon width={14} height={14} className="absolute left-3 top-3 text-nk-gold" aria-hidden />
       <FavoriteButton productId={product.id} className="absolute right-2.5 top-2.5 z-10" />
-      <div className="flex flex-1 flex-col gap-1 px-4 pb-4 pt-3">
-        <h3 className="text-[15px] font-semibold leading-snug text-nk-ink">
+      <div className="flex flex-1 flex-col gap-1.5 px-5 pb-5 pt-4">
+        <h3 className="font-serif text-lg font-semibold leading-snug text-nk-ink">
           <Link href={href} draggable={false} className="hover:text-nk-forest">
             {product.name}
           </Link>
         </h3>
-        <p className="text-xs text-nk-muted">
+        <p className="text-sm text-nk-muted">
           {product.size ?? ' '}
           <span
             className={cn(
@@ -60,15 +60,15 @@ function BestsellerCard({ product }: { product: ProductCard }) {
             {product.inStock ? t.product.inStock : t.product.outOfStock}
           </span>
         </p>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-          <span className="text-base font-bold text-nk-ink">
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3">
+          <span className="text-xl font-bold text-nk-ink">
             {formatMoney(product.price, locale, t.common.som)}
           </span>
           <AddToCartButton
             product={product}
             size="sm"
             iconOnly
-            className="h-10 w-10 shrink-0 rounded-full !p-0"
+            className="h-11 w-11 shrink-0 rounded-full !p-0"
           />
         </div>
       </div>
@@ -105,7 +105,7 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
     const el = track.current;
     if (!el) return;
     const card = el.querySelector<HTMLElement>('[data-card]');
-    const step = card ? card.offsetWidth + 16 : el.clientWidth * 0.8;
+    const step = card ? card.offsetWidth + 20 : el.clientWidth * 0.8;
     el.scrollBy({ left: direction * step, behavior: 'smooth' });
   };
 
@@ -170,7 +170,7 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-1 pb-4 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-1 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth px-1 pb-4 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="region"
           aria-roledescription="carousel"
           aria-label={t.landing.bestTitle}
@@ -179,7 +179,7 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
             <div
               key={product.id}
               data-card
-              className="w-[68%] shrink-0 snap-start sm:w-[44%] md:w-[30%] lg:w-[calc((100%-48px)/4)]"
+              className="w-[78%] shrink-0 snap-start sm:w-[46%] md:w-[31%] lg:w-[calc((100%-60px)/4)]"
             >
               <Tilt className="group relative h-full rounded-[1.4rem]" max={6}>
                 <BestsellerCard product={product} />
@@ -210,7 +210,7 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
             aria-label={label}
             disabled={hidden}
             className={cn(
-              'absolute top-[38%] hidden h-11 w-11 items-center justify-center rounded-full border border-nk-beige bg-white text-nk-ink shadow-md transition hover:scale-105 hover:text-nk-forest disabled:pointer-events-none disabled:opacity-0 sm:flex',
+              'absolute top-[36%] hidden h-12 w-12 items-center justify-center rounded-full border border-nk-beige bg-white text-nk-ink shadow-md transition hover:scale-105 hover:text-nk-forest disabled:pointer-events-none disabled:opacity-0 sm:flex',
               pos
             )}
           >
