@@ -198,7 +198,8 @@ export interface Order {
   deliveryMethod: DeliveryMethod;
   paymentMethod: PaymentMethod;
   /** DELIVERY orders: where the courier brings the order. */
-  delivery: { city: string; address: string } | null;
+  /** `time`: when it suits the customer, as they wrote it (optional). */
+  delivery: { city: string; address: string; time: string | null } | null;
   /** PICKUP orders: the chosen pickup point. */
   pickup: { locationId: string; name: string; address: string; time: string | null } | null;
   comment: string | null;

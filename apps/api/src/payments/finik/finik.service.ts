@@ -66,6 +66,12 @@ export class FinikService {
   private readonly cardType: string;
   /** public address Finik calls (through the website proxy) */
   readonly webhookUrl: URL;
+  /**
+   * Test mode (FINIK_TEST_AMOUNT, whole som, e.g. 1): every online payment
+   * charges this amount instead of the order total, so real payments can be
+   * tried many times. Prices and order totals stay real. null = off.
+   */
+  readonly testAmount: number | null;
 
   constructor(config: ConfigService) {
     this.apiKey = config.get<string>('FINIK_API_KEY') || undefined;
@@ -76,6 +82,10 @@ export class FinikService {
     this.publicKey = config.get<string>('FINIK_PUBLIC_KEY') || FINIK_PUBLIC_KEYS[this.env];
     this.merchantName = config.get<string>('FINIK_MERCHANT_NAME') || 'NUSKA_etno';
     this.cardType = config.get<string>('FINIK_CARD_TYPE') || 'FINIK_QR';
+    const test = Number(config.get<string>('FINIK_TEST_AMOUNT') ?? '');
+    this.testAmount = Number.isInteger(test) && test > 0 ? test * 100 : null;
+    if (this.testAmount)
+      this.logger.warn(`Finik TEST MODE: every online payment charges ${test} som`);
     const webUrl = (config.get<string>('WEB_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
     this.webhookUrl = new URL(
       config.get<string>('FINIK_WEBHOOK_URL') || `${webUrl}/api/payments/finik/webhook`

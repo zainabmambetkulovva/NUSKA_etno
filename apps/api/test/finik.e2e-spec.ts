@@ -87,7 +87,7 @@ describe('Online payment with Finik (e2e)', () => {
   it('pays an order online: signed request to Finik, payment page, signed webhook marks it paid once', async () => {
     await request(ctx.app.getHttpServer())
       .get('/api/payments/methods')
-      .expect(200, { cash: true, online: true });
+      .expect(200, { cash: true, online: true, testAmount: null });
     const product = await createProduct(ctx.prisma, { priceAmount: 15000, stockQuantity: 5 });
     const user = await createUser(ctx.prisma);
     const agent = await loginAs(ctx.app, user.email);
@@ -190,5 +190,98 @@ describe('Online payment with Finik (e2e)', () => {
 
     const again = await agent.post(`/api/orders/${order.id}/pay`).expect(200);
     expect(again.body).toEqual({ paymentUrl: 'https://pay.finik.kg/p/abc' });
+  });
+});
+
+describe('Finik test mode: FINIK_TEST_AMOUNT (e2e)', () => {
+  let ctx: TestContext;
+  let fetchSpy: jest.SpyInstance;
+  let sent: Record<string, unknown>[];
+
+  beforeAll(async () => {
+    Object.assign(process.env, {
+      FINIK_API_KEY: 'test-api-key',
+      FINIK_ACCOUNT_ID: ACCOUNT,
+      FINIK_PRIVATE_KEY: FINIK_TEST_PRIVATE_KEY,
+      FINIK_PUBLIC_KEY: FINIK_TEST_PUBLIC_KEY,
+      FINIK_ENV: 'beta',
+      FINIK_TEST_AMOUNT: '1',
+    });
+    ctx = await createTestApp();
+  });
+  afterAll(async () => {
+    for (const key of [
+      'FINIK_API_KEY',
+      'FINIK_ACCOUNT_ID',
+      'FINIK_PRIVATE_KEY',
+      'FINIK_PUBLIC_KEY',
+      'FINIK_ENV',
+      'FINIK_TEST_AMOUNT',
+    ])
+      delete process.env[key];
+    await ctx.app.close();
+  });
+  beforeEach(async () => {
+    await resetDatabase(ctx.prisma);
+    sent = [];
+    fetchSpy = jest.spyOn(global, 'fetch').mockImplementation(async (_input, init) => {
+      sent.push(JSON.parse(String(init?.body)));
+      return new Response(null, { status: 302, headers: { Location: 'https://pay.finik.kg/p/t' } });
+    });
+  });
+  afterEach(() => fetchSpy.mockRestore());
+
+  it('charges 1 som while prices and the order total stay real; the 1-som webhook pays it', async () => {
+    await request(ctx.app.getHttpServer())
+      .get('/api/payments/methods')
+      .expect(200, { cash: true, online: true, testAmount: 1 });
+    const product = await createProduct(ctx.prisma, { priceAmount: 23500, stockQuantity: 5 });
+    const user = await createUser(ctx.prisma);
+    const agent = await loginAs(ctx.app, user.email);
+    await agent.post('/api/cart/items').send({ productId: product.id, quantity: 1 }).expect(201);
+    const order = (
+      await agent
+        .post('/api/orders')
+        .send({
+          customerName: 'Айдай',
+          customerPhone: '0555123456',
+          deliveryMethod: 'DELIVERY',
+          deliveryCity: 'Бишкек',
+          deliveryAddress: 'Орозбекова 136',
+          paymentMethod: 'ONLINE',
+        })
+        .expect(201)
+    ).body;
+    expect(order.total.amount).toBe(23500);
+    expect(sent[0]).toMatchObject({ Amount: 1 });
+
+    const paymentId = sent[0].PaymentId as string;
+    const timestamp = String(Date.now());
+    const body = {
+      id: 'evt-1',
+      status: 'SUCCEEDED',
+      amount: 1,
+      fields: { paymentId },
+      data: { accountId: ACCOUNT },
+    };
+    const signature = signFinik(
+      {
+        method: 'POST',
+        path: WEBHOOK_PATH,
+        headers: { Host: 'localhost:3000', 'x-api-timestamp': timestamp },
+        body,
+      },
+      FINIK_TEST_PRIVATE_KEY
+    );
+    await request(ctx.app.getHttpServer())
+      .post(WEBHOOK_PATH)
+      .set('x-api-timestamp', timestamp)
+      .set('signature', signature)
+      .send(body)
+      .expect(200);
+    const paid = (await agent.get(`/api/orders/${order.id}`).expect(200)).body;
+    expect(paid.payments).toEqual([
+      expect.objectContaining({ status: 'PAID', amount: expect.objectContaining({ amount: 100 }) }),
+    ]);
   });
 });

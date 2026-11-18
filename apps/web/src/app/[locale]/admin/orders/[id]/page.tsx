@@ -82,6 +82,11 @@ export default function AdminOrderPage() {
               {o.delivery.address}
             </p>
           )}
+          {o.delivery?.time && (
+            <p>
+              <span className="text-ink-soft">{t.checkout.deliveryTime}:</span> {o.delivery.time}
+            </p>
+          )}
           {o.pickup && (
             <p className="pt-2">
               <span className="text-ink-soft">{t.account.pickup}:</span> {o.pickup.name},{' '}

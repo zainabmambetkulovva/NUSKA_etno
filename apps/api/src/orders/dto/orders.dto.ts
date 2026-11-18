@@ -47,6 +47,13 @@ export class CreateOrderDto {
   @MaxLength(500)
   deliveryAddress?: string;
 
+  @ApiPropertyOptional({ description: 'When the delivery suits the customer (free text)' })
+  @IsOptional()
+  @Transform(trim)
+  @IsString()
+  @MaxLength(100)
+  deliveryTime?: string;
+
   @ApiPropertyOptional({
     enum: PaymentMethod,
     default: PaymentMethod.CASH,

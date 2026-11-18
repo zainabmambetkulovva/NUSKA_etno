@@ -166,6 +166,12 @@ export default function OrderPage() {
               </dd>
             </div>
           )}
+          {o.delivery?.time && (
+            <div>
+              <dt className="text-ink-soft">{t.checkout.deliveryTime}</dt>
+              <dd>{o.delivery.time}</dd>
+            </div>
+          )}
           {o.pickup && (
             <div>
               <dt className="text-ink-soft">{t.account.pickup}</dt>

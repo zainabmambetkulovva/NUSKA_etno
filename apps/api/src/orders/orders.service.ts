@@ -165,6 +165,7 @@ export class OrdersService {
             deliveryMethod: delivery ? DeliveryMethod.DELIVERY : DeliveryMethod.PICKUP,
             deliveryCity: delivery ? dto.deliveryCity! : null,
             deliveryAddress: delivery ? dto.deliveryAddress! : null,
+            deliveryTime: delivery && dto.deliveryTime ? dto.deliveryTime : null,
             paymentMethod: online ? PaymentMethod.ONLINE : PaymentMethod.CASH,
             pickupLocationId: pickup?.id ?? null,
             pickupLocationName: pickup?.name ?? null,
@@ -179,14 +180,15 @@ export class OrdersService {
         });
 
         if (online) {
-          // Finik takes whole som
-          if (subtotal % 100 !== 0)
+          // Finik takes whole som (a test amount, when set, replaces the real one)
+          const amount = this.finik.testAmount ?? subtotal;
+          if (amount % 100 !== 0)
             throw AppError.badRequest('ONLINE_PAYMENT_UNAVAILABLE', 'Amount is not whole som');
           await tx.payment.create({
             data: {
               orderId: order.id,
               method: PaymentMethod.ONLINE,
-              amount: subtotal,
+              amount,
               currency: 'KGS',
               provider: 'finik',
               providerPaymentId: this.finik.newPaymentId(),
@@ -231,7 +233,7 @@ export class OrdersService {
         data: {
           orderId,
           method: PaymentMethod.ONLINE,
-          amount: order.totalAmount,
+          amount: this.finik.testAmount ?? order.totalAmount,
           currency: order.currency,
           provider: 'finik',
           providerPaymentId: this.finik.newPaymentId(),
@@ -497,7 +499,7 @@ function toOrderView(order: OrderDetailSource) {
     paymentMethod: order.paymentMethod,
     delivery:
       order.deliveryMethod === DeliveryMethod.DELIVERY
-        ? { city: order.deliveryCity, address: order.deliveryAddress }
+        ? { city: order.deliveryCity, address: order.deliveryAddress, time: order.deliveryTime }
         : null,
     pickup:
       order.deliveryMethod === DeliveryMethod.PICKUP

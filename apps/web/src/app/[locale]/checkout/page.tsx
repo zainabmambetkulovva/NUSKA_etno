@@ -50,6 +50,7 @@ export default function CheckoutPage() {
       deliveryMethod: z.enum(['DELIVERY', 'PICKUP']),
       deliveryCity: z.string().trim().max(100),
       deliveryAddress: z.string().trim().max(500),
+      deliveryTime: z.string().trim().max(100),
       pickupLocationId: z.string(),
       pickupTime: z.string().optional(),
       customerComment: z.string().max(1000).optional(),
@@ -74,6 +75,7 @@ export default function CheckoutPage() {
       deliveryMethod: 'DELIVERY',
       deliveryCity: '',
       deliveryAddress: '',
+      deliveryTime: '',
       pickupLocationId: '',
     },
   });
@@ -96,7 +98,8 @@ export default function CheckoutPage() {
 
   const methods = useQuery({
     queryKey: ['payment-methods'],
-    queryFn: () => api<{ cash: boolean; online: boolean }>('/payments/methods'),
+    queryFn: () =>
+      api<{ cash: boolean; online: boolean; testAmount: number | null }>('/payments/methods'),
     staleTime: 5 * 60_000,
   });
   const onlineAvailable = Boolean(methods.data?.online);
@@ -110,7 +113,11 @@ export default function CheckoutPage() {
         body: {
           deliveryMethod: values.deliveryMethod,
           ...(values.deliveryMethod === 'DELIVERY'
-            ? { deliveryCity: values.deliveryCity, deliveryAddress: values.deliveryAddress }
+            ? {
+                deliveryCity: values.deliveryCity,
+                deliveryAddress: values.deliveryAddress,
+                deliveryTime: values.deliveryTime || undefined,
+              }
             : {
                 pickupLocationId: values.pickupLocationId,
                 pickupTime: values.pickupTime
@@ -270,6 +277,24 @@ export default function CheckoutPage() {
                     )}
                   </Field>
                 </div>
+                <Field
+                  label={
+                    <>
+                      {t.checkout.deliveryTime} {optional}
+                    </>
+                  }
+                  error={errors.deliveryTime?.message}
+                >
+                  {(id, d) => (
+                    <Input
+                      id={id}
+                      aria-describedby={d}
+                      maxLength={100}
+                      placeholder={t.checkout.deliveryTimePlaceholder}
+                      {...form.register('deliveryTime')}
+                    />
+                  )}
+                </Field>
               </>
             ) : (
               <>
@@ -431,6 +456,11 @@ export default function CheckoutPage() {
             <p className="text-xs text-ink-soft">{t.checkout.deliveryNote}</p>
           )}
           <p className="text-xs text-ink-soft">{t.checkout.paymentNote}</p>
+          {onlineAvailable && payment === 'ONLINE' && methods.data?.testAmount && (
+            <p className="rounded-xl bg-[#FFF4D6] px-3 py-2 text-xs font-medium text-nk-brown">
+              {t.checkout.testPayment.replace('{amount}', String(methods.data.testAmount))}
+            </p>
+          )}
           {place.error && <ErrorBox>{errorMessage(place.error, t.errors)}</ErrorBox>}
           <Button
             type="submit"

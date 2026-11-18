@@ -72,7 +72,9 @@ test('the shop works by delivery: without pickup points the order goes to an add
 
   await page.getByLabel(ky.checkout.city).fill('Бишкек');
   await page.getByLabel(ky.checkout.address).fill('Орозбеков көч., 136, 5-батир');
+  await page.getByLabel(ky.checkout.deliveryTime).fill('эртең 18:00дөн кийин');
   await page.getByRole('button', { name: ky.checkout.place }).click();
   await page.waitForURL('**/ky/checkout/success?order=**');
   await expect(page.getByText('Бишкек, Орозбеков көч., 136, 5-батир')).toBeVisible();
+  await expect(page.getByText('эртең 18:00дөн кийин')).toBeVisible();
 });

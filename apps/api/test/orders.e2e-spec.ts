@@ -112,13 +112,14 @@ describe('Cart, checkout and orders (e2e)', () => {
         deliveryMethod: 'DELIVERY',
         deliveryCity: ' Бишкек ',
         deliveryAddress: 'Орозбекова 136, кв. 5',
+        deliveryTime: 'завтра после 18:00',
       })
       .expect(201);
     expect(res.body).toMatchObject({
       status: 'PENDING',
       deliveryMethod: 'DELIVERY',
       paymentMethod: 'CASH',
-      delivery: { city: 'Бишкек', address: 'Орозбекова 136, кв. 5' },
+      delivery: { city: 'Бишкек', address: 'Орозбекова 136, кв. 5', time: 'завтра после 18:00' },
       pickup: null,
       total: { amount: 20000 },
     });
