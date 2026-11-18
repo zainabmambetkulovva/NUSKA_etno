@@ -354,3 +354,36 @@ few times (3 → 25 s apart) and its «Попробовать снова» reloa
 server. To avoid the wait altogether, point a free uptime monitor (for example
 UptimeRobot, every 5–10 minutes) at `https://<api-host>/api/health/live` — it
 answers without touching the database — or move the API to a paid plan.
+
+## Hero after the second mockup
+
+«Табияттан. Дасторконго.» in large serif over a band of mountains (only the
+top of `about.png` is shown), the side note on the left, a carved round tray
+drawn in code (`scripts/podium`, scene `tray` → `public/images/home/tray-wood.webp`)
+with the company's products on computed spots (none covers another), the round
+«Каталогго өтүү» button and the first five categories hanging from the tray rim
+on gold lines (a grid of links on phones). Below it «01 / Биздин тарых — Ар бир
+даамда — салт.» with the yurt and the girl in a hill-shaped frame.
+
+## Motion everywhere
+
+- Every page: headings, texts, cards, grid items and forms rise and come into
+  focus as they scroll in — pure CSS scroll-driven animations
+  (`animation-timeline: view()` in `globals.css`), so nothing stays hidden and
+  hydration is untouched; skipped inside `[data-no-reveal]` (hero, admin) and
+  with reduced motion; browsers without the feature just show the content.
+- Cards lift with a light sweeping across (`.card-hover`, `article.card`),
+  buttons get a sweep and a small press, fields glow on focus.
+
+## Accounts
+
+Sign-in / sign-up pages show a picture panel with what the account gives
+(order history, favorites, faster checkout, status notifications); password
+fields have a show / hide eye (`components/ui/password-input.tsx`).
+
+## Online payment (Finik)
+
+Checkout offers «Онлайн-оплата (Finik)» when the API has the Finik keys
+(`GET /api/payments/methods`); the order then opens Finik's payment page. The
+success page and the order page show «Оплачено» / «Ожидает оплаты» with
+«Оплатить онлайн» (`POST /api/orders/:id/pay`). Setup: docs/environment-variables.md.

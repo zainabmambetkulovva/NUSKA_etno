@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
 import { OrderStatusBadge, orderStatusLabel } from '@/components/account/order-status-badge';
+import { PayOnline } from '@/components/account/pay-online';
 import { OrnamentLoader } from '@/components/brand/ornament';
 import { ProductImage } from '@/components/product/product-image';
 import { Button } from '@/components/ui/button';
@@ -151,6 +152,7 @@ export default function OrderPage() {
           </h2>
           <OrderStatusBadge status={o.status} method={o.deliveryMethod} />
         </div>
+        <PayOnline order={o} className="mb-4" />
         <dl className="grid gap-3 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-ink-soft">{t.account.date}</dt>

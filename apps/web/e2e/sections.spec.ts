@@ -79,7 +79,7 @@ test('home follows the mockup and keeps the earlier blocks: categories, origin, 
   await page.goto('/ky');
   for (const title of [
     ky.landing.productsTitle,
-    ky.landing.aboutTitle,
+    ky.landing.storyTitle,
     ky.landing.originTitle,
     ky.landing.bestTitle,
     ky.home.whyTitle,

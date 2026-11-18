@@ -8,8 +8,9 @@ import { useSearchParams } from 'next/navigation';
 
 import { AuthCard } from '@/components/auth/auth-card';
 import { Button, ButtonLink } from '@/components/ui/button';
-import { Field, Input } from '@/components/ui/field';
+import { Field } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
@@ -51,10 +52,9 @@ function ResetForm() {
             error={password && !valid ? t.validation.password : undefined}
           >
             {(id, d) => (
-              <Input
+              <PasswordInput
                 id={id}
                 aria-describedby={d}
-                type="password"
                 autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

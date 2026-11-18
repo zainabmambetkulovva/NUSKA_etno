@@ -86,6 +86,12 @@ const ru: Dictionary = {
     returns: 'Информация о возврате',
   },
   home: {
+    heroLine1: 'Из природы.',
+    heroLine2: 'На дастархан.',
+    heroSide: 'Природная сила Кыргызстана',
+    heroSideText: 'Традиционные продукты. Натуральный состав.',
+    heroTrayLabel:
+      'Продукты NUSKA_etno на деревянном подносе: кымыз, жупка, сары май, керемет шыпаа, нават',
     heroBadge: 'Натуральный продукт из Кыргызстана',
     heroMore: 'Узнать больше',
     heroTitle: 'Природная сила Кыргызстана',
@@ -275,6 +281,13 @@ const ru: Dictionary = {
     },
   },
   checkout: {
+    payOnlineText: 'Через Finik: QR или банковская карта. Вы перейдёте на страницу оплаты.',
+    payOnlineFailed:
+      'Страница оплаты не открылась. Заказ сохранён — попробуйте оплатить ещё раз или оплатите при получении.',
+    payNow: 'Оплатить онлайн',
+    paid: 'Оплачено',
+    awaitingPayment: 'Ожидает оплаты',
+    toPayment: 'Перейти к оплате',
     howToReceive: 'Способ получения',
     methodDelivery: 'Доставка',
     methodDeliveryText: 'Курьер привезёт по указанному адресу',
@@ -396,6 +409,16 @@ const ru: Dictionary = {
     suggestions: 'Подсказки',
   },
   auth: {
+    panelTitle: 'Личный кабинет NUSKA_etno',
+    panelText: 'Войдите, чтобы управлять заказами в одном месте.',
+    perks: [
+      'История и статус заказов',
+      'Избранное — любимые продукты в одном месте',
+      'Быстрое оформление: ваши данные сохранены',
+      'Уведомления о статусе заказа',
+    ],
+    showPassword: 'Показать пароль',
+    hidePassword: 'Скрыть пароль',
     passwordConfirm: 'Повторите пароль',
     passwordMismatch: 'Пароли не совпадают',
     acceptTermsBefore: 'Я принимаю ',
@@ -494,6 +517,9 @@ const ru: Dictionary = {
     CANCELLED: 'Отменён',
   },
   errors: {
+    ALREADY_PAID: 'Заказ уже оплачен.',
+    ORDER_CLOSED: 'Этот заказ закрыт.',
+    PAYMENT_PROVIDER_ERROR: 'Платёжная система не ответила. Попробуйте чуть позже.',
     ONLINE_PAYMENT_UNAVAILABLE: 'Онлайн-оплата пока недоступна — оплатите при получении.',
     AI_DISABLED: 'Помощник временно выключен.',
     INVALID_CONVERSATION: 'Не удалось отправить сообщение.',
@@ -709,6 +735,8 @@ const ru: Dictionary = {
     },
   },
   landing: {
+    storyEyebrow: '01 / Наша история',
+    storyTitle: 'В каждом вкусе — традиция.',
     benefits: [
       { top: '100% натуральный', bottom: 'состав' },
       { top: 'Из сердца', bottom: 'Кыргызстана' },

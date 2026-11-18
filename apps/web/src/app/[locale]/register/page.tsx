@@ -13,6 +13,7 @@ import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useRegister } from '@/hooks/use-auth';
 import { useI18n } from '@/i18n/i18n-provider';
 import { ApiError } from '@/lib/api/client';
@@ -149,10 +150,9 @@ function RegisterForm() {
         </Field>
         <Field label={t.auth.password} error={errors.password?.message} hint={t.auth.passwordHint}>
           {(id, d) => (
-            <Input
+            <PasswordInput
               id={id}
               aria-describedby={d}
-              type="password"
               autoComplete="new-password"
               {...form.register('password')}
             />
@@ -160,10 +160,9 @@ function RegisterForm() {
         </Field>
         <Field label={t.auth.passwordConfirm} error={errors.passwordConfirm?.message}>
           {(id, d) => (
-            <Input
+            <PasswordInput
               id={id}
               aria-describedby={d}
-              type="password"
               autoComplete="new-password"
               {...form.register('passwordConfirm')}
             />
