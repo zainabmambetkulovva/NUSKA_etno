@@ -93,7 +93,7 @@ const CATEGORY_PHOTOS: Record<string, string | null> = {
   'dairy-products': '/images/dishes/sary-mai.png',
   'national-sweets': '/images/dishes/navat.png',
   'traditional-dishes': '/images/dishes/besh-barmak.png',
-  'meat-products': null,
+  'meat-products': '/images/products/kholodets.webp',
 };
 
 /** «Сила природы в каждой детали»: text on the left, an arch card for every real category. */

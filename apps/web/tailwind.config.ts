@@ -59,6 +59,10 @@ const config: Config = {
       },
       borderRadius: { xl: '1rem', '2xl': '1.5rem' },
       keyframes: {
+        'hero-in': {
+          from: { opacity: '0', transform: 'scale(1.06)', filter: 'blur(6px)' },
+          to: { opacity: '1', transform: 'scale(1)', filter: 'blur(0)' },
+        },
         'auth-pan': {
           from: { transform: 'scale(1.05) translateX(0)' },
           to: { transform: 'scale(1.12) translateX(-2%)' },
