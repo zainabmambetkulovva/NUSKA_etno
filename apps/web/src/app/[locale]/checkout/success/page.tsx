@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 
 import { OrderStatusBadge } from '@/components/account/order-status-badge';
+import { PayOnline } from '@/components/account/pay-online';
 import { KochkorMuyuz, OrnamentLoader } from '@/components/brand/ornament';
 import { ButtonLink } from '@/components/ui/button';
 import { CheckIcon, PinIcon } from '@/components/ui/icons';
@@ -87,6 +88,7 @@ function Success() {
             </div>
           ) : null}
         </div>
+        <PayOnline order={o} />
         <p className="text-sm text-ink-soft">{t.checkout.paymentNote}</p>
       </div>
       <div className="mt-8 flex flex-wrap justify-center gap-3">

@@ -21,8 +21,8 @@ import { serverApiSafe } from '@/lib/api/server';
 import { resolveLocale } from '@/lib/locale-params';
 
 /**
- * Home page after the NUSKA_etno mockup: hero → benefits → categories → about
- * the brand → origin map and bestsellers. Below them the earlier home blocks
+ * Home page after the NUSKA_etno mockups: hero (title, carved tray, categories)
+ * → «01 / Our story» → benefits → categories → origin map and bestsellers. Below them the earlier home blocks
  * the company asked to keep: why us → prices (podium) → story → products →
  * promises → closing call.
  */
@@ -45,11 +45,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <>
-      <Hero locale={locale} t={t} videoUrl={videoUrl} />
+      <Hero locale={locale} t={t} categories={categories} />
+      <BrandAbout t={t} locale={locale} />
       <BenefitsBar t={t} />
       <CategoryArches t={t} locale={locale} categories={categories} />
       <HoneyDivider className="-my-4" />
-      <BrandAbout t={t} locale={locale} />
       <OriginAndBestsellers
         t={t}
         locale={locale}

@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { DeliveryMethod, OrderStatus, PaymentMethod, Prisma } from '@prisma/client';
 
 import { AuditService } from '../audit/audit.service';
@@ -9,6 +10,7 @@ import { paginate } from '../common/utils/pagination';
 import { normalizePhone } from '../common/utils/phone';
 import { InventoryService } from '../inventory/inventory.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { FinikService } from '../payments/finik/finik.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DbClient } from '../prisma/prisma.types';
 
@@ -54,13 +56,20 @@ interface Actor {
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
+  private readonly webUrl: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly inventory: InventoryService,
     private readonly notifications: NotificationsService,
     private readonly audit: AuditService,
-    private readonly cart: CartService
-  ) {}
+    private readonly cart: CartService,
+    private readonly finik: FinikService,
+    config: ConfigService
+  ) {
+    this.webUrl = (config.get<string>('WEB_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
+  }
 
   // --- Checkout (TZ §9) ----------------------------------------------------
 
@@ -71,8 +80,9 @@ export class OrdersService {
    */
   async create(userId: string, dto: CreateOrderDto, requestLocale: Locale) {
     const locale = dto.locale ?? requestLocale;
-    // No online payment provider is connected yet: orders are paid on receipt.
-    if (dto.paymentMethod === PaymentMethod.ONLINE)
+    // Online payment only when Finik is configured on the server.
+    const online = dto.paymentMethod === PaymentMethod.ONLINE;
+    if (online && !this.finik.configured)
       throw AppError.badRequest(
         'ONLINE_PAYMENT_UNAVAILABLE',
         'Online payment is not available yet'
@@ -155,7 +165,7 @@ export class OrdersService {
             deliveryMethod: delivery ? DeliveryMethod.DELIVERY : DeliveryMethod.PICKUP,
             deliveryCity: delivery ? dto.deliveryCity! : null,
             deliveryAddress: delivery ? dto.deliveryAddress! : null,
-            paymentMethod: PaymentMethod.CASH,
+            paymentMethod: online ? PaymentMethod.ONLINE : PaymentMethod.CASH,
             pickupLocationId: pickup?.id ?? null,
             pickupLocationName: pickup?.name ?? null,
             pickupLocationAddress: pickup?.address ?? null,
@@ -167,6 +177,22 @@ export class OrdersService {
             },
           },
         });
+
+        if (online) {
+          // Finik takes whole som
+          if (subtotal % 100 !== 0)
+            throw AppError.badRequest('ONLINE_PAYMENT_UNAVAILABLE', 'Amount is not whole som');
+          await tx.payment.create({
+            data: {
+              orderId: order.id,
+              method: PaymentMethod.ONLINE,
+              amount: subtotal,
+              currency: 'KGS',
+              provider: 'finik',
+              providerPaymentId: this.finik.newPaymentId(),
+            },
+          });
+        }
 
         await this.inventory.deductForOrder(
           tx,
@@ -185,7 +211,63 @@ export class OrdersService {
       { timeout: 15_000 }
     );
 
-    return this.getForUser(userId, orderId);
+    const view = await this.getForUser(userId, orderId);
+    return online ? { ...view, paymentUrl: await this.paymentLink(orderId, locale) } : view;
+  }
+
+  /**
+   * Finik payment page for the order's pending online payment (a new payment
+   * attempt when the previous one failed). null when Finik does not answer:
+   * the customer can try again from the order page.
+   */
+  private async paymentLink(orderId: string, locale: Locale): Promise<string | null> {
+    const order = await this.prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      include: { payments: { orderBy: { createdAt: 'desc' } } },
+    });
+    let payment = order.payments.find((p) => p.provider === 'finik' && p.status === 'PENDING');
+    if (!payment)
+      payment = await this.prisma.payment.create({
+        data: {
+          orderId,
+          method: PaymentMethod.ONLINE,
+          amount: order.totalAmount,
+          currency: order.currency,
+          provider: 'finik',
+          providerPaymentId: this.finik.newPaymentId(),
+        },
+      });
+    try {
+      return await this.finik.createPayment({
+        paymentId: payment.providerPaymentId!,
+        amount: payment.amount,
+        description: `NUSKA_etno №${order.orderNumber}`,
+        redirectUrl: `${this.webUrl}/${locale}/checkout/success?order=${orderId}`,
+        locale,
+      });
+    } catch (error) {
+      this.logger.error(`order ${orderId}: Finik payment link failed: ${(error as Error).message}`);
+      return null;
+    }
+  }
+
+  /** «Оплатить онлайн» again for an own unpaid online order. */
+  async payOnline(userId: string, orderId: string, locale: Locale) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, userId },
+      include: { payments: true },
+    });
+    if (!order) throw AppError.notFound('ORDER_NOT_FOUND', 'Order not found');
+    if (!this.finik.configured || order.paymentMethod !== PaymentMethod.ONLINE)
+      throw AppError.badRequest('ONLINE_PAYMENT_UNAVAILABLE', 'Online payment is not available');
+    if (order.status === OrderStatus.CANCELLED || order.status === OrderStatus.COMPLETED)
+      throw AppError.conflict('ORDER_CLOSED', 'The order is closed');
+    if (order.payments.some((p) => p.status === 'PAID'))
+      throw AppError.conflict('ALREADY_PAID', 'The order is already paid');
+    const paymentUrl = await this.paymentLink(orderId, locale);
+    if (!paymentUrl)
+      throw AppError.badRequest('PAYMENT_PROVIDER_ERROR', 'The payment provider did not answer');
+    return { paymentUrl };
   }
 
   // --- Customer ----------------------------------------------------------

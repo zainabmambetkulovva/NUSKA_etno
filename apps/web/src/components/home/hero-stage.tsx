@@ -79,6 +79,8 @@ export function HeroStage({
         ref={ref}
         className={className}
         aria-labelledby={labelledBy}
+        // the hero animates itself; the site-wide scroll reveal leaves it alone
+        data-no-reveal
         onPointerMove={move}
         onPointerLeave={() => {
           rawX.set(0);

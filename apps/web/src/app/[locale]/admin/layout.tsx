@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="container py-8">
+    <div className="container py-8" data-no-reveal>
       <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
         <nav
           className="flex gap-1 overflow-x-auto lg:sticky lg:top-24 lg:h-fit lg:flex-col"

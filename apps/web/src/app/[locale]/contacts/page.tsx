@@ -96,7 +96,7 @@ export default async function ContactsPage({ params }: { params: Promise<{ local
             className="w-full min-w-0 sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]"
           >
             <Reveal delay={i * 0.05} className="h-full">
-              <div className="flex h-full items-center gap-4 rounded-[1.5rem] border border-nk-beige bg-white/85 p-5 shadow-[0_18px_36px_-28px_rgba(80,60,30,0.6)]">
+              <div className="card-hover flex h-full items-center gap-4 rounded-[1.5rem] border border-nk-beige bg-white/85 p-5 shadow-[0_18px_36px_-28px_rgba(80,60,30,0.6)]">
                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-nk-sage/70 text-nk-forest [&_svg]:h-6 [&_svg]:w-6">
                   {card.icon}
                 </span>

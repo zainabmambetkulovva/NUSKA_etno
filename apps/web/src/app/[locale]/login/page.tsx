@@ -13,6 +13,7 @@ import { GoogleButton } from '@/components/auth/google-button';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
+import { PasswordInput } from '@/components/ui/password-input';
 import { useLogin } from '@/hooks/use-auth';
 import { useI18n } from '@/i18n/i18n-provider';
 import { errorMessage } from '@/lib/api/errors';
@@ -75,10 +76,9 @@ function LoginForm() {
         </Field>
         <Field label={t.auth.password} error={errors.password?.message}>
           {(id, d) => (
-            <Input
+            <PasswordInput
               id={id}
               aria-describedby={d}
-              type="password"
               autoComplete="current-password"
               {...form.register('password')}
             />

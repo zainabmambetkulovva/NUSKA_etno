@@ -59,6 +59,14 @@ const config: Config = {
       },
       borderRadius: { xl: '1rem', '2xl': '1.5rem' },
       keyframes: {
+        'auth-pan': {
+          from: { transform: 'scale(1.05) translateX(0)' },
+          to: { transform: 'scale(1.12) translateX(-2%)' },
+        },
+        'grow-y': {
+          from: { transform: 'scaleY(0)', opacity: '0' },
+          to: { transform: 'scaleY(1)', opacity: '1' },
+        },
         'fade-up': {
           from: { opacity: '0', transform: 'translateY(12px)' },
           to: { opacity: '1', transform: 'none' },

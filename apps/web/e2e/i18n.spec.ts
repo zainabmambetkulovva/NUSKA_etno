@@ -6,12 +6,12 @@ test('opens in Kyrgyz, switches to Russian and remembers the choice', async ({ p
   await page.goto('/');
   await expect(page).toHaveURL(/\/ky$/);
   await expect(page.locator('html')).toHaveAttribute('lang', 'ky');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(ky.home.heroTitle);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(ky.home.heroLine1);
 
   await page.locator('header').getByRole('button', { name: ky.nav.language }).click();
   await page.getByRole('menuitem', { name: /Русский/ }).click();
   await expect(page).toHaveURL(/\/ru$/);
-  await expect(page.getByRole('heading', { level: 1 })).toContainText(ru.home.heroTitle);
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(ru.home.heroLine1);
 
   await page.goto('/');
   await expect(page).toHaveURL(/\/ru$/);

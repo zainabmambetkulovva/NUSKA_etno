@@ -61,7 +61,7 @@ const BENEFIT_ICONS = [
 export function BenefitsBar({ t }: { t: Dictionary }) {
   return (
     <section
-      className="container relative z-20 -mt-4 lg:-mt-14"
+      className="container relative z-20 mt-4 lg:mt-6"
       aria-label={t.landing.productsEyebrow}
     >
       <ul className="grid grid-cols-2 gap-x-2 gap-y-4 rounded-[1.75rem] border border-white/80 bg-white/80 px-4 py-5 shadow-[0_24px_50px_-30px_rgba(80,60,30,0.6)] backdrop-blur-md sm:grid-cols-3 lg:grid-cols-5 lg:gap-0 lg:px-6">
@@ -141,7 +141,7 @@ export function CategoryArches({
                   >
                     <Link
                       href={`/${locale}/catalog/${category.slug}`}
-                      className="group relative flex aspect-[3/4.4] flex-col overflow-hidden rounded-t-[999px] rounded-b-[1.6rem] border-[3px] border-white/80 bg-[linear-gradient(180deg,#FBEFD9_0%,#F0D6AA_70%)] shadow-[0_24px_40px_-26px_rgba(80,55,25,0.75)] transition duration-500 hover:-translate-y-2 hover:border-nk-gold/70 hover:shadow-[0_32px_48px_-26px_rgba(80,55,25,0.85)]"
+                      className="card-hover group relative flex aspect-[3/4.4] flex-col overflow-hidden rounded-t-[999px] rounded-b-[1.6rem] border-[3px] border-white/80 bg-[linear-gradient(180deg,#FBEFD9_0%,#F0D6AA_70%)] shadow-[0_24px_40px_-26px_rgba(80,55,25,0.75)] transition duration-500 hover:-translate-y-2 hover:border-nk-gold/70 hover:shadow-[0_32px_48px_-26px_rgba(80,55,25,0.85)]"
                     >
                       <span className="relative flex-1">
                         {photo ? (
@@ -196,64 +196,78 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
   return (
     <section
       id="brand"
-      className="relative scroll-mt-24 py-6 lg:py-10"
+      className="relative scroll-mt-24 py-10 lg:py-16"
       aria-labelledby="brand-title"
     >
-      <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-0">
-        <Reveal className="relative h-[340px] sm:h-[420px] lg:h-[460px]">
-          <ImageReveal className="absolute inset-0 overflow-hidden rounded-r-[3rem] [mask-image:linear-gradient(to_right,#000_75%,transparent)] lg:rounded-r-none">
+      <div className="container">
+        <span
+          className="block h-px w-full max-w-[44rem] bg-gradient-to-r from-nk-gold/70 to-transparent"
+          aria-hidden
+        />
+      </div>
+      <div className="container mt-8 grid grid-cols-1 items-end gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-12">
+        <Reveal>
+          {/* «01 / БИЗДИН ТАРЫХ ———» */}
+          <p className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.32em] text-nk-brown">
+            {t.landing.storyEyebrow}
+            <span className="h-px w-24 bg-nk-gold/60" aria-hidden />
+          </p>
+          <TextReveal
+            id="brand-title"
+            text={t.landing.storyTitle}
+            className="mt-5 font-serif text-[clamp(2.4rem,5vw,4.4rem)] font-medium leading-[1.04] text-[#1F3A22]"
+          />
+          <p className="mt-5 max-w-xl text-[15.5px] leading-relaxed text-nk-muted">
+            {t.landing.aboutText}
+          </p>
+          <ul className="mt-6 flex flex-wrap gap-2.5">
+            {t.landing.values.map((value, i) => (
+              <li
+                key={value}
+                className="group inline-flex items-center gap-2 rounded-full border border-nk-gold/40 bg-white/80 py-1.5 pl-1.5 pr-4 text-sm text-nk-ink shadow-sm transition duration-300 hover:-translate-y-0.5 hover:border-nk-gold hover:shadow-md"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-nk-cream text-nk-brown transition group-hover:bg-nk-gold group-hover:text-white [&_svg]:h-4 [&_svg]:w-4">
+                  {VALUE_ICONS[i]}
+                </span>
+                {value}
+              </li>
+            ))}
+          </ul>
+          <Link href={`/${locale}/about`} className="btn-forest group mt-8">
+            {t.landing.aboutButton}
+            <ArrowRightIcon
+              width={18}
+              height={18}
+              className="transition group-hover:translate-x-1"
+            />
+          </Link>
+        </Reveal>
+
+        {/* yurt in the mountains with the girl, in a hill-shaped frame */}
+        <Reveal className="relative h-[360px] sm:h-[440px] lg:h-[520px]">
+          <ImageReveal
+            from="right"
+            className="absolute inset-0 overflow-hidden rounded-[2rem] rounded-tl-[58%_88%] shadow-[0_40px_70px_-45px_rgba(60,40,15,0.75)]"
+          >
             <Image
               src="/images/home/cta.png"
               alt=""
               fill
               unoptimized
-              className="object-cover object-[50%_58%]"
+              className="object-cover object-[35%_58%]"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#F4E5CB]/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#F4E5CB]/45 via-transparent to-transparent" />
           </ImageReveal>
-          {/* she stands on the bottom edge of the picture (no parallax: it lifted her off it) */}
-          <div className="absolute bottom-0 right-[8%] aspect-[1086/1448] h-[96%] sm:right-[14%]">
+          <div className="absolute bottom-0 right-[6%] aspect-[1086/1448] h-[94%]">
             <Image
               src="/images/home/brand-girl.webp"
               alt={t.landing.aboutImageAlt}
               fill
               unoptimized
-              className="object-contain object-bottom"
+              className="object-contain object-bottom drop-shadow-[0_20px_30px_rgba(60,35,10,0.35)]"
             />
           </div>
         </Reveal>
-
-        <div className="container grid grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:pl-4 lg:pr-[max(2rem,calc((100vw-1280px)/2+2rem))]">
-          <Reveal>
-            <Eyebrow>{t.landing.aboutEyebrow}</Eyebrow>
-            <TextReveal
-              id="brand-title"
-              text={t.landing.aboutTitle}
-              className="mt-3 font-serif text-[2rem] leading-[1.12] text-nk-ink sm:text-[2.4rem]"
-            />
-            <p className="mt-4 text-[15px] leading-relaxed text-nk-muted">{t.landing.aboutText}</p>
-            <Link href={`/${locale}/about`} className="btn-forest group mt-7">
-              {t.landing.aboutButton}
-              <ArrowRightIcon
-                width={18}
-                height={18}
-                className="transition group-hover:translate-x-1"
-              />
-            </Link>
-          </Reveal>
-          <Reveal delay={0.1}>
-            <ul className="space-y-4 border-nk-gold/40 lg:border-l lg:pl-7">
-              {t.landing.values.map((value, i) => (
-                <li key={value} className="group flex items-center gap-3.5 text-[15px] text-nk-ink">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-nk-gold/50 bg-white text-nk-brown shadow-sm transition duration-300 group-hover:-translate-y-0.5 group-hover:bg-nk-gold group-hover:text-white">
-                    {VALUE_ICONS[i]}
-                  </span>
-                  {value}
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
       </div>
     </section>
   );

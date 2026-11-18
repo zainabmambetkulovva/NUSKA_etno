@@ -1,103 +1,90 @@
+import type { CategoryNode } from '@nuska/types';
 import Image from 'next/image';
 import Link from 'next/link';
 
 import { HeroAtmosphereSlot, HeroLayer, HeroStage } from './hero-stage';
 
-import { Branch, Cloud, Eagle } from '@/components/brand/nature-decor';
+import { LogoMark } from '@/components/brand/logo';
+import { Cloud, Eagle } from '@/components/brand/nature-decor';
 import { Magnetic } from '@/components/motion/magnetic';
 import { TextReveal } from '@/components/motion/text-reveal';
-import { ArrowRightIcon, LeafIcon, PlayIcon } from '@/components/ui/icons';
+import { ArrowRightIcon } from '@/components/ui/icons';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
 
-/** Part of the hero picture shown from the bottom; the logo painted in its sky stays above. */
-const VISIBLE = 0.62;
-const RATIO = 1672 / 941;
-
 /**
- * The packages on the wooden stump (public/images/home/stump-wood.webp, drawn
- * in code by scripts/podium), each on its own spot so none covers another:
- * jupka left, keremet shypaa at the back, sary mai right, the navat bowl at
- * the front. Positions are % of the 360 × 300 composition box (the stand
- * points printed by `render.cjs` with the stump scene).
+ * The company's products on the carved tray (public/images/home/tray-wood.webp,
+ * drawn in code by scripts/podium, scene "tray"). `x`, `y` are the stand points
+ * printed by the render (units of the 1300 × 520 tray box); `height` is in %
+ * of the box. Each stands on its own spot: none covers another.
  */
-const PRODUCTS = [
-  {
-    src: '/images/products/zhupka.png',
-    w: 480,
-    h: 733,
-    left: 19.2,
-    bottom: 33.7,
-    height: 34,
-    z: 1,
-    rotate: 0,
-  },
+const TRAY_ITEMS = [
+  { src: '/images/dishes/kymyz.png', w: 1536, h: 1024, x: 262.4, y: 360.3, height: 27 },
+  { src: '/images/products/zhupka.png', w: 480, h: 733, x: 459.1, y: 355.2, height: 47 },
+  { src: '/images/products/navat.png', w: 723, h: 566, x: 627.5, y: 381, height: 22 },
+  { src: '/images/products/kymyz.webp', w: 669, h: 2000, x: 769.9, y: 352.7, height: 58 },
+  { src: '/images/products/sary-mai.png', w: 825, h: 1148, x: 921, y: 375.2, height: 33 },
   {
     src: '/images/products/keremet-shypaa.png',
     w: 681,
     h: 1263,
-    left: 39.7,
-    bottom: 38.6,
-    height: 46,
-    z: 1,
+    x: 1072,
+    y: 356.4,
+    height: 54,
     rotate: -19.6,
-  },
-  {
-    src: '/images/products/sary-mai.png',
-    w: 825,
-    h: 1148,
-    left: 62.8,
-    bottom: 33.7,
-    height: 29,
-    z: 1,
-    rotate: 0,
-  },
-  {
-    src: '/images/products/navat.png',
-    w: 723,
-    h: 566,
-    left: 43.9,
-    bottom: 27.4,
-    height: 11.5,
-    z: 3,
-    rotate: 0,
   },
 ] as const;
 
-/** The company's packages standing on the stump (photos as sent, transparent background). */
-function ProductComposition({ className }: { className?: string }) {
+/** The labels hang on one row, this far down the tray box (%). */
+const LABEL_ROW = 112;
+/** Where the leader lines of the category labels meet the tray rim (% of the tray box). */
+const RIM = [
+  { x: 11, y: 84 },
+  { x: 30.5, y: 95 },
+  { x: 50, y: 97.5 },
+  { x: 69.5, y: 95 },
+  { x: 89, y: 84 },
+];
+
+function Tray({ t, className }: { t: Dictionary; className?: string }) {
   return (
-    <div className={className} aria-hidden>
-      <div className="relative h-full w-full">
+    <div className={className} role="img" aria-label={t.home.heroTrayLabel}>
+      <div className="relative aspect-[1300/520] w-full">
         <Image
-          src="/images/home/stump-wood.webp"
+          src="/images/home/tray-wood.webp"
           alt=""
           fill
+          priority
           unoptimized
-          className="object-contain"
+          className="object-contain motion-safe:animate-fade-up"
         />
-        {PRODUCTS.map((product) => (
+        {TRAY_ITEMS.map((item, i) => (
           <div
-            key={product.src}
-            className="absolute"
+            key={item.src}
+            className="absolute -translate-x-1/2"
             style={{
-              left: `${product.left}%`,
-              bottom: `${product.bottom}%`,
-              height: `${product.height}%`,
-              aspectRatio: `${product.w} / ${product.h}`,
-              zIndex: product.z,
+              left: `${(item.x / 1300) * 100}%`,
+              bottom: `${((520 - item.y) / 520) * 100}%`,
+              height: `${item.height}%`,
+              aspectRatio: `${item.w} / ${item.h}`,
             }}
           >
-            <Image
-              src={product.src}
-              alt=""
-              width={product.w}
-              height={product.h}
-              quality={95}
-              sizes="220px"
-              className="h-full w-full object-contain drop-shadow-[0_14px_14px_rgba(50,30,10,0.35)]"
-              style={product.rotate ? { transform: `rotate(${product.rotate}deg)` } : undefined}
-            />
+            <div
+              className="h-full w-full motion-safe:animate-fade-up"
+              style={{ animationDelay: `${0.25 + i * 0.09}s` }}
+            >
+              <Image
+                src={item.src}
+                alt=""
+                width={item.w}
+                height={item.h}
+                priority={i < 4}
+                quality={95}
+                sizes="(min-width: 1024px) 260px, 30vw"
+                className="h-full w-full origin-bottom object-contain drop-shadow-[0_18px_14px_rgba(60,35,10,0.38)] transition duration-500 ease-out hover:-translate-y-[4%] hover:scale-[1.04]"
+                style={'rotate' in item ? { transform: `rotate(${item.rotate}deg)` } : undefined}
+              />
+            </div>
           </div>
         ))}
       </div>
@@ -106,169 +93,200 @@ function ProductComposition({ className }: { className?: string }) {
 }
 
 /**
- * First screen of the mockup: on the left the badge, «Природная сила
- * Кыргызстана», the subtitle and two buttons on the warm cream sky; on the
- * right the company's picture of the valley (yurt, horses, dairy products on
- * wood) with the packages on a wooden stump, drifting clouds and an eagle.
- * The picture file is shown untouched (unoptimized); only its lower part is in
- * view, so the logo painted in its sky stays out of the frame.
+ * First screen after the company's mockup: «Табияттан. Дасторконго.» in large
+ * serif over a band of mountains, the side note on the left, the carved tray
+ * with the products (drawn in code + the company's photos), the round
+ * «Каталогго өтүү» button and the categories hanging from the tray on thin
+ * gold lines. WebGL pollen and clouds on desktops (paused off screen).
  */
 export function Hero({
   locale,
   t,
-  videoUrl,
+  categories,
 }: {
   locale: Locale;
   t: Dictionary;
-  videoUrl: string | null;
+  categories: CategoryNode[];
 }) {
-  const imageWidth = `max(100%, calc(var(--hero-h) / ${VISIBLE} * ${RATIO.toFixed(4)}))`;
-  const more = videoUrl
-    ? { href: videoUrl, target: '_blank', rel: 'noopener noreferrer' }
-    : { href: `/${locale}#brand` };
-
+  const shown = categories.slice(0, 5);
   return (
     <HeroStage
       labelledBy="hero-title"
-      className="relative -mt-[68px] flex flex-col overflow-hidden bg-nk-cream [--hero-h:300px] lg:-mt-[80px] lg:block lg:h-[var(--hero-h)] lg:[--hero-h:max(620px,40vw)]"
+      className="relative -mt-[68px] overflow-hidden bg-nk-cream pb-12 pt-[92px] lg:-mt-[80px] lg:pb-16 lg:pt-[96px]"
     >
       {/* warm sky */}
       <div
-        className="absolute inset-0 bg-[radial-gradient(ellipse_at_30%_10%,#FFF6E6_0%,#F7E8CF_45%,#F1DDBF_100%)]"
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#FFF6E6_0%,#F7EBD3_55%,#F4E6CB_100%)]"
         aria-hidden
       />
-
-      {/* phones and tablets: the picture as a rounded card under the text, with the packages */}
-      <div className="container relative order-2 pb-2 lg:hidden">
-        <div className="relative h-[clamp(240px,66vw,420px)] overflow-hidden rounded-[2rem] border-[3px] border-white/80 shadow-[0_28px_50px_-30px_rgba(80,55,25,0.8)]">
-          {/* only the lower part of the picture: the logo painted in its sky stays out */}
-          <Image
-            src="/images/home/hero.png"
-            alt={t.home.heroImageAlt}
-            width={1672}
-            height={941}
-            priority
-            unoptimized
-            className="absolute bottom-0 left-[-82%] h-auto w-[215%] max-w-none"
-          />
-          <div
-            className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent"
-            aria-hidden
-          />
-          <ProductComposition className="absolute bottom-[2%] left-[1%] aspect-[360/300] w-[56%] max-w-[300px]" />
-        </div>
-      </div>
-
-      {/* desktop: the whole background */}
-      <div className="relative order-2 hidden h-[var(--hero-h)] overflow-hidden lg:absolute lg:inset-0 lg:block lg:h-auto">
-        <HeroLayer className="absolute -inset-4" depth={-0.6} zoom={0.1} origin="66% 88%">
-          <Image
-            src="/images/home/hero.png"
-            alt=""
-            width={1672}
-            height={941}
-            priority
-            unoptimized
-            className="absolute bottom-0 right-0 h-auto max-w-none"
-            style={{ width: imageWidth }}
-          />
-        </HeroLayer>
-        {/* melts into the cream sky on the left and at the top */}
-        <div
-          className="absolute inset-0 hidden bg-[linear-gradient(to_right,#F7E9D1_0%,rgba(247,233,209,0.92)_18%,rgba(247,233,209,0.55)_32%,rgba(247,233,209,0.12)_46%,transparent_56%)] lg:block"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-[#F7E9D1] to-transparent lg:h-40"
-          aria-hidden
-        />
-        <div
-          className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-nk-cream to-transparent lg:h-24"
-          aria-hidden
-        />
-      </div>
-
-      {/* WebGL clouds, pollen and light on desktops; CSS clouds otherwise */}
-      <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
-        <Cloud className="left-[34%] top-[16%] h-16 w-60 [--drift:60px]" />
-        <Cloud
-          className="right-[6%] top-[26%] h-14 w-52 [--drift:-50px] [--drift-duration:32s]"
-          style={{ animationDelay: '-8s' }}
-        />
-      </HeroAtmosphereSlot>
-
+      {/* the band of mountains behind the tray, melting into the cream above and below */}
       <HeroLayer
-        className="pointer-events-none absolute inset-0 hidden lg:block"
-        depth={1}
-        zoom={0.22}
-        origin="64% 92%"
+        className="absolute inset-x-0 top-[28%] h-[40%] sm:top-[24%] lg:top-[20%] lg:h-[42%]"
+        depth={-0.5}
+        zoom={0.08}
       >
-        <ProductComposition className="absolute bottom-[9%] left-[52%] aspect-[360/300] w-[clamp(300px,27vw,470px)]" />
-      </HeroLayer>
-      <HeroLayer
-        className="pointer-events-none absolute inset-0 hidden lg:block"
-        depth={1.8}
-        lift={160}
-      >
-        <Eagle className="right-[30%] top-[18%] h-12 w-28" />
-      </HeroLayer>
-      <Branch className="-left-6 top-20 hidden xl:block" />
-
-      <HeroLayer
-        className="container relative z-10 order-1 pb-8 pt-[96px] lg:flex lg:h-full lg:items-center lg:pb-16 lg:pt-[80px]"
-        depth={0.25}
-        lift={120}
-        fade
-      >
-        <div className="max-w-[640px]">
-          <p className="inline-flex items-center gap-2 rounded-full bg-white/75 px-3.5 py-1.5 text-xs font-medium text-nk-ink shadow-sm backdrop-blur motion-safe:animate-fade-up">
-            <LeafIcon width={16} height={16} className="text-nk-forest" />
-            {t.home.heroBadge}
-          </p>
-          <TextReveal
-            as="h1"
-            id="hero-title"
-            immediate
-            delay={0.1}
-            text={t.home.heroTitle}
-            className="mt-5 font-serif text-[clamp(2.4rem,4.3vw,4.3rem)] font-semibold leading-[1.02] tracking-tight text-nk-ink"
-          />
-          <p
-            className="mt-5 max-w-[30rem] text-base leading-relaxed text-nk-ink/85 motion-safe:animate-fade-up sm:text-lg"
-            style={{ animationDelay: '0.45s' }}
-          >
-            {t.home.heroText}
-          </p>
-          <div
-            className="mt-8 flex flex-wrap items-center gap-5 motion-safe:animate-fade-up"
-            style={{ animationDelay: '0.6s' }}
-          >
-            <Magnetic>
-              <Link href={`/${locale}/catalog`} className="btn-forest group">
-                {t.nav.goToCatalog}
-                <ArrowRightIcon
-                  width={18}
-                  height={18}
-                  className="transition-transform group-hover:translate-x-1"
-                />
-              </Link>
-            </Magnetic>
-            <a
-              {...more}
-              className="group inline-flex items-center gap-3 text-sm font-medium text-nk-ink"
-            >
-              <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-white text-nk-forest shadow-[0_10px_24px_-12px_rgba(43,42,34,0.6)] transition group-hover:scale-105">
-                <span
-                  className="absolute inset-0 rounded-full ring-2 ring-white/70 motion-safe:animate-ping-slow"
-                  aria-hidden
-                />
-                <PlayIcon width={18} height={18} />
-              </span>
-              {t.home.heroMore}
-            </a>
+        {/* only the upper part of the picture (sky, peaks, forest): the box is clipped,
+            the picture inside is taller, so the meadow with the animals stays below */}
+        <div className="absolute inset-0 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,#000_26%,#000_58%,transparent_92%)]">
+          <div className="absolute inset-x-0 top-0 h-[240%]">
+            <Image
+              src="/images/home/about.png"
+              alt=""
+              fill
+              priority
+              unoptimized
+              className="object-cover object-top"
+            />
           </div>
         </div>
       </HeroLayer>
+
+      <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
+        <Cloud className="left-[30%] top-[20%] h-16 w-60 [--drift:60px]" />
+        <Cloud
+          className="right-[8%] top-[26%] h-14 w-52 [--drift:-50px] [--drift-duration:32s]"
+          style={{ animationDelay: '-8s' }}
+        />
+      </HeroAtmosphereSlot>
+      <HeroLayer
+        className="pointer-events-none absolute inset-0 hidden lg:block"
+        depth={1.6}
+        lift={140}
+      >
+        <Eagle className="right-[24%] top-[16%] h-10 w-24" />
+      </HeroLayer>
+
+      <div className="container relative">
+        {/* left note with the gold knot and a gold rule */}
+        <div className="relative z-10 max-w-[13rem] motion-safe:animate-fade-up lg:absolute lg:left-4 lg:top-2 xl:left-0">
+          <LogoMark className="h-9 w-9 motion-safe:animate-[spin_24s_linear_infinite] lg:h-11 lg:w-11" />
+          <div className="mt-3 border-l-2 border-nk-gold/70 pl-4 lg:mt-4">
+            <p className="font-serif text-[1.2rem] leading-snug text-nk-ink sm:text-[1.55rem]">
+              {t.home.heroSide}
+            </p>
+            <span className="my-3 block h-px w-12 bg-nk-gold" aria-hidden />
+            <p className="font-serif text-[15px] leading-relaxed text-nk-muted">
+              {t.home.heroSideText}
+            </p>
+          </div>
+        </div>
+
+        {/* the large title */}
+        <HeroLayer className="relative z-10 mt-6 lg:mt-0" depth={0.25} lift={60}>
+          <h1
+            id="hero-title"
+            aria-label={`${t.home.heroLine1} ${t.home.heroLine2}`}
+            className="font-serif text-[clamp(2.9rem,9vw,8.6rem)] font-semibold leading-[0.88] tracking-tight text-[#1F3A22]"
+          >
+            <TextReveal as="span" immediate text={t.home.heroLine1} className="block lg:pl-[23%]" />
+            <TextReveal
+              as="span"
+              immediate
+              delay={0.18}
+              text={t.home.heroLine2}
+              className="block lg:pl-[17.5%]"
+            />
+          </h1>
+        </HeroLayer>
+
+        {/* the tray with the products; it rides a little over the title */}
+        <HeroLayer
+          className="relative z-20 -mt-[9%] sm:-mt-[11%] lg:-mt-[12.5%]"
+          depth={0.6}
+          zoom={0.05}
+          origin="50% 90%"
+        >
+          <Tray t={t} className="mx-auto w-full max-w-[1180px]" />
+
+          {/* categories on gold lines from the tray rim (desktop) */}
+          <ul
+            className="pointer-events-none absolute inset-x-0 mx-auto hidden max-w-[1180px] lg:block"
+            style={{ top: 0, height: '100%' }}
+          >
+            {shown.map((category, i) => {
+              const rim = RIM[i];
+              return (
+                // each item covers the tray box, so its parts are placed in % of the box
+                <li key={category.slug} className="absolute inset-0">
+                  <span
+                    className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-nk-gold bg-white shadow-[0_0_0_4px_rgba(199,166,106,0.18)]"
+                    style={{ left: `${rim.x}%`, top: `${rim.y}%` }}
+                    aria-hidden
+                  />
+                  <span
+                    className="absolute w-px origin-top bg-gradient-to-b from-nk-gold to-nk-gold/30 motion-safe:animate-[grow-y_0.9s_ease-out_both]"
+                    style={{
+                      left: `${rim.x}%`,
+                      top: `${rim.y}%`,
+                      height: `${LABEL_ROW - rim.y}%`,
+                      animationDelay: `${0.8 + i * 0.1}s`,
+                    }}
+                    aria-hidden
+                  />
+                  <Link
+                    href={`/${locale}/catalog/${category.slug}`}
+                    className="group pointer-events-auto absolute flex -translate-x-1/2 items-center gap-2 whitespace-nowrap pt-2 font-serif text-[1.2rem] text-nk-ink transition hover:text-nk-forest motion-safe:animate-fade-up"
+                    style={{
+                      left: `${rim.x}%`,
+                      top: `${LABEL_ROW}%`,
+                      animationDelay: `${1 + i * 0.1}s`,
+                    }}
+                  >
+                    {category.name}
+                    <ArrowRightIcon
+                      width={18}
+                      height={18}
+                      className="transition group-hover:translate-x-1"
+                    />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </HeroLayer>
+
+        {/* categories on phones and tablets */}
+        <ul className="relative z-20 mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:hidden">
+          {shown.map((category) => (
+            <li key={category.slug}>
+              <Link
+                href={`/${locale}/catalog/${category.slug}`}
+                className="flex h-full items-center justify-between gap-2 rounded-2xl border border-nk-gold/40 bg-white/85 px-3.5 py-2 font-serif text-[14px] leading-tight text-nk-ink shadow-sm backdrop-blur transition hover:border-nk-gold"
+              >
+                {category.name}
+                <ArrowRightIcon width={15} height={15} className="shrink-0 text-nk-gold" />
+              </Link>
+            </li>
+          ))}
+        </ul>
+
+        {/* round «Каталогго өтүү» */}
+        <div className="relative z-30 mt-8 flex justify-center lg:absolute lg:right-2 lg:top-[38%] lg:mt-0 xl:right-0">
+          <Magnetic>
+            <Link
+              href={`/${locale}/catalog`}
+              className="group relative flex h-36 w-36 flex-col items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#3C6A47,#22392A)] text-center font-serif text-lg leading-tight text-[#F6EBCF] shadow-[0_24px_50px_-18px_rgba(34,57,42,0.85)] transition duration-300 hover:scale-105 lg:h-52 lg:w-52 lg:text-[1.65rem]"
+            >
+              <span
+                className="absolute inset-1.5 rounded-full border border-dashed border-nk-gold/70 motion-safe:animate-[spin_18s_linear_infinite]"
+                aria-hidden
+              />
+              <span
+                className="absolute -inset-1 rounded-full border border-nk-gold/50"
+                aria-hidden
+              />
+              <span className="relative px-5">{t.nav.goToCatalog}</span>
+              <ArrowRightIcon
+                width={30}
+                height={30}
+                className="relative mt-2 transition duration-300 group-hover:translate-x-1.5"
+              />
+            </Link>
+          </Magnetic>
+        </div>
+      </div>
+      {/* room for the hanging labels on desktop */}
+      <div className="hidden h-24 lg:block" aria-hidden />
     </HeroStage>
   );
 }

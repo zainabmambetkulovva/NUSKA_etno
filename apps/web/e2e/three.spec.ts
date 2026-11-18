@@ -49,7 +49,9 @@ test('with reduced motion the hero stays still and loads no WebGL', async ({ bro
     if (message.type() === 'error' && /hydrat/i.test(message.text())) errors.push(message.text());
   });
   await page.goto('/ky');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(ky.home.heroTitle);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveAccessibleName(
+    `${ky.home.heroLine1} ${ky.home.heroLine2}`
+  );
   await page.waitForTimeout(3000);
   await expect(page.locator('[data-hero-3d]')).toHaveAttribute('data-hero-3d', 'off');
   await expect(page.locator('canvas')).toHaveCount(0);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { DeliveryMethod, Order, PickupLocation } from '@nuska/types';
@@ -94,9 +94,17 @@ export default function CheckoutPage() {
       form.setValue('pickupLocationId', pickup.data[0].id);
   }, [pickup.data, form]);
 
+  const methods = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: () => api<{ cash: boolean; online: boolean }>('/payments/methods'),
+    staleTime: 5 * 60_000,
+  });
+  const onlineAvailable = Boolean(methods.data?.online);
+  const [payment, setPayment] = useState<'CASH' | 'ONLINE'>('CASH');
+
   const place = useMutation({
     mutationFn: (values: FormValues) =>
-      api<Order>('/orders', {
+      api<Order & { paymentUrl?: string | null }>('/orders', {
         method: 'POST',
         locale,
         body: {
@@ -109,7 +117,7 @@ export default function CheckoutPage() {
                   ? new Date(values.pickupTime).toISOString()
                   : undefined,
               }),
-          paymentMethod: 'CASH',
+          paymentMethod: onlineAvailable ? payment : 'CASH',
           customerName: values.customerName,
           customerPhone: values.customerPhone,
           customerEmail: values.customerEmail || undefined,
@@ -118,9 +126,15 @@ export default function CheckoutPage() {
         },
       }),
     onSuccess: async (order) => {
-      toast(t.checkout.success);
       await queryClient.invalidateQueries({ queryKey: cartKey(locale) });
       await queryClient.invalidateQueries({ queryKey: ['orders'] });
+      // online payment: straight to Finik's payment page
+      if (order.paymentUrl) {
+        window.location.assign(order.paymentUrl);
+        return;
+      }
+      if (order.paymentMethod === 'ONLINE') toast(t.checkout.payOnlineFailed, 'error');
+      else toast(t.checkout.success);
       router.push(`/${locale}/checkout/success?order=${order.id}`);
     },
   });
@@ -331,29 +345,50 @@ export default function CheckoutPage() {
 
           <section className="card space-y-3 p-6">
             <h2 className="font-serif text-xl">{t.checkout.payment}</h2>
-            <label className="flex items-start gap-3 rounded-xl border border-brand bg-brand-50 p-4">
-              <input type="radio" checked readOnly className="mt-1 accent-brand" />
-              <span>
-                <span className="block font-medium">{t.checkout.payOnReceipt}</span>
-                <span className="text-sm text-ink-muted">{t.checkout.payOnReceiptText}</span>
-              </span>
-            </label>
-            <div
-              className="flex items-center justify-between gap-3 rounded-xl border border-dashed border-cream-dark p-4 text-ink-soft"
-              aria-disabled
-            >
-              <span className="flex items-center gap-3">
-                <input
-                  type="radio"
-                  disabled
-                  className="accent-brand"
-                  aria-label={t.checkout.payOnline}
-                />
-                {t.checkout.payOnline}
-              </span>
-              <span className="rounded-full bg-cream-50 px-2.5 py-0.5 text-xs">
-                {t.checkout.payOnlineSoon}
-              </span>
+            <div className="space-y-3" role="radiogroup" aria-label={t.checkout.payment}>
+              {(
+                [
+                  ['CASH', t.checkout.payOnReceipt, t.checkout.payOnReceiptText],
+                  ['ONLINE', t.checkout.payOnline, t.checkout.payOnlineText],
+                ] as const
+              ).map(([value, title, text]) => {
+                const disabled = value === 'ONLINE' && !onlineAvailable;
+                const chosen = (onlineAvailable ? payment : 'CASH') === value;
+                return (
+                  <label
+                    key={value}
+                    className={cn(
+                      'flex items-start gap-3 rounded-xl border p-4 transition',
+                      disabled
+                        ? 'cursor-not-allowed border-dashed border-cream-dark text-ink-soft'
+                        : chosen
+                          ? 'cursor-pointer border-brand bg-brand-50'
+                          : 'cursor-pointer border-cream-dark hover:border-brand/50'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      value={value}
+                      checked={chosen}
+                      disabled={disabled}
+                      onChange={() => setPayment(value)}
+                      className="mt-1 accent-brand"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center justify-between gap-2 font-medium">
+                        {title}
+                        {disabled && (
+                          <span className="rounded-full bg-cream-50 px-2.5 py-0.5 text-xs font-normal">
+                            {t.checkout.payOnlineSoon}
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-sm text-ink-muted">{text}</span>
+                    </span>
+                  </label>
+                );
+              })}
             </div>
           </section>
         </div>
@@ -405,7 +440,7 @@ export default function CheckoutPage() {
             disabled={!cart.canCheckout}
             aria-describedby={blockedReason ? 'checkout-blocked' : undefined}
           >
-            {t.checkout.place}
+            {onlineAvailable && payment === 'ONLINE' ? t.checkout.toPayment : t.checkout.place}
           </Button>
           {blockedReason && (
             <p id="checkout-blocked" className="text-center text-xs text-danger" role="status">

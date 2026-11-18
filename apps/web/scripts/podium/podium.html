@@ -6,7 +6,8 @@
 import * as THREE from '/node_modules/three/build/three.module.js';
 
 const STUMP = window.SCENE === 'stump';
-const W = window.RW || 3200, H = STUMP ? Math.round(W * 300 / 360) : Math.round(W * 932 / 2400);
+const TRAY = window.SCENE === 'tray';
+const W = window.RW || 3200, H = TRAY ? Math.round(W * 520 / 1300) : STUMP ? Math.round(W * 300 / 360) : Math.round(W * 932 / 2400);
 const canvas = document.getElementById('c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setSize(W, H, false);
@@ -93,8 +94,9 @@ function planks(size, base, dark, light) {
 
 // ---------- scene ----------
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(STUMP ? 24 : 20, W / H, 0.1, 100);
-if (STUMP) { camera.position.set(0, 5.4, 19.5); camera.lookAt(0, 2.9, 0); }
+const camera = new THREE.PerspectiveCamera(TRAY ? 16 : STUMP ? 24 : 20, W / H, 0.1, 100);
+if (TRAY) { camera.position.set(0, 3.9, 22); camera.lookAt(0, 1.55, 0); }
+else if (STUMP) { camera.position.set(0, 5.4, 19.5); camera.lookAt(0, 2.9, 0); }
 else { camera.position.set(0, 7.2, 24); camera.lookAt(0, 3.0, 0); }
 
 scene.add(new THREE.HemisphereLight(0xfff1dc, 0x3b2a1a, 0.9));
@@ -153,12 +155,12 @@ const platTop = new THREE.MeshPhysicalMaterial({ map: planksTex, roughness: 0.5,
 const platSideTex = sideGrain(2048, 256, '#7b4f2a', '#45260f', '#a8774a'); platSideTex.repeat.set(6, 1);
 const platSide = new THREE.MeshPhysicalMaterial({ map: platSideTex, roughness: 0.5, clearcoat: 0.35 });
 const plat = new THREE.Mesh(roundedCylinder(platR, platH, 0.08, 192), platSide);
-plat.receiveShadow = true; plat.castShadow = true; if (!STUMP) scene.add(plat);
+plat.receiveShadow = true; plat.castShadow = true; if (!STUMP && !TRAY) scene.add(plat);
 const platCap = new THREE.Mesh(new THREE.RingGeometry(0.0005, platR - 0.075, 192, 48), platTop);
-platCap.rotation.x = -Math.PI / 2; platCap.position.y = platH + 0.0005; platCap.receiveShadow = true; if (!STUMP) scene.add(platCap);
+platCap.rotation.x = -Math.PI / 2; platCap.position.y = platH + 0.0005; platCap.receiveShadow = true; if (!STUMP && !TRAY) scene.add(platCap);
 
 // blocks: outer ones taller and further back, the middle one lowest and in front
-const blocks = STUMP ? [{ x: 0, z: 0, r: 3.3, h: 1.55, wood: walnut, y0: 0 }] : [
+const blocks = TRAY ? [] : STUMP ? [{ x: 0, z: 0, r: 3.3, h: 1.55, wood: walnut, y0: 0 }] : [
   { x: -6.55, z: -1.7, r: 1.55, h: 2.0, wood: oak },
   { x: -3.3, z: -0.25, r: 1.5, h: 1.6, wood: walnut },
   { x: 0.0, z: 0.55, r: 1.48, h: 1.25, wood: oak },
@@ -172,16 +174,78 @@ for (const b of blocks) {
   scene.add(m);
 }
 
+// ---------- the carved round tray (hero) ----------
+const TRAY_R = 6.3, TRAY_FLOOR = 0.24;
+function ornamentBand(size, inner, outer) {
+  // kochkor-muyuz curls carved into a ring: dark grooves with a light edge
+  const c = document.createElement('canvas'); c.width = c.height = size; const g = c.getContext('2d');
+  const cx = size / 2, cy = size / 2, rIn = (inner / outer) * size / 2, rOut = size / 2;
+  g.clearRect(0, 0, size, size);
+  const n = 36, mid = (rIn + rOut) / 2, amp = (rOut - rIn) * 0.42;
+  const curl = (dx, dy, color, width) => {
+    g.strokeStyle = color; g.lineWidth = width; g.lineCap = 'round';
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      const p = (r, t) => [cx + dx + Math.cos(a + t) * r, cy + dy + Math.sin(a + t) * r];
+      const step = (Math.PI * 2) / n;
+      // a wave along the band with two horn curls
+      g.beginPath();
+      for (let k = 0; k <= 24; k++) {
+        const t = (k / 24) * step;
+        const r = mid + Math.sin((k / 24) * Math.PI * 2) * amp * 0.55;
+        const [x, y] = p(r, t); k === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+      }
+      g.stroke();
+      for (const side of [-1, 1]) {
+        const [hx, hy] = p(mid + side * amp * 0.55, step * (side < 0 ? 0.25 : 0.75));
+        g.beginPath();
+        for (let k = 0; k <= 30; k++) {
+          const t = (k / 30) * Math.PI * 1.7;
+          const rr = amp * 0.42 * (1 - k / 38);
+          const ang = a + step * (side < 0 ? 0.25 : 0.75) + (side < 0 ? t : -t) * 0.9;
+          const x = hx + Math.cos(ang * 6) * rr, y = hy + Math.sin(ang * 6) * rr;
+          k === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+        }
+        g.stroke();
+      }
+    }
+    // border lines of the band
+    for (const r of [rIn + 6, rOut - 6]) { g.beginPath(); g.arc(cx + dx, cy + dy, r, 0, Math.PI * 2); g.stroke(); }
+  };
+  curl(1.5, 2, 'rgba(255,225,170,0.55)', size * 0.006); // light lower edge
+  curl(0, 0, 'rgba(58,30,10,0.85)', size * 0.0055);    // groove
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+}
+if (TRAY) {
+  const pts = [new THREE.Vector2(0.0001, 0), new THREE.Vector2(TRAY_R - 0.25, 0)];
+  for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + (i / 10) * Math.PI; pts.push(new THREE.Vector2(TRAY_R - 0.25 + Math.cos(a) * 0.25 * 0.9, 0.2 + Math.sin(a) * 0.2)); }
+  pts.push(new THREE.Vector2(TRAY_R - 0.42, 0.36), new THREE.Vector2(TRAY_R - 0.55, TRAY_FLOOR), new THREE.Vector2(0.0001, TRAY_FLOOR));
+  const edgeTex = sideGrain(2048, 256, '#7a4a22', '#3f230c', '#a76f3c'); edgeTex.repeat.set(6, 1);
+  const body = new THREE.Mesh(new THREE.LatheGeometry(pts, 256), new THREE.MeshPhysicalMaterial({ map: edgeTex, roughness: 0.42, clearcoat: 0.5, clearcoatRoughness: 0.25 }));
+  body.castShadow = true; body.receiveShadow = true; scene.add(body);
+  const floorTex = sideGrain(2048, 2048, '#8a5428', '#4a2a10', '#b77c45');
+  const floor = new THREE.Mesh(new THREE.RingGeometry(0.0005, TRAY_R - 0.54, 256, 32), new THREE.MeshPhysicalMaterial({ map: floorTex, roughness: 0.45, clearcoat: 0.55, clearcoatRoughness: 0.22 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.y = TRAY_FLOOR + 0.001; floor.receiveShadow = true; scene.add(floor);
+  const band = ornamentBand(4096, TRAY_R - 1.45, TRAY_R - 0.6);
+  const bandMesh = new THREE.Mesh(new THREE.RingGeometry(0.0005, TRAY_R - 0.6, 256, 8), new THREE.MeshStandardMaterial({ map: band, transparent: true, roughness: 0.6 }));
+  bandMesh.rotation.x = -Math.PI / 2; bandMesh.position.y = TRAY_FLOOR + 0.004; scene.add(bandMesh);
+}
+
 // shadow on the floor under the platform
-const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 20), new THREE.ShadowMaterial({ opacity: STUMP ? 0.2 : 0.32 }));
-floor.rotation.x = -Math.PI / 2; floor.position.y = -0.001; floor.receiveShadow = true; scene.add(floor);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 20), new THREE.ShadowMaterial({ opacity: STUMP || TRAY ? 0.2 : 0.32 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -0.001; ground.receiveShadow = true; scene.add(ground);
 
 renderer.render(scene, camera);
 
 // screen positions for the page (in units of a 726 × 282 stage)
 const SW = 726, SH = 282;
 const proj = (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(camera); return { x: (v.x + 1) / 2 * SW, y: (1 - v.y) / 2 * SH }; };
-window.layout = STUMP
+window.layout = TRAY
+  ? (window.SPOTS || []).map(([x, z]) => {
+      const k = proj(x, TRAY_FLOOR, z);
+      return { x: +(k.x / SW * 1300).toFixed(1), y: +(k.y / SH * 520).toFixed(1) };
+    })
+  : STUMP
   ? [[-2.15, 0.2], [0, -2.15], [2.15, 0.2], [0, 2.55]].map(([x, z]) => {
       const top = 1.55, k = proj(x, top, z), sw = 360, sh = 300;
       // stage units → stump box units (360 × 300)

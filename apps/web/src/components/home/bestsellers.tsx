@@ -18,7 +18,7 @@ function BestsellerCard({ product }: { product: ProductCard }) {
   const { t, locale } = useI18n();
   const href = `/${locale}/product/${product.slug}`;
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.4rem] border border-white/70 bg-white/90 shadow-[0_18px_36px_-24px_rgba(80,60,30,0.55)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_44px_-24px_rgba(80,60,30,0.65)]">
+    <article className="card-hover group relative flex h-full flex-col overflow-hidden rounded-[1.4rem] border border-white/70 bg-white/90 shadow-[0_18px_36px_-24px_rgba(80,60,30,0.55)] transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_44px_-24px_rgba(80,60,30,0.65)]">
       <Link
         href={href}
         tabIndex={-1}

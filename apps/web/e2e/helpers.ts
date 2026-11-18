@@ -22,7 +22,7 @@ export async function login(
 ) {
   await page.goto(`/ky/login?next=${encodeURIComponent(next)}`);
   await page.getByLabel(ky.auth.email).fill(account.email);
-  await page.getByLabel(ky.auth.password).fill(account.password);
+  await page.getByLabel(ky.auth.password, { exact: true }).fill(account.password);
   await page.locator('form').getByRole('button', { name: ky.auth.login }).click();
   await page.waitForURL(`**${next}`);
 }

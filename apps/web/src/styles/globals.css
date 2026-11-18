@@ -188,3 +188,115 @@ main:has([data-flush-footer]) + footer {
     }
   }
 }
+
+/* ---------------------------------------------------------------- motion
+ * Entrance on scroll for every page, in pure CSS (scroll-driven animations):
+ * headings, texts, cards and grid items rise and come into focus as they enter
+ * the screen. No JavaScript, so nothing can stay hidden or upset hydration;
+ * browsers without `animation-timeline` simply show everything. Individual
+ * `translate` / `scale` are used, so components that set `transform`
+ * themselves (tilt, framer-motion) are not disturbed. */
+@keyframes ar-rise {
+  from {
+    opacity: 0;
+    translate: 0 26px;
+    scale: 0.985;
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    main
+      :is(h2, h3, .card, article, form, dl, table, ul.grid > li, ol > li, [data-reveal]):not(
+        [data-no-reveal] *
+      ),
+    main p:not([data-no-reveal] *, .card *, article *, li *, form *, label *) {
+      animation: ar-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* cards: lift, deeper shadow and a soft light sweeping across */
+  .card,
+  .card-hover {
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+  }
+  a.card:hover,
+  .card-hover:hover,
+  article.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 26px 46px -28px rgba(70, 48, 20, 0.6);
+    border-color: rgba(199, 166, 106, 0.55);
+  }
+  .card-hover,
+  article.card {
+    position: relative;
+    isolation: isolate;
+  }
+  .card-hover::after,
+  article.card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      transparent 30%,
+      rgba(255, 246, 220, 0.55) 48%,
+      transparent 66%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 2;
+  }
+  .card-hover:hover::after,
+  article.card:hover::after {
+    transform: translateX(120%);
+  }
+
+  /* buttons: a light sweep on hover and a small press */
+  .btn-forest {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-forest::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.28) 50%,
+      transparent 65%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .btn-forest:hover::after {
+    transform: translateX(130%);
+  }
+  .btn-forest:active,
+  button:active:not(:disabled) {
+    transform: scale(0.97);
+  }
+
+  /* fields come alive on focus */
+  .field-input:focus {
+    box-shadow:
+      0 0 0 4px rgba(53, 91, 62, 0.12),
+      0 10px 24px -18px rgba(53, 91, 62, 0.6);
+  }
+}

@@ -49,6 +49,18 @@ export class OrdersController {
     return this.orders.listForUser(user.id, query.limit, query.offset);
   }
 
+  /** A new Finik payment page for an unpaid online order. */
+  @Post(':id/pay')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  pay(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @RequestLocale() locale: Locale
+  ) {
+    return this.orders.payOnline(user.id, id, locale);
+  }
+
   @Get(':id')
   get(@CurrentUser() user: AuthenticatedUser, @Param('id', ParseUUIDPipe) id: string) {
     return this.orders.getForUser(user.id, id);
