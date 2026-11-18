@@ -23,7 +23,13 @@ export class PaymentsPublicController {
   @Public()
   @Get('methods')
   methods() {
-    return { cash: true, online: this.finik.configured };
+    return {
+      cash: true,
+      online: this.finik.configured,
+      // test mode: the amount (som) charged instead of the order total
+      testAmount:
+        this.finik.configured && this.finik.testAmount ? this.finik.testAmount / 100 : null,
+    };
   }
 
   /**

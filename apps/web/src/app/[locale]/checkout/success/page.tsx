@@ -76,6 +76,11 @@ function Success() {
               <p className="text-ink-muted">
                 {o.delivery.city}, {o.delivery.address}
               </p>
+              {o.delivery.time && (
+                <p className="text-ink-muted">
+                  {t.checkout.deliveryTime}: {o.delivery.time}
+                </p>
+              )}
               <p className="text-ink-soft">{t.checkout.deliveryNote}</p>
             </div>
           ) : o.pickup ? (

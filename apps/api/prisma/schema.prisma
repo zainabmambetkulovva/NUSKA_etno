@@ -490,6 +490,8 @@ model Order {
   /// Delivery: city / settlement and street, house, apartment (DELIVERY only).
   deliveryCity          String?        @map("delivery_city") @db.VarChar(100)
   deliveryAddress       String?        @map("delivery_address") @db.VarChar(500)
+  /// When it suits the customer to receive the delivery, as they wrote it (optional).
+  deliveryTime          String?        @map("delivery_time") @db.VarChar(100)
   /// How the customer pays: CASH = cash or transfer on receipt; ONLINE = payment provider.
   paymentMethod         PaymentMethod  @default(CASH) @map("payment_method")
   pickupLocationId      String?        @map("pickup_location_id") @db.Uuid
