@@ -355,15 +355,16 @@ server. To avoid the wait altogether, point a free uptime monitor (for example
 UptimeRobot, every 5–10 minutes) at `https://<api-host>/api/health/live` — it
 answers without touching the database — or move the API to a paid plan.
 
-## Hero after the second mockup
+## Hero after the latest mockup
 
-«Табияттан. Дасторконго.» in large serif over a band of mountains (only the
-top of `about.png` is shown), the side note on the left, a carved round tray
-drawn in code (`scripts/podium`, scene `tray` → `public/images/home/tray-wood.webp`)
-with the company's products on computed spots (none covers another), the round
-«Каталогго өтүү» button and the first five categories hanging from the tray rim
-on gold lines (a grid of links on phones). Below it «01 / Биздин тарых — Ар бир
-даамда — салт.» with the yurt and the girl in a hill-shaped frame.
+Left: the gold knot and «КЫРГЫЗСТАНДЫН ТАБИГЫЙ КҮЧҮ», the large «Табияттан.
+Дасторконго.», the subtitle, «Каталогго өтүү» and «Бренд жөнүндө», three
+features with gold line icons. Right: the mockup's own picture (mountains,
+carved tray, the company's products on a cloth) cropped from the mockup with
+the overlapping title letters removed (`public/images/home/hero-scene.webp`),
+fading into the cream on the left; WebGL pollen over it on desktops. Below a
+gold line: the first five categories with icons. On phones: text, picture,
+categories in two columns.
 
 ## Motion everywhere
 

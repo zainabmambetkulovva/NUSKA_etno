@@ -11,6 +11,8 @@ const PHOTOS: Record<string, string> = {
   zhupka: '/images/products/zhupka.png',
   'sary-mai': '/images/products/sary-mai.png',
   'keremet-shypaa': '/images/products/keremet-shypaa.png',
+  kattama: '/images/products/kattama.webp',
+  kholodets: '/images/products/kholodets.webp',
 };
 
 export function companyPhoto(slug?: string | null) {
