@@ -11,7 +11,6 @@ import {
   DiamondIcon,
   HeartIcon,
   LeafIcon,
-  PlayIcon,
   ShieldIcon,
 } from '@/components/ui/icons';
 import { Reveal } from '@/components/ui/reveal';
@@ -373,16 +372,8 @@ export function PricesPodium({
 
 // ---------------------------------------------------------------- 04 story
 
-/** "About us": the meadow photo with a play button and the brand story. */
-export function Story({
-  t,
-  locale,
-  videoUrl,
-}: {
-  t: Dictionary;
-  locale: Locale;
-  videoUrl: string | null;
-}) {
+/** "About us": the meadow photo and the brand story. */
+export function Story({ t, locale }: { t: Dictionary; locale: Locale }) {
   return (
     <section
       className="relative overflow-hidden"
@@ -402,23 +393,6 @@ export function Story({
               sizes="(min-width: 1024px) 45vw, 100vw"
               className="object-cover transition duration-[1.5s] hover:scale-105"
             />
-            {videoUrl && (
-              <a
-                href={videoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={t.home.storyVideo}
-                className="group absolute left-1/2 top-[51%] flex h-[19%] aspect-square -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#27391F]/75 backdrop-blur-sm transition hover:scale-110"
-              >
-                <span className="flex h-[58%] w-[58%] items-center justify-center rounded-full bg-gradient-to-b from-[#F3D896] to-[#D6AD62] text-[#27391F] shadow-lg">
-                  <PlayIcon width={18} height={18} className="translate-x-px" />
-                </span>
-                <span
-                  className="absolute inset-0 rounded-full border border-[#E7C77F]/60 motion-safe:animate-ping"
-                  aria-hidden
-                />
-              </a>
-            )}
           </figure>
         </Reveal>
         <Reveal delay={0.1}>

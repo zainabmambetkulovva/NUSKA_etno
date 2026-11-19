@@ -73,7 +73,7 @@ test('stores are shown as an endless ticker on the pickup page', async ({ page }
   await expect(stores.getByText('Бимар').first()).toBeVisible();
 });
 
-test('home follows the mockup and keeps the earlier blocks: categories, origin, bestsellers, prices, footer', async ({
+test('home follows the mockup and keeps the earlier blocks: categories, origin, our products, footer', async ({
   page,
 }) => {
   await page.goto('/ky');
@@ -83,28 +83,17 @@ test('home follows the mockup and keeps the earlier blocks: categories, origin, 
     ky.landing.originTitle,
     ky.landing.bestTitle,
     ky.home.whyTitle,
-    ky.home.pricesTitle,
     ky.home.storyTitle,
-    ky.home.productsTitle,
     ky.home.ctaTitle,
   ])
     await expect(page.getByRole('heading', { name: title })).toBeAttached();
 
-  // The plates on the podium carry the catalog prices and open the product.
-  const prices = page.locator('section#prices');
-  await prices.scrollIntoViewIfNeeded();
-  await expect(prices.getByRole('link', { name: /Сары май\s*235 сом/ })).toBeVisible();
-  await expect(prices.getByRole('link', { name: /Нават\s*100 сомдон/ })).toBeVisible();
-  await prices.getByRole('link', { name: /Кымыз\s*300 сом/ }).click();
-  await expect(page).toHaveURL(/\/ky\/product\/kymyz$/);
-  await page.goBack();
+  // «Our products» shows every product: kymyz, sary mai, honey and beshbarmak first.
+  const ours = page.getByRole('region', { name: ky.landing.bestTitle }).first();
+  await expect(ours.locator('h3').first()).toHaveText('Кымыз');
+  await expect(ours.locator('h3').nth(1)).toHaveText('Сары май');
+  await expect(page.locator('section#prices')).toHaveCount(0);
 
-  // Product cards open the products.
-  const products = page.locator('section[aria-labelledby="products-title"]');
-  await expect(products.getByRole('link', { name: /Жупка/ })).toHaveAttribute(
-    'href',
-    '/ky/product/zhupka'
-  );
   await expect(page.getByRole('link', { name: ky.home.ctaButton })).toHaveAttribute(
     'href',
     '/ky/catalog'
@@ -117,7 +106,10 @@ test('home follows the mockup and keeps the earlier blocks: categories, origin, 
       .getByRole('link', { name: /Сүт азыктары/ })
   ).toHaveAttribute('href', '/ky/catalog/dairy-products');
   await expect(
-    page.getByRole('region', { name: ky.landing.bestTitle }).getByRole('link', { name: 'Кымыз' })
+    page
+      .getByRole('region', { name: ky.landing.bestTitle })
+      .first()
+      .getByRole('link', { name: 'Кымыз' })
   ).toHaveAttribute('href', '/ky/product/kymyz');
 
   // Footer: catalog, company, help, newsletter, socials and the back to top button.
@@ -141,6 +133,7 @@ test('home follows the mockup and keeps the earlier blocks: categories, origin, 
     /^https:\/\/(www\.)?youtube\.com\//
   );
   // the fixed button above the AI button, shown once the page is scrolled
+  await footer.scrollIntoViewIfNeeded();
   await page.getByRole('button', { name: ky.footer.backToTop }).click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(50);
 });

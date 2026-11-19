@@ -51,7 +51,7 @@ export function ProductCard({
       // Same style on the server and the client (no hydration mismatch); with reduced
       // motion the values simply stay at rest because onMove ignores the pointer.
       style={{ rotateX, rotateY, transformPerspective: 900 }}
-      className="group card relative flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-lift"
+      className="card-hover group card relative flex h-full flex-col overflow-hidden rounded-[1.4rem] transition-[translate,box-shadow] duration-300 hover:shadow-[0_26px_44px_-24px_rgba(80,60,30,0.65)] hover:[translate:0_-6px]"
     >
       <Link href={href} className="block" tabIndex={-1} aria-hidden>
         <ProductImage

@@ -20,9 +20,23 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (me.isFetched && !me.data)
       router.replace(`/${locale}/login?next=${encodeURIComponent(pathname)}`);
-    else if (me.data && me.data.role !== 'ADMIN') router.replace(`/${locale}`);
   }, [me.isFetched, me.data, router, locale, pathname]);
 
+  if (me.data && me.data.role !== 'ADMIN')
+    return (
+      <div className="container flex justify-center py-20">
+        <div className="card max-w-md space-y-4 p-8 text-center">
+          <h1 className="font-serif text-2xl text-nk-ink">{t.admin.noAccessTitle}</h1>
+          <p className="text-ink-muted">{t.admin.noAccessText.replace('{email}', me.data.email)}</p>
+          <Link
+            href={`/${locale}/login?next=${encodeURIComponent(pathname)}`}
+            className="btn-forest"
+          >
+            {t.admin.noAccessSwitch}
+          </Link>
+        </div>
+      </div>
+    );
   if (me.data?.role !== 'ADMIN')
     return <OrnamentLoader label={t.common.loading} className="py-24" />;
 
