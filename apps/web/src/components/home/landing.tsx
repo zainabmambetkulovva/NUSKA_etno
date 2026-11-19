@@ -94,6 +94,7 @@ const CATEGORY_PHOTOS: Record<string, string | null> = {
   'national-sweets': '/images/dishes/navat.png',
   'traditional-dishes': '/images/dishes/besh-barmak.png',
   'meat-products': '/images/products/kholodets.webp',
+  drinks: '/images/products/kompot.webp',
 };
 
 /** «Сила природы в каждой детали»: text on the left, an arch card for every real category. */
@@ -129,7 +130,7 @@ export function CategoryArches({
         </Reveal>
 
         {/* room above and below the scrolling row, so the lift on hover and the soft shadow are not cut */}
-        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:py-0 lg:grid-cols-5 [&::-webkit-scrollbar]:hidden">
+        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:py-0 xl:grid-cols-6 [&::-webkit-scrollbar]:hidden">
           {categories.map((category, i) => {
             const photo = CATEGORY_PHOTOS[category.slug];
             return (

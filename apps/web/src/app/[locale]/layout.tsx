@@ -22,6 +22,9 @@ import '@fontsource/caveat/500.css';
 import '@fontsource/caveat/600.css';
 import '../../styles/globals.css';
 
+/** Link preview picture (WhatsApp, Telegram, Facebook…): the company's banner. */
+const OG_IMAGE = '/og-image.jpg';
+
 export const viewport: Viewport = { themeColor: '#1E3A23' };
 
 export async function generateMetadata({
@@ -42,6 +45,13 @@ export async function generateMetadata({
       title: t.meta.title,
       description: t.meta.description,
       locale: locale === 'ky' ? 'ky_KG' : 'ru_RU',
+      images: [{ url: OG_IMAGE, width: 1200, height: 630, alt: t.meta.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t.meta.title,
+      description: t.meta.description,
+      images: [OG_IMAGE],
     },
   };
 }

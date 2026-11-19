@@ -84,6 +84,11 @@ const categories: { slug: string; sortOrder: number; name: LocalizedName }[] = [
     sortOrder: 5,
     name: { ru: 'Натуральный мёд', ky: 'Табигый бал' },
   },
+  {
+    slug: 'drinks',
+    sortOrder: 6,
+    name: { ru: 'Напитки', ky: 'Суусундуктар' },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -221,7 +226,7 @@ const products: {
     name: 'Компот',
     priceSom: 120,
     type: ProductType.FOOD,
-    categorySlugs: [],
+    categorySlugs: ['drinks'],
     volumeLiters: 1,
   },
 ];
