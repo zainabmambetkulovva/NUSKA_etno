@@ -99,12 +99,12 @@ Without these, image upload endpoints answer `503 STORAGE_NOT_CONFIGURED`.
 The browser never calls the API directly: Next.js proxies `/api/*` to the API
 (same origin, first-party httpOnly cookies, no CORS). Template: `apps/web/.env.example`.
 
-| Variable                  | Default                 | Description                                                                      |
-| ------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
-| `API_INTERNAL_URL`        | `http://localhost:4000` | Where the Next.js server reaches the API (proxy and server rendering)            |
-| `API_PROXY_SECRET`        | –                       | Same value as `PROXY_SECRET` of the API; required in production                  |
-| `NEXT_PUBLIC_SITE_URL`    | `http://localhost:3000` | Public site URL for canonical links, hreflang, sitemap                           |
-| `NEXT_PUBLIC_IMAGES_HOST` | –                       | Exact host of the S3/CDN bucket with product images (enables image optimisation) |
+| Variable                  | Default                                             | Description                                                                        |
+| ------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `API_INTERNAL_URL`        | `http://localhost:4000`                             | Where the Next.js server reaches the API (proxy and server rendering)              |
+| `API_PROXY_SECRET`        | –                                                   | Same value as `PROXY_SECRET` of the API; required in production                    |
+| `NEXT_PUBLIC_SITE_URL`    | Vercel production URL, else `http://localhost:3000` | Public site URL for canonical links, hreflang, sitemap, link previews (Open Graph) |
+| `NEXT_PUBLIC_IMAGES_HOST` | –                                                   | Exact host of the S3/CDN bucket with product images (enables image optimisation)   |
 
 > The browser calls `/api/*` on the website; `src/app/api/[...path]/route.ts` forwards the
 > request to the API with `X-Proxy-Secret` and `X-Client-IP` (the visitor IP from

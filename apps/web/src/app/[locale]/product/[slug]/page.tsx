@@ -49,9 +49,10 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
     openGraph: {
       title: product.name,
       description,
+      // the product's photo, else the company's banner
       images: product.images[0]
         ? [{ url: product.images[0].url, alt: product.images[0].alt ?? product.name }]
-        : undefined,
+        : [{ url: '/og-image.jpg', width: 1200, height: 630, alt: product.name }],
     },
   };
 }
