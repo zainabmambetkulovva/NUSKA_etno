@@ -19,8 +19,8 @@ test('a product page tells what it is good for, what it is made of and the price
 }) => {
   // Opened from the "Our products" cards of the home page.
   await page.goto('/ky');
-  const products = page.locator('section[aria-labelledby="products-title"]');
-  await products.getByRole('link', { name: /Сары май/ }).click();
+  const products = page.getByRole('region', { name: ky.landing.bestTitle }).first();
+  await products.getByRole('link', { name: 'Сары май', exact: true }).click();
   await expect(page).toHaveURL(/\/ky\/product\/sary-mai$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Сары май' })).toBeVisible();
   await expect(page.getByText('235 сом').first()).toBeVisible();

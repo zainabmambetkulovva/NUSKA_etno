@@ -84,6 +84,22 @@ const CATEGORY_ICONS: Record<string, string> = {
 const FEATURE_ICONS = ['leaf', 'recipe', 'mountains'];
 
 /**
+ * The company's own package photos laid over the scene where the mockup drew
+ * them (positions in px of the 1026 × 763 scene): sharp at any size, and each
+ * can glow along its own outline. Back to front.
+ */
+const SCENE_W = 1026;
+const SCENE_H = 763;
+const SCENE_ITEMS = [
+  { name: 'zhupka', w: 231, h: 352, cx: 338, bottom: 545 },
+  { name: 'kymyz', w: 141, h: 447, cx: 522, bottom: 557 },
+  { name: 'keremet-shypaa', w: 138, h: 388, cx: 803, bottom: 547 },
+  { name: 'sary-mai', w: 180, h: 250, cx: 685, bottom: 600 },
+  { name: 'kymyz-bowl', w: 232, h: 180, cx: 216, bottom: 601 },
+  { name: 'navat', w: 194, h: 152, cx: 438, bottom: 634 },
+] as const;
+
+/**
  * First screen after the company's mockup: on the left the gold knot and
  * «КЫРГЫЗСТАНДЫН ТАБИГЫЙ КҮЧҮ», the large «Табияттан. Дасторконго.», the
  * subtitle, «Каталогго өтүү» and «Бренд жөнүндө», three features; on the
@@ -128,6 +144,26 @@ export function Hero({
               unoptimized
               className="object-cover motion-safe:animate-[hero-in_1.4s_cubic-bezier(.22,1,.36,1)_both]"
             />
+            {/* the packages; one after another, each glows along its outline every 2 s */}
+            {SCENE_ITEMS.map((item, i) => (
+              <Image
+                key={item.name}
+                src={`/images/home/hero-items/${item.name}.webp`}
+                alt=""
+                width={item.w * 2}
+                height={item.h * 2}
+                priority
+                unoptimized
+                className="hero-glow absolute"
+                style={{
+                  left: `${((item.cx - item.w / 2) / SCENE_W) * 100}%`,
+                  top: `${((item.bottom - item.h) / SCENE_H) * 100}%`,
+                  width: `${(item.w / SCENE_W) * 100}%`,
+                  height: `${(item.h / SCENE_H) * 100}%`,
+                  animationDelay: `${1.5 + i * 2}s`,
+                }}
+              />
+            ))}
           </div>
           <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
             <Cloud className="left-[30%] top-[6%] h-14 w-52 [--drift:50px]" />
@@ -229,7 +265,7 @@ export function Hero({
             >
               <Link
                 href={`/${locale}/catalog/${category.slug}`}
-                className="group flex items-center gap-2.5 rounded-2xl px-2 py-2.5 font-serif text-[1rem] leading-tight text-nk-ink transition hover:bg-white/60 hover:text-nk-forest sm:text-[1.05rem] lg:justify-center lg:whitespace-nowrap lg:text-[1.08rem] xl:text-[1.15rem]"
+                className="group flex items-center gap-2.5 rounded-2xl px-2 py-2.5 font-serif text-[1rem] leading-tight text-nk-ink transition hover:bg-white/60 hover:text-nk-forest sm:text-[1.05rem] lg:justify-center lg:gap-2 lg:whitespace-nowrap lg:text-[0.98rem] xl:text-[1.08rem]"
               >
                 <Icon
                   name={CATEGORY_ICONS[category.slug] ?? 'leaf'}

@@ -13,6 +13,7 @@ import { ArrowLeftIcon, ArrowRightIcon, StarIcon } from '@/components/ui/icons';
 import { useI18n } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/cn';
 import { formatMoney } from '@/lib/format';
+import { companyPhoto } from '@/lib/product-photos';
 
 function BestsellerCard({ product }: { product: ProductCard }) {
   const { t, locale } = useI18n();
@@ -27,7 +28,12 @@ function BestsellerCard({ product }: { product: ProductCard }) {
         className="relative block bg-[radial-gradient(ellipse_at_50%_60%,#FFF8EA,#F3E4C8)]"
       >
         <ProductImage
-          url={product.image?.url}
+          // beshbarmak is shown in its package here (the company's photo)
+          url={
+            product.slug === 'besh-barmak'
+              ? (companyPhoto(product.slug) ?? product.image?.url)
+              : product.image?.url
+          }
           slug={product.slug}
           alt={product.image?.alt}
           name={product.name}
@@ -170,7 +176,7 @@ export function Bestsellers({ products }: { products: ProductCard[] }) {
           onPointerMove={onPointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
-          className="-mx-4 -my-8 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto scroll-smooth px-4 py-8 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="-mx-4 -my-14 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto scroll-smooth px-4 py-14 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           role="region"
           aria-roledescription="carousel"
           aria-label={t.landing.bestTitle}

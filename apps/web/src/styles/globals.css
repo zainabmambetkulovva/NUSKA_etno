@@ -213,9 +213,10 @@ main:has([data-flush-footer]) + footer {
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     main
-      :is(h2, h3, .card, article, form, dl, table, ul.grid > li, ol > li, [data-reveal]):not(
+      :is(h2, h3, form, dl, table, ul.grid > li, div.grid > *, ol > li, [data-reveal]):not(
         [data-no-reveal] *
       ),
+    main .card:not(article, li *, div.grid > *, .grid *):not([data-no-reveal] *),
     main p:not([data-no-reveal] *, .card *, article *, li *, form *, label *) {
       animation: ar-rise linear both;
       animation-timeline: view();
@@ -236,7 +237,7 @@ main:has([data-flush-footer]) + footer {
   a.card:hover,
   .card-hover:hover,
   article.card:hover {
-    transform: translateY(-4px);
+    translate: 0 -4px;
     box-shadow: 0 26px 46px -28px rgba(70, 48, 20, 0.6);
     border-color: rgba(199, 166, 106, 0.55);
   }
@@ -298,5 +299,27 @@ main:has([data-flush-footer]) + footer {
     box-shadow:
       0 0 0 4px rgba(53, 91, 62, 0.12),
       0 10px 24px -18px rgba(53, 91, 62, 0.6);
+  }
+}
+
+/* Hero packages: each glows along its own outline for a moment, one after
+   another (6 items × 2 s). Two drop-shadows always, so the filter animates. */
+.hero-glow {
+  filter: drop-shadow(0 0 0 rgba(255, 210, 120, 0)) drop-shadow(0 0 0 rgba(255, 190, 80, 0));
+}
+@keyframes hero-glow {
+  0%,
+  17%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(255, 210, 120, 0)) drop-shadow(0 0 0 rgba(255, 190, 80, 0));
+  }
+  7% {
+    filter: drop-shadow(0 0 3px rgba(255, 226, 150, 1))
+      drop-shadow(0 0 16px rgba(255, 190, 80, 0.85));
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-glow {
+    animation: hero-glow 12s ease-in-out infinite;
   }
 }

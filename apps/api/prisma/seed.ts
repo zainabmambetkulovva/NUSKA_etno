@@ -215,6 +215,15 @@ const products: {
     type: ProductType.FOOD,
     categorySlugs: ['natural-honey'],
   },
+  {
+    sku: 'KOMPOT',
+    slug: 'kompot',
+    name: 'Компот',
+    priceSom: 120,
+    type: ProductType.FOOD,
+    categorySlugs: [],
+    volumeLiters: 1,
+  },
 ];
 
 // ---------------------------------------------------------------------------
