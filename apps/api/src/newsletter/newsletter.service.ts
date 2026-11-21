@@ -7,6 +7,7 @@ import { AppError } from '../common/errors';
 import { DEFAULT_LOCALE, Locale } from '../common/utils/locale';
 import { paginate } from '../common/utils/pagination';
 import { generateToken, hashToken } from '../common/utils/tokens';
+import { webOrigin } from '../common/utils/web-origin';
 import { MailService } from '../mail/mail.service';
 import { newsletterConfirmMail } from '../mail/mail.templates';
 import { PrismaService } from '../prisma/prisma.service';
@@ -33,7 +34,7 @@ export class NewsletterService {
     private readonly audit: AuditService,
     config: ConfigService
   ) {
-    this.webUrl = config.get<string>('WEB_URL') ?? 'http://localhost:3000';
+    this.webUrl = webOrigin(config);
   }
 
   async subscribe(dto: SubscribeDto): Promise<{ ok: true }> {

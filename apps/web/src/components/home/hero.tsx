@@ -85,18 +85,19 @@ const FEATURE_ICONS = ['leaf', 'recipe', 'mountains'];
 
 /**
  * The company's own package photos laid over the scene where the mockup drew
- * them (positions in px of the 1026 × 763 scene): sharp at any size, and each
- * can glow along its own outline. Back to front.
+ * them on the empty carved tray (positions in px of the 1072 × 762 scene):
+ * sharp at any size, each on its own spot with a soft contact shadow, and
+ * each glows along its own outline in turn. Back to front.
  */
-const SCENE_W = 1026;
-const SCENE_H = 763;
+const SCENE_W = 1072;
+const SCENE_H = 762;
 const SCENE_ITEMS = [
-  { name: 'zhupka', w: 231, h: 352, cx: 338, bottom: 545 },
-  { name: 'kymyz', w: 141, h: 447, cx: 522, bottom: 557 },
-  { name: 'keremet-shypaa', w: 138, h: 388, cx: 803, bottom: 547 },
-  { name: 'sary-mai', w: 180, h: 250, cx: 685, bottom: 600 },
-  { name: 'kymyz-bowl', w: 232, h: 180, cx: 216, bottom: 601 },
-  { name: 'navat', w: 194, h: 152, cx: 438, bottom: 634 },
+  { name: 'zhupka', w: 216, h: 330, cx: 345, bottom: 590 },
+  { name: 'kymyz', w: 136, h: 430, cx: 522, bottom: 600 },
+  { name: 'keremet-shypaa', w: 131, h: 370, cx: 862, bottom: 585 },
+  { name: 'sary-mai', w: 172, h: 240, cx: 692, bottom: 645 },
+  { name: 'kymyz-bowl', w: 213, h: 165, cx: 252, bottom: 655 },
+  { name: 'navat', w: 179, h: 140, cx: 482, bottom: 672 },
 ] as const;
 
 /**
@@ -127,10 +128,10 @@ export function Hero({
         aria-hidden
       />
 
-      <div className="relative flex flex-col lg:block lg:min-h-[min(47.5vw,820px)]">
+      <div className="relative flex flex-col lg:block lg:min-h-[min(45.5vw,790px)]">
         {/* the picture: right two thirds on desktop, a band under the text on phones */}
         <HeroLayer
-          className="relative order-2 mt-6 aspect-[1026/763] w-full lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:w-[64vw] lg:max-w-[1100px]"
+          className="relative order-2 mt-6 aspect-[1072/762] w-full lg:absolute lg:right-0 lg:top-0 lg:mt-0 lg:w-[64vw] lg:max-w-[1100px]"
           depth={-0.35}
           zoom={0.06}
           origin="60% 80%"
@@ -146,23 +147,35 @@ export function Hero({
             />
             {/* the packages; one after another, each glows along its outline every 2 s */}
             {SCENE_ITEMS.map((item, i) => (
-              <Image
-                key={item.name}
-                src={`/images/home/hero-items/${item.name}.webp`}
-                alt=""
-                width={item.w * 2}
-                height={item.h * 2}
-                priority
-                unoptimized
-                className="hero-glow absolute"
-                style={{
-                  left: `${((item.cx - item.w / 2) / SCENE_W) * 100}%`,
-                  top: `${((item.bottom - item.h) / SCENE_H) * 100}%`,
-                  width: `${(item.w / SCENE_W) * 100}%`,
-                  height: `${(item.h / SCENE_H) * 100}%`,
-                  animationDelay: `${1.5 + i * 2}s`,
-                }}
-              />
+              <div key={item.name} className="contents">
+                {/* contact shadow on the tray */}
+                <span
+                  className="absolute rounded-[50%] bg-[rgba(45,25,8,0.45)] blur-[6px]"
+                  style={{
+                    left: `${((item.cx - item.w * 0.42) / SCENE_W) * 100}%`,
+                    top: `${((item.bottom - 9) / SCENE_H) * 100}%`,
+                    width: `${((item.w * 0.84) / SCENE_W) * 100}%`,
+                    height: `${(16 / SCENE_H) * 100}%`,
+                  }}
+                  aria-hidden
+                />
+                <Image
+                  src={`/images/home/hero-items/${item.name}.webp`}
+                  alt=""
+                  width={item.w * 2}
+                  height={item.h * 2}
+                  priority
+                  unoptimized
+                  className="hero-glow absolute"
+                  style={{
+                    left: `${((item.cx - item.w / 2) / SCENE_W) * 100}%`,
+                    top: `${((item.bottom - item.h) / SCENE_H) * 100}%`,
+                    width: `${(item.w / SCENE_W) * 100}%`,
+                    height: `${(item.h / SCENE_H) * 100}%`,
+                    animationDelay: `${1.5 + i * 2}s`,
+                  }}
+                />
+              </div>
             ))}
           </div>
           <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
@@ -184,7 +197,7 @@ export function Hero({
             <h1
               id="hero-title"
               aria-label={`${t.home.heroLine1} ${t.home.heroLine2}`}
-              className="mt-6 font-serif text-[clamp(2.9rem,7vw,6.4rem)] font-semibold leading-[0.95] tracking-tight text-[#1F3A22]"
+              className="mt-6 font-serif text-[clamp(2.9rem,6.2vw,5.6rem)] font-semibold leading-[0.95] tracking-tight text-[#1F3A22]"
             >
               <TextReveal
                 as="span"

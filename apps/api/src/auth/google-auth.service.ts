@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppError } from '../common/errors';
 import { DEFAULT_LOCALE, isLocale, Locale } from '../common/utils/locale';
 import { generateToken } from '../common/utils/tokens';
+import { webOrigin } from '../common/utils/web-origin';
 
 /** State kept in a short-lived httpOnly cookie between the redirect to Google and the callback. */
 export interface GoogleOAuthState {
@@ -44,7 +45,7 @@ export class GoogleAuthService {
   constructor(config: ConfigService) {
     this.clientId = config.get<string>('GOOGLE_CLIENT_ID') || undefined;
     this.clientSecret = config.get<string>('GOOGLE_CLIENT_SECRET') || undefined;
-    this.webUrl = (config.get<string>('WEB_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
+    this.webUrl = webOrigin(config);
     this.redirectUri =
       config.get<string>('GOOGLE_REDIRECT_URI') || `${this.webUrl}/api/auth/google/callback`;
   }

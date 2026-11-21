@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { webOrigin } from '../../common/utils/web-origin';
+
 import { signFinik, verifyFinik } from './finik-signature';
 
 /**
@@ -88,7 +90,7 @@ export class FinikService {
     this.testAmount = Number.isInteger(test) && test > 0 ? test * 100 : null;
     if (this.testAmount)
       this.logger.warn(`Finik TEST MODE: every online payment charges ${test} som`);
-    const webUrl = (config.get<string>('WEB_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
+    const webUrl = webOrigin(config);
     this.webhookUrl = new URL(
       config.get<string>('FINIK_WEBHOOK_URL') || `${webUrl}/api/payments/finik/webhook`
     );
