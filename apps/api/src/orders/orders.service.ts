@@ -8,6 +8,7 @@ import { AppError } from '../common/errors';
 import { Locale, pickTranslation } from '../common/utils/locale';
 import { paginate } from '../common/utils/pagination';
 import { normalizePhone } from '../common/utils/phone';
+import { webOrigin } from '../common/utils/web-origin';
 import { InventoryService } from '../inventory/inventory.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { FinikService } from '../payments/finik/finik.service';
@@ -68,7 +69,7 @@ export class OrdersService {
     private readonly finik: FinikService,
     config: ConfigService
   ) {
-    this.webUrl = (config.get<string>('WEB_URL') ?? 'http://localhost:3000').replace(/\/$/, '');
+    this.webUrl = webOrigin(config);
   }
 
   // --- Checkout (TZ §9) ----------------------------------------------------
@@ -244,7 +245,8 @@ export class OrdersService {
         paymentId: payment.providerPaymentId!,
         amount: payment.amount,
         description: `NUSKA_etno №${order.orderNumber}`,
-        redirectUrl: `${this.webUrl}/${locale}/checkout/success?order=${orderId}`,
+        // a plain path: payment pages often mangle or drop a query string
+        redirectUrl: `${this.webUrl}/${locale}/checkout/paid/${orderId}`,
         locale,
       });
     } catch (error) {

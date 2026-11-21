@@ -284,6 +284,15 @@ const ru: Dictionary = {
     },
   },
   checkout: {
+    receiptTitle: 'Чек об оплате',
+    receiptPaid: 'Оплачено',
+    receiptDate: 'Дата оплаты',
+    receiptMethod: 'Способ оплаты',
+    receiptMethodOnline: 'Онлайн, Finik',
+    receiptPayment: 'Номер платежа',
+    receiptPrint: 'Распечатать чек',
+    confirmingPayment: 'Подтверждаем оплату… Это займёт несколько секунд.',
+    signInToSee: 'Войдите в аккаунт, чтобы увидеть заказ.',
     deliveryTime: 'Удобное время',
     deliveryTimePlaceholder: 'Например: завтра после 18:00',
     testPayment:

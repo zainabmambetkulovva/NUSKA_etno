@@ -125,7 +125,7 @@ describe('Online payment with Finik (e2e)', () => {
       Amount: 300,
       CardType: 'FINIK_QR',
       Lang: 'ru',
-      RedirectUrl: `http://localhost:3000/ru/checkout/success?order=${order.id}`,
+      RedirectUrl: `http://localhost:3000/ru/checkout/paid/${order.id}`,
       Data: { accountId: ACCOUNT, webhookUrl: `http://localhost:3000${WEBHOOK_PATH}` },
     });
     const paymentId = sent.body.PaymentId as string;

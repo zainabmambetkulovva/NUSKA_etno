@@ -8,6 +8,7 @@ import { parseDurationSeconds } from '../common/utils/duration';
 import { DEFAULT_LOCALE, isLocale } from '../common/utils/locale';
 import { normalizePhone } from '../common/utils/phone';
 import { generateToken, hashToken } from '../common/utils/tokens';
+import { webOrigin } from '../common/utils/web-origin';
 import { MailService } from '../mail/mail.service';
 import { emailVerificationMail, passwordResetMail } from '../mail/mail.templates';
 import { PrismaService } from '../prisma/prisma.service';
@@ -51,7 +52,7 @@ export class AuthService {
   ) {
     this.accessTtlSeconds = parseDurationSeconds(config.get<string>('JWT_EXPIRES_IN') ?? '15m');
     this.refreshTtlMs = (config.get<number>('REFRESH_TOKEN_TTL_DAYS') ?? 30) * 24 * 60 * 60 * 1000;
-    this.webUrl = config.get<string>('WEB_URL') ?? 'http://localhost:3000';
+    this.webUrl = webOrigin(config);
   }
 
   async register(dto: RegisterDto, meta: ClientMeta) {
