@@ -67,9 +67,10 @@ export class FinikService {
   /** public address Finik calls (through the website proxy) */
   readonly webhookUrl: URL;
   /**
-   * Test mode (FINIK_TEST_AMOUNT, whole som, e.g. 1): every online payment
-   * charges this amount instead of the order total, so real payments can be
-   * tried many times. Prices and order totals stay real. null = off.
+   * Test mode: every online payment charges FINIK_TEST_AMOUNT som instead of
+   * the order total, so real payments can be tried many times; prices and
+   * order totals stay real. While the shop is being tested it is ON by
+   * default (1 som); FINIK_TEST_AMOUNT=0 switches it off for real sales.
    */
   readonly testAmount: number | null;
 
@@ -82,7 +83,8 @@ export class FinikService {
     this.publicKey = config.get<string>('FINIK_PUBLIC_KEY') || FINIK_PUBLIC_KEYS[this.env];
     this.merchantName = config.get<string>('FINIK_MERCHANT_NAME') || 'NUSKA_etno';
     this.cardType = config.get<string>('FINIK_CARD_TYPE') || 'FINIK_QR';
-    const test = Number(config.get<string>('FINIK_TEST_AMOUNT') ?? '');
+    const raw = (config.get<string>('FINIK_TEST_AMOUNT') ?? '').trim();
+    const test = raw === '' ? 1 : Number(raw);
     this.testAmount = Number.isInteger(test) && test > 0 ? test * 100 : null;
     if (this.testAmount)
       this.logger.warn(`Finik TEST MODE: every online payment charges ${test} som`);

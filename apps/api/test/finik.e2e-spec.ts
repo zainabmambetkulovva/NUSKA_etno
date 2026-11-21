@@ -32,6 +32,8 @@ describe('Online payment with Finik (e2e)', () => {
       // webhooks in this test are signed with Finik's published TEST key pair
       FINIK_PUBLIC_KEY: FINIK_TEST_PUBLIC_KEY,
       FINIK_ENV: 'beta',
+      // real amounts in this suite (test mode is on by default)
+      FINIK_TEST_AMOUNT: '0',
     });
     ctx = await createTestApp();
   });
@@ -42,6 +44,7 @@ describe('Online payment with Finik (e2e)', () => {
       'FINIK_PRIVATE_KEY',
       'FINIK_PUBLIC_KEY',
       'FINIK_ENV',
+      'FINIK_TEST_AMOUNT',
     ])
       delete process.env[key];
     await ctx.app.close();
@@ -205,7 +208,8 @@ describe('Finik test mode: FINIK_TEST_AMOUNT (e2e)', () => {
       FINIK_PRIVATE_KEY: FINIK_TEST_PRIVATE_KEY,
       FINIK_PUBLIC_KEY: FINIK_TEST_PUBLIC_KEY,
       FINIK_ENV: 'beta',
-      FINIK_TEST_AMOUNT: '1',
+      // not set at all: test mode is on by default (1 som)
+      FINIK_TEST_AMOUNT: '',
     });
     ctx = await createTestApp();
   });

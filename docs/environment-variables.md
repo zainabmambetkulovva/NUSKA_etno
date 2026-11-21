@@ -168,16 +168,17 @@ The payment is created and confirmed by the **API**, so the keys go to
 **Render → nuska-etno-api → Environment** (not to Vercel: the website never
 sees them).
 
-| Variable              | Value                                                                                                   |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `FINIK_API_KEY`       | `x-api-key` from the Finik merchant account — **secret**                                                |
-| `FINIK_ACCOUNT_ID`    | the Finik account that receives the money                                                               |
-| `FINIK_PRIVATE_KEY`   | the RSA private key whose public key was sent to Finik (PEM; one line with `\n` works) — **secret**     |
-| `FINIK_ENV`           | `production` (default) or `beta` (Finik's test environment)                                             |
-| `FINIK_MERCHANT_NAME` | optional; name on the payment page (default `NUSKA_etno`)                                               |
-| `FINIK_CARD_TYPE`     | optional; default `FINIK_QR`                                                                            |
-| `FINIK_WEBHOOK_URL`   | optional; default `${WEB_URL}/api/payments/finik/webhook`                                               |
-| `FINIK_PUBLIC_KEY`    | optional; Finik's webhook key if Finik changes it (the published production and beta keys are built in) |
+| Variable              | Value                                                                                                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FINIK_API_KEY`       | `x-api-key` from the Finik merchant account — **secret**                                                                                                                                              |
+| `FINIK_ACCOUNT_ID`    | the Finik account that receives the money                                                                                                                                                             |
+| `FINIK_PRIVATE_KEY`   | the RSA private key whose public key was sent to Finik (PEM; one line with `\n` works) — **secret**                                                                                                   |
+| `FINIK_ENV`           | `production` (default) or `beta` (Finik's test environment)                                                                                                                                           |
+| `FINIK_MERCHANT_NAME` | optional; name on the payment page (default `NUSKA_etno`)                                                                                                                                             |
+| `FINIK_CARD_TYPE`     | optional; default `FINIK_QR`                                                                                                                                                                          |
+| `FINIK_WEBHOOK_URL`   | optional; default `${WEB_URL}/api/payments/finik/webhook`                                                                                                                                             |
+| `FINIK_TEST_AMOUNT`   | test mode, **on by default while the shop is tested**: every online payment charges this many som (default `1`) instead of the order total; prices and order totals stay real. Set `0` for real sales |
+| `FINIK_PUBLIC_KEY`    | optional; Finik's webhook key if Finik changes it (the published production and beta keys are built in)                                                                                               |
 
 How it works: checkout with «Онлайн-оплата» creates the order and a pending
 payment, the API signs a request to Finik (`POST /v1/payment`, RSA-SHA256 as in
