@@ -36,6 +36,14 @@ ZwIDAQAB
 const HOSTS = { production: 'api.acquiring.averspay.kg', beta: 'beta.api.acquiring.averspay.kg' };
 const PAYMENT_PATH = '/v1/payment';
 
+/** Finik refused or did not answer; `reason` is short and has no secrets. */
+export class FinikError extends Error {
+  constructor(readonly reason: string) {
+    super(reason);
+    this.name = 'FinikError';
+  }
+}
+
 export type FinikResult = 'SUCCEEDED' | 'FAILED' | 'UNKNOWN';
 
 export interface FinikWebhook {
@@ -154,6 +162,9 @@ export class FinikService {
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(20_000),
+    }).catch((error: Error) => {
+      this.logger.error(`Finik create payment: no answer (${error.message})`);
+      throw new FinikError('no answer from Finik');
     });
     // Finik answers 302 with the payment page in Location (or JSON with paymentUrl).
     const location = response.headers.get('location');
@@ -168,7 +179,16 @@ export class FinikService {
       }
     }
     this.logger.error(`Finik create payment failed: HTTP ${response.status} ${text.slice(0, 300)}`);
-    throw new Error(`Finik create payment failed: HTTP ${response.status}`);
+    let detail = '';
+    try {
+      const body = JSON.parse(text) as { ErrorMessage?: string; message?: string };
+      detail = String(body.ErrorMessage ?? body.message ?? '');
+    } catch {
+      // not JSON
+    }
+    throw new FinikError(
+      `HTTP ${response.status}${detail ? `: ${detail.slice(0, 160)}` : ''}`.trim()
+    );
   }
 
   /**

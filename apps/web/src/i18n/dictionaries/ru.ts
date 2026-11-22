@@ -284,6 +284,10 @@ const ru: Dictionary = {
     },
   },
   checkout: {
+    unpaidTitle: 'Заказ создан — ожидает оплаты',
+    unpaidText:
+      'Страница оплаты не открылась, деньги не списаны. Нажмите кнопку ниже, чтобы повторить, или оплатите при получении.',
+    payReason: 'Ответ платёжной системы',
     receiptTitle: 'Чек об оплате',
     receiptPaid: 'Оплачено',
     receiptDate: 'Дата оплаты',
@@ -425,6 +429,15 @@ const ru: Dictionary = {
     suggestions: 'Подсказки',
   },
   auth: {
+    registerPanelTitle: 'Добро пожаловать в семью NUSKA_etno',
+    registerPanelText: 'Аккаунт — минута до традиционных вкусов.',
+    registerSub: 'Заполните пару строк — и можно заказывать.',
+    stepAbout: 'О вас',
+    stepAccess: 'Для входа',
+    pwRules: ['Не менее 8 символов', 'Буквы', 'Цифры'],
+    pwStrength: ['Слабый', 'Средний', 'Хороший', 'Надёжный'],
+    termsCardTitle: 'Согласие',
+    haveAccountCta: 'Уже есть аккаунт?',
     panelTitle: 'Личный кабинет NUSKA_etno',
     panelText: 'Войдите, чтобы управлять заказами в одном месте.',
     perks: [

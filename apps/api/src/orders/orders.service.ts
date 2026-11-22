@@ -11,7 +11,7 @@ import { normalizePhone } from '../common/utils/phone';
 import { webOrigin } from '../common/utils/web-origin';
 import { InventoryService } from '../inventory/inventory.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { FinikService } from '../payments/finik/finik.service';
+import { FinikError, FinikService } from '../payments/finik/finik.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DbClient } from '../prisma/prisma.types';
 
@@ -215,15 +215,22 @@ export class OrdersService {
     );
 
     const view = await this.getForUser(userId, orderId);
-    return online ? { ...view, paymentUrl: await this.paymentLink(orderId, locale) } : view;
+    if (!online) return view;
+    const link = await this.paymentLink(orderId, locale);
+    return { ...view, paymentUrl: link.url, paymentError: link.error };
   }
 
   /**
    * Finik payment page for the order's pending online payment (a new payment
-   * attempt when the previous one failed). null when Finik does not answer:
-   * the customer can try again from the order page.
+   * attempt when the previous one failed). `url` is null when Finik refused
+   * or did not answer: the customer can try again from the order page, and
+   * `error` says why — only while test mode is on (no provider details to
+   * customers of the real shop).
    */
-  private async paymentLink(orderId: string, locale: Locale): Promise<string | null> {
+  private async paymentLink(
+    orderId: string,
+    locale: Locale
+  ): Promise<{ url: string | null; error: string | null }> {
     const order = await this.prisma.order.findUniqueOrThrow({
       where: { id: orderId },
       include: { payments: { orderBy: { createdAt: 'desc' } } },
@@ -241,7 +248,7 @@ export class OrdersService {
         },
       });
     try {
-      return await this.finik.createPayment({
+      const url = await this.finik.createPayment({
         paymentId: payment.providerPaymentId!,
         amount: payment.amount,
         description: `NUSKA_etno №${order.orderNumber}`,
@@ -249,9 +256,11 @@ export class OrdersService {
         redirectUrl: `${this.webUrl}/${locale}/checkout/paid/${orderId}`,
         locale,
       });
+      return { url, error: null };
     } catch (error) {
       this.logger.error(`order ${orderId}: Finik payment link failed: ${(error as Error).message}`);
-      return null;
+      const reason = error instanceof FinikError ? error.reason : 'unexpected error';
+      return { url: null, error: this.finik.testAmount ? reason : null };
     }
   }
 
@@ -268,10 +277,12 @@ export class OrdersService {
       throw AppError.conflict('ORDER_CLOSED', 'The order is closed');
     if (order.payments.some((p) => p.status === 'PAID'))
       throw AppError.conflict('ALREADY_PAID', 'The order is already paid');
-    const paymentUrl = await this.paymentLink(orderId, locale);
-    if (!paymentUrl)
-      throw AppError.badRequest('PAYMENT_PROVIDER_ERROR', 'The payment provider did not answer');
-    return { paymentUrl };
+    const link = await this.paymentLink(orderId, locale);
+    if (!link.url)
+      throw AppError.badRequest('PAYMENT_PROVIDER_ERROR', 'The payment provider did not answer', {
+        reason: link.error,
+      });
+    return { paymentUrl: link.url };
   }
 
   // --- Customer ----------------------------------------------------------

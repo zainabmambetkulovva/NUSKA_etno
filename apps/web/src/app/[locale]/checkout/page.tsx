@@ -107,7 +107,7 @@ export default function CheckoutPage() {
 
   const place = useMutation({
     mutationFn: (values: FormValues) =>
-      api<Order & { paymentUrl?: string | null }>('/orders', {
+      api<Order & { paymentUrl?: string | null; paymentError?: string | null }>('/orders', {
         method: 'POST',
         locale,
         body: {
@@ -140,8 +140,16 @@ export default function CheckoutPage() {
         window.location.assign(order.paymentUrl);
         return;
       }
-      if (order.paymentMethod === 'ONLINE') toast(t.checkout.payOnlineFailed, 'error');
-      else toast(t.checkout.success);
+      if (order.paymentMethod === 'ONLINE') {
+        // the order is kept; the next page says the payment did not open, and why
+        try {
+          if (order.paymentError)
+            window.sessionStorage.setItem(`nuska-pay-error-${order.id}`, order.paymentError);
+        } catch {
+          // storage unavailable: the reason is simply not shown
+        }
+        toast(t.checkout.payOnlineFailed, 'error');
+      } else toast(t.checkout.success);
       router.push(`/${locale}/checkout/success?order=${order.id}`);
     },
   });

@@ -16,9 +16,9 @@ on:
         type: boolean
         default: true
       reset_password:
-        description: If the administrator's account already exists, set its password to ADMIN_PASSWORD
+        description: Set the administrator's password to ADMIN_PASSWORD (also if the account already exists)
         type: boolean
-        default: false
+        default: true
 
 concurrency:
   group: init-database

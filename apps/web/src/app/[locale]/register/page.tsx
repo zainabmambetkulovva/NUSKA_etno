@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 import { AuthCard, safeNext } from '@/components/auth/auth-card';
 import { GoogleButton } from '@/components/auth/google-button';
+import { PasswordStrength } from '@/components/auth/password-strength';
 import { Button } from '@/components/ui/button';
 import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
@@ -18,6 +19,19 @@ import { useRegister } from '@/hooks/use-auth';
 import { useI18n } from '@/i18n/i18n-provider';
 import { ApiError } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
+
+/** «① О вас» — a numbered gold badge and a thin rule. */
+function StepHeading({ n, title }: { n: number; title: string }) {
+  return (
+    <div className="flex items-center gap-3 pt-1">
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-nk-gold/90 font-serif text-sm font-semibold text-nk-night">
+        {n}
+      </span>
+      <span className="font-serif text-lg text-nk-ink">{title}</span>
+      <span className="h-px flex-1 bg-gradient-to-r from-nk-gold/50 to-transparent" aria-hidden />
+    </div>
+  );
+}
 
 function RegisterForm() {
   const { t, locale } = useI18n();
@@ -68,6 +82,9 @@ function RegisterForm() {
   return (
     <AuthCard
       title={t.auth.registerTitle}
+      subtitle={t.auth.registerSub}
+      panelTitle={t.auth.registerPanelTitle}
+      panelText={t.auth.registerPanelText}
       footer={
         <>
           {t.auth.haveAccount}{' '}
@@ -93,6 +110,7 @@ function RegisterForm() {
           )
         )}
       >
+        <StepHeading n={1} title={t.auth.stepAbout} />
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={t.auth.firstName} error={errors.firstName?.message}>
             {(id, d) => (
@@ -148,7 +166,8 @@ function RegisterForm() {
             />
           )}
         </Field>
-        <Field label={t.auth.password} error={errors.password?.message} hint={t.auth.passwordHint}>
+        <StepHeading n={2} title={t.auth.stepAccess} />
+        <Field label={t.auth.password} error={errors.password?.message}>
           {(id, d) => (
             <PasswordInput
               id={id}
@@ -158,6 +177,7 @@ function RegisterForm() {
             />
           )}
         </Field>
+        <PasswordStrength value={form.watch('password') ?? ''} />
         <Field label={t.auth.passwordConfirm} error={errors.passwordConfirm?.message}>
           {(id, d) => (
             <PasswordInput
@@ -168,7 +188,7 @@ function RegisterForm() {
             />
           )}
         </Field>
-        <div>
+        <div className="rounded-xl border border-nk-gold/40 bg-[#FFFCF4] p-3.5">
           <label className="flex items-start gap-2.5 text-sm text-ink-muted">
             <input
               type="checkbox"
