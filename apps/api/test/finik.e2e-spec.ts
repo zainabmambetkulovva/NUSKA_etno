@@ -288,4 +288,44 @@ describe('Finik test mode: FINIK_TEST_AMOUNT (e2e)', () => {
       expect.objectContaining({ status: 'PAID', amount: expect.objectContaining({ amount: 100 }) }),
     ]);
   });
+
+  it('when Finik refuses, the order is kept, the reason is reported (test mode) and paying again works', async () => {
+    const product = await createProduct(ctx.prisma, { priceAmount: 23500, stockQuantity: 5 });
+    const user = await createUser(ctx.prisma);
+    const agent = await loginAs(ctx.app, user.email);
+    await agent.post('/api/cart/items').send({ productId: product.id, quantity: 1 }).expect(201);
+    fetchSpy.mockImplementationOnce(
+      async () =>
+        new Response(JSON.stringify({ StatusCode: 400, ErrorMessage: 'Invalid accountId' }), {
+          status: 400,
+        })
+    );
+    const order = (
+      await agent
+        .post('/api/orders')
+        .send({
+          customerName: 'Айдай',
+          customerPhone: '0555123456',
+          deliveryMethod: 'DELIVERY',
+          deliveryCity: 'Бишкек',
+          deliveryAddress: 'Орозбекова 136',
+          paymentMethod: 'ONLINE',
+        })
+        .expect(201)
+    ).body;
+    expect(order).toMatchObject({
+      paymentUrl: null,
+      paymentError: 'HTTP 400: Invalid accountId',
+    });
+    expect(order.payments).toEqual([expect.objectContaining({ status: 'PENDING' })]);
+
+    fetchSpy.mockImplementationOnce(
+      async () => new Response(JSON.stringify({ ErrorMessage: 'Nope' }), { status: 401 })
+    );
+    const failed = await agent.post(`/api/orders/${order.id}/pay`).expect(400);
+    expect(failed.body).toMatchObject({ code: 'PAYMENT_PROVIDER_ERROR', reason: 'HTTP 401: Nope' });
+
+    const again = await agent.post(`/api/orders/${order.id}/pay`).expect(200);
+    expect(again.body).toEqual({ paymentUrl: 'https://pay.finik.kg/p/t' });
+  });
 });

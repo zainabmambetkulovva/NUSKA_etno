@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ErrorBox } from '@/components/ui/misc';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
-import { errorMessage } from '@/lib/api/errors';
+import { ApiError, errorMessage } from '@/lib/api/errors';
 import { cn } from '@/lib/cn';
 
 /**
@@ -40,7 +40,14 @@ export function PayOnline({ order, className }: { order: Order; className?: stri
       )}
       {pay.error && (
         <div className="w-full">
-          <ErrorBox>{errorMessage(pay.error, t.errors)}</ErrorBox>
+          <ErrorBox>
+            {errorMessage(pay.error, t.errors)}
+            {pay.error instanceof ApiError && typeof pay.error.body?.reason === 'string' && (
+              <span className="mt-1 block text-xs opacity-80">
+                {t.checkout.payReason}: {pay.error.body.reason}
+              </span>
+            )}
+          </ErrorBox>
         </div>
       )}
     </div>

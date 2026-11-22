@@ -13,6 +13,7 @@ import { ErrorBox } from '@/components/ui/misc';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { ApiError } from '@/lib/api/errors';
+import { cn } from '@/lib/cn';
 import { formatDate, formatMoney, formatOrderNumber } from '@/lib/format';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
@@ -61,14 +62,39 @@ export function OrderReceipt({ id }: { id: string | null }) {
   const o = order.data;
   const paid = o.payments.find((p) => p.status === 'PAID');
   const waiting = o.paymentMethod === 'ONLINE' && !paid;
+  // the reason Finik refused, kept by the checkout page (test mode only)
+  let reason: string | null = null;
+  try {
+    reason = window.sessionStorage.getItem(`nuska-pay-error-${o.id}`);
+  } catch {
+    reason = null;
+  }
+  // from checkout (not Finik's return page) with the payment still open: it did not start
+  const unpaid = waiting && pathname.includes('/checkout/success');
   return (
     <div className="container max-w-2xl py-12">
       <div className="mb-8 space-y-4 text-center">
-        <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-brand text-cream-light shadow-card">
-          <CheckIcon width={32} height={32} />
+        <span
+          className={cn(
+            'mx-auto flex h-16 w-16 items-center justify-center rounded-full text-cream-light shadow-card',
+            unpaid ? 'bg-[#C98A1F]' : 'bg-brand'
+          )}
+        >
+          {unpaid ? (
+            <span className="text-3xl font-bold">!</span>
+          ) : (
+            <CheckIcon width={32} height={32} />
+          )}
         </span>
-        <h1 className="text-3xl font-semibold md:text-4xl">{t.checkout.successTitle}</h1>
-        <p className="text-ink-muted">{t.checkout.successText}</p>
+        <h1 className="text-3xl font-semibold md:text-4xl">
+          {unpaid ? t.checkout.unpaidTitle : t.checkout.successTitle}
+        </h1>
+        <p className="text-ink-muted">{unpaid ? t.checkout.unpaidText : t.checkout.successText}</p>
+        {unpaid && reason && (
+          <p className="mx-auto max-w-md rounded-xl bg-[#FFF4D6] px-3 py-2 text-xs text-nk-brown">
+            {t.checkout.payReason}: {reason}
+          </p>
+        )}
       </div>
       <div className="card space-y-5 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">

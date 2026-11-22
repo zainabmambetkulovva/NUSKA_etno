@@ -15,10 +15,18 @@ import { useI18n } from '@/i18n/i18n-provider';
  */
 export function AuthCard({
   title,
+  subtitle,
+  panelTitle,
+  panelText,
   children,
   footer,
 }: {
   title: string;
+  /** a line under the title */
+  subtitle?: string;
+  /** replaces the picture panel's headline and line (sign-up has its own) */
+  panelTitle?: string;
+  panelText?: string;
   children: ReactNode;
   footer?: ReactNode;
 }) {
@@ -38,8 +46,10 @@ export function AuthCard({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(26,46,32,0.15)_0%,rgba(26,46,32,0.55)_45%,rgba(22,38,27,0.92)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 p-9 text-[#F6EBCF]">
             <LogoMark className="h-10 w-10 motion-safe:animate-[spin_24s_linear_infinite]" />
-            <p className="mt-4 font-serif text-3xl leading-tight">{t.auth.panelTitle}</p>
-            <p className="mt-2 text-sm text-[#F6EBCF]/80">{t.auth.panelText}</p>
+            <p className="mt-4 font-serif text-3xl leading-tight">
+              {panelTitle ?? t.auth.panelTitle}
+            </p>
+            <p className="mt-2 text-sm text-[#F6EBCF]/80">{panelText ?? t.auth.panelText}</p>
             <ul className="mt-6 space-y-2.5">
               {t.auth.perks.map((perk, i) => (
                 <li
@@ -60,6 +70,7 @@ export function AuthCard({
           <div className="space-y-3 text-center">
             <KochkorMuyuz className="mx-auto h-8 w-16 text-brand/60" animate />
             <h1 className="font-serif text-3xl font-semibold text-nk-ink">{title}</h1>
+            {subtitle && <p className="text-sm text-ink-muted">{subtitle}</p>}
           </div>
           {children}
           {footer && (
