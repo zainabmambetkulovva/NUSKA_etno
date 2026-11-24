@@ -102,7 +102,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
         className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(ellipse_at_10%_0%,rgba(83,122,74,0.35),transparent_55%)]"
         aria-hidden
       />
-      <YurtLine className="pointer-events-none absolute bottom-16 right-6 hidden h-28 w-40 text-nk-gold/45 lg:block" />
+      <YurtLine className="pointer-events-none absolute bottom-[4.75rem] right-8 hidden h-24 w-36 text-nk-gold/45 lg:block" />
 
       {/* phones: the link columns two per row; desktop: one row */}
       <div className="container relative grid grid-cols-2 gap-x-6 gap-y-10 pb-10 pt-14 lg:grid-cols-[1.35fr_1fr_1fr_1fr_1.45fr] lg:gap-8">
@@ -153,7 +153,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
         </div>
       </div>
 
-      <div className="container relative pb-28">
+      <div className="container relative pb-20 md:pb-6">
         <div className="flex items-center gap-4" aria-hidden>
           <span className="h-px flex-1 bg-gradient-to-r from-transparent to-nk-gold/50" />
           <LogoMark className="h-5 w-5" />
@@ -165,7 +165,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
           </p>
           <nav
             aria-label={t.footer.legal}
-            className="flex flex-wrap justify-center gap-x-5 gap-y-1"
+            className="flex flex-wrap justify-center gap-x-5 gap-y-1 md:pr-36"
           >
             <Link
               href={l('/privacy')}
