@@ -17,6 +17,7 @@ import { DbClient } from '../prisma/prisma.types';
 
 import { AdminOrdersQueryDto, ChangeOrderStatusDto, CreateOrderDto } from './dto/orders.dto';
 import { canTransition, CUSTOMER_CANCELLABLE } from './order-status';
+import { renderReceiptPdf } from './receipt/receipt-pdf';
 
 const MAX_PICKUP_AHEAD_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -300,6 +301,42 @@ export class OrdersService {
       this.prisma.order.count({ where }),
     ]);
     return paginate(orders.map(toOrderView), total, limit, offset);
+  }
+
+  /** PDF receipt of an own order that has been paid online. */
+  async receiptPdf(userId: string, orderId: string, locale: Locale) {
+    const order = await this.prisma.order.findFirst({
+      where: { id: orderId, userId },
+      include: orderDetailInclude,
+    });
+    if (!order) throw AppError.notFound('ORDER_NOT_FOUND', 'Order not found');
+    const paid = order.payments.find((p) => p.status === 'PAID');
+    if (!paid) throw AppError.conflict('NOT_PAID', 'The order has no paid online payment');
+    const buffer = await renderReceiptPdf(
+      {
+        orderNumber: order.orderNumber,
+        createdAt: order.createdAt,
+        total: { amount: order.totalAmount },
+        customer: { name: order.customerName, phone: order.customerPhone },
+        delivery:
+          order.deliveryMethod === DeliveryMethod.DELIVERY
+            ? { city: order.deliveryCity, address: order.deliveryAddress, time: order.deliveryTime }
+            : null,
+        pickup:
+          order.deliveryMethod === DeliveryMethod.PICKUP
+            ? { name: order.pickupLocationName, address: order.pickupLocationAddress }
+            : null,
+        items: order.items.map((item) => ({
+          name: item.productName,
+          quantity: item.quantity,
+          unitPrice: { amount: item.unitPriceAmount },
+          totalPrice: { amount: item.totalPriceAmount },
+        })),
+        payment: { id: paid.id, amount: paid.amount, paidAt: paid.paidAt },
+      },
+      locale
+    );
+    return { buffer, filename: `nuska-etno-chek-${order.orderNumber}.pdf` };
   }
 
   async getForUser(userId: string, orderId: string) {

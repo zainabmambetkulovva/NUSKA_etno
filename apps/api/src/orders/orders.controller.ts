@@ -9,10 +9,13 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  StreamableFile,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { UserRole } from '@prisma/client';
+import type { Response } from 'express';
 
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { RequestLocale } from '../common/decorators/request-locale.decorator';
@@ -59,6 +62,24 @@ export class OrdersController {
     @RequestLocale() locale: Locale
   ) {
     return this.orders.payOnline(user.id, id, locale);
+  }
+
+  /** The receipt of a paid online order as a PDF file. */
+  @Get(':id/receipt.pdf')
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  async receipt(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @RequestLocale() locale: Locale,
+    @Res({ passthrough: true }) res: Response
+  ) {
+    const { buffer, filename } = await this.orders.receiptPdf(user.id, id, locale);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Cache-Control': 'private, no-store',
+    });
+    return new StreamableFile(buffer);
   }
 
   @Get(':id')

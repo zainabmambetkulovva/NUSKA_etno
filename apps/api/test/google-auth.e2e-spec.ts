@@ -63,7 +63,10 @@ describe('Sign in with Google (e2e)', () => {
   };
 
   it('reports the provider', async () => {
-    expect((await http().get('/api/auth/providers').expect(200)).body).toEqual({ google: true });
+    expect((await http().get('/api/auth/providers').expect(200)).body).toEqual({
+      google: true,
+      googleRedirectUri: 'http://localhost:3000/api/auth/google/callback',
+    });
   });
 
   it('creates an account, signs in and returns to the page', async () => {

@@ -14,6 +14,7 @@ import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { formatDate } from '@/lib/format';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 const LIMIT = 25;
@@ -46,7 +47,7 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <AdminTitle>{t.admin.users}</AdminTitle>
+      <AdminTitle hint={t.admin.pages.users}>{t.admin.users}</AdminTitle>
       <Input
         className="mb-4 max-w-xs"
         type="search"
@@ -98,8 +99,12 @@ export default function AdminUsersPage() {
                           type="button"
                           className="text-brand hover:underline"
                           onClick={() =>
-                            window.confirm(`${u.isActive ? t.admin.block : t.admin.unblock}?`) &&
-                            update.mutate({ id: u.id, body: { isActive: !u.isActive } })
+                            void askConfirm(`${u.isActive ? t.admin.block : t.admin.unblock}?`, {
+                              danger: u.isActive,
+                            }).then(
+                              (ok) =>
+                                ok && update.mutate({ id: u.id, body: { isActive: !u.isActive } })
+                            )
                           }
                         >
                           {u.isActive ? t.admin.block : t.admin.unblock}
@@ -108,13 +113,16 @@ export default function AdminUsersPage() {
                           type="button"
                           className="text-olive hover:underline"
                           onClick={() =>
-                            window.confirm(
+                            void askConfirm(
                               `${u.role === 'ADMIN' ? t.admin.makeUser : t.admin.makeAdmin}?`
-                            ) &&
-                            update.mutate({
-                              id: u.id,
-                              body: { role: u.role === 'ADMIN' ? 'USER' : 'ADMIN' },
-                            })
+                            ).then(
+                              (ok) =>
+                                ok &&
+                                update.mutate({
+                                  id: u.id,
+                                  body: { role: u.role === 'ADMIN' ? 'USER' : 'ADMIN' },
+                                })
+                            )
                           }
                         >
                           {u.role === 'ADMIN' ? t.admin.makeUser : t.admin.makeAdmin}

@@ -159,6 +159,23 @@ describe('Online payment with Finik (e2e)', () => {
 
     // a paid order cannot be paid again
     await agent.post(`/api/orders/${order.id}/pay?locale=ru`).expect(409);
+
+    // the receipt is a PDF with the order and the payment
+    const receipt = await agent
+      .get(`/api/orders/${order.id}/receipt.pdf?locale=ru`)
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (c: Buffer) => chunks.push(c));
+        res.on('end', () => done(null, Buffer.concat(chunks)));
+      })
+      .expect(200);
+    expect(receipt.headers['content-type']).toMatch(/application\/pdf/);
+    expect(receipt.headers['content-disposition']).toContain(
+      `nuska-etno-chek-${order.orderNumber}.pdf`
+    );
+    expect((receipt.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+    expect((receipt.body as Buffer).length).toBeGreaterThan(8000);
   });
 
   it('ignores an underpaying webhook and lets the customer pay again', async () => {
@@ -318,6 +335,8 @@ describe('Finik test mode: FINIK_TEST_AMOUNT (e2e)', () => {
       paymentError: 'HTTP 400: Invalid accountId',
     });
     expect(order.payments).toEqual([expect.objectContaining({ status: 'PENDING' })]);
+    // no receipt before the payment
+    await agent.get(`/api/orders/${order.id}/receipt.pdf`).expect(409);
 
     fetchSpy.mockImplementationOnce(
       async () => new Response(JSON.stringify({ ErrorMessage: 'Nope' }), { status: 401 })

@@ -4,11 +4,23 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
 
-export function AdminTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
+export function AdminTitle({
+  children,
+  action,
+  hint,
+}: {
+  children: ReactNode;
+  action?: ReactNode;
+  /** one plain sentence: what this section is for */
+  hint?: ReactNode;
+}) {
   return (
-    <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-      <h1 className="text-3xl font-semibold">{children}</h1>
-      {action}
+    <div className="mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-semibold">{children}</h1>
+        {action}
+      </div>
+      {hint && <p className="mt-2 max-w-3xl text-sm leading-relaxed text-nk-muted">{hint}</p>}
     </div>
   );
 }

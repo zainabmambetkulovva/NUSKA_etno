@@ -36,7 +36,7 @@ export default function AdminAiPage() {
   const s = settings.data;
   return (
     <div className="space-y-6">
-      <AdminTitle>
+      <AdminTitle hint={t.admin.pages.ai}>
         <span className="flex items-center gap-3">
           <NuskaOrb className="h-9 w-9" /> {t.admin.aiTitle}
         </span>

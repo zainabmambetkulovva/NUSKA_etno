@@ -1,344 +1,357 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import type { AdminBanner, AdminSiteContent, Locale } from '@nuska/types';
+import type { AdminSiteContent, Locale } from '@nuska/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { AdminTitle } from '@/components/admin/admin-ui';
 import { OrnamentLoader } from '@/components/brand/ornament';
 import { Button } from '@/components/ui/button';
-import { Checkbox, Field, Input, Textarea } from '@/components/ui/field';
-import { Badge, ErrorBox } from '@/components/ui/misc';
+import { Field, Input, Textarea } from '@/components/ui/field';
+import { CheckIcon } from '@/components/ui/icons';
+import { ErrorBox } from '@/components/ui/misc';
 import { locales, localeNames } from '@/i18n/config';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
+import { cn } from '@/lib/cn';
 import { useToast } from '@/stores/toast';
 
-type Tr = Record<Locale, { title: string; subtitle: string; buttonLabel: string }>;
-const emptyTr = (): Tr => ({
-  ky: { title: '', subtitle: '', buttonLabel: '' },
-  ru: { title: '', subtitle: '', buttonLabel: '' },
-});
+/** The texts of the site that can be edited: the key the site reads, and how the form looks. */
+const BLOCKS = [
+  { key: 'contacts', kind: 'contacts' },
+  { key: 'stores', kind: 'stores' },
+  { key: 'about', kind: 'text' },
+  { key: 'pickup', kind: 'text' },
+  { key: 'page.traditions', kind: 'text' },
+  { key: 'page.privacy', kind: 'text' },
+  { key: 'page.terms', kind: 'text' },
+  { key: 'page.order-terms', kind: 'text' },
+  { key: 'page.returns', kind: 'text' },
+] as const;
+type BlockKey = (typeof BLOCKS)[number]['key'];
 
-function Banners() {
-  const { t, locale } = useI18n();
+type Tr = Record<Locale, { title: string; body: string }>;
+const emptyTr = (): Tr => ({ ky: { title: '', body: '' }, ru: { title: '', body: '' } });
+
+interface Channels {
+  whatsapp: string;
+  instagram: string;
+  telegram: string;
+  youtube: string;
+}
+
+const str = (v: unknown) => (typeof v === 'string' ? v : '');
+
+function Editor({
+  blockKey,
+  kind,
+  block,
+}: {
+  blockKey: BlockKey;
+  kind: (typeof BLOCKS)[number]['kind'];
+  block: AdminSiteContent | undefined;
+}) {
+  const { t } = useI18n();
+  const c = t.admin.contentEditor;
   const queryClient = useQueryClient();
   const toast = useToast((s) => s.show);
-  const list = useQuery({
-    queryKey: ['admin', 'banners'],
-    queryFn: () => api<AdminBanner[]>('/admin/content/banners'),
-  });
-  const [editing, setEditing] = useState<string | 'new' | null>(null);
-  const [linkUrl, setLinkUrl] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [isActive, setActive] = useState(true);
   const [tr, setTr] = useState<Tr>(emptyTr());
-  const refresh = () => queryClient.invalidateQueries({ queryKey: ['admin', 'banners'] });
-  const save = useMutation({
-    mutationFn: () => {
-      const body = {
-        linkUrl: linkUrl || null,
-        imageUrl: imageUrl || null,
-        isActive,
-        translations: locales
-          .filter((l) => tr[l].title.trim())
-          .map((l) => ({
-            locale: l,
-            title: tr[l].title,
-            subtitle: tr[l].subtitle || null,
-            buttonLabel: tr[l].buttonLabel || null,
-          })),
-      };
-      return editing === 'new'
-        ? api('/admin/content/banners', { method: 'POST', body })
-        : api(`/admin/content/banners/${editing}`, { method: 'PATCH', body });
-    },
-    onSuccess: () => (toast(t.common.saved), setEditing(null), refresh()),
+  const [channels, setChannels] = useState<Channels>({
+    whatsapp: '',
+    instagram: '',
+    telegram: '',
+    youtube: '',
   });
-  const remove = useMutation({
-    mutationFn: (id: string) => api(`/admin/content/banners/${id}`, { method: 'DELETE' }),
-    onSuccess: refresh,
-  });
-  const open = (b?: AdminBanner) => {
-    setEditing(b?.id ?? 'new');
-    setLinkUrl(b?.linkUrl ?? '');
-    setImageUrl(b?.imageUrl ?? '');
-    setActive(b?.isActive ?? true);
+  const [city, setCity] = useState('');
+  const [stores, setStores] = useState('');
+  const [problem, setProblem] = useState<string | null>(null);
+
+  // load the saved values whenever another text is chosen (or after saving)
+  useEffect(() => {
     const next = emptyTr();
-    b?.translations.forEach(
-      (x) =>
-        (next[x.locale] = {
-          title: x.title,
-          subtitle: x.subtitle ?? '',
-          buttonLabel: x.buttonLabel ?? '',
-        })
+    block?.translations.forEach(
+      (x) => (next[x.locale] = { title: x.title ?? '', body: x.body ?? '' })
     );
     setTr(next);
+    const data = block?.data ?? {};
+    setChannels({
+      whatsapp: str(data.whatsapp) || str(data.phone),
+      instagram: str(data.instagram),
+      telegram: str(data.telegram),
+      youtube: str(data.youtube),
+    });
+    setCity(str(data.city));
+    setStores(
+      Array.isArray(data.stores)
+        ? (data.stores as unknown[]).filter((s): s is string => typeof s === 'string').join('\n')
+        : ''
+    );
+    setProblem(null);
+  }, [block, blockKey]);
+
+  const save = useMutation({
+    mutationFn: () => {
+      // other values already stored in the block are kept; the company has no street address
+      const data: Record<string, unknown> = { ...(block?.data ?? {}) };
+      delete data.address;
+      if (kind === 'contacts') {
+        delete data.phone;
+        data.whatsapp = channels.whatsapp.trim();
+        data.instagram = channels.instagram.trim().replace(/^@/, '');
+        data.telegram = channels.telegram.trim().replace(/^@/, '');
+        data.youtube = channels.youtube.trim();
+      }
+      if (kind === 'stores') {
+        data.city = city.trim();
+        data.stores = stores
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      return api(`/admin/content/blocks/${encodeURIComponent(blockKey)}`, {
+        method: 'PUT',
+        body: {
+          data: Object.keys(data).length ? data : null,
+          translations: locales.map((l) => ({
+            locale: l,
+            title: tr[l].title.trim() || null,
+            body: tr[l].body.trim() || null,
+          })),
+        },
+      });
+    },
+    onSuccess: () => {
+      toast(t.common.saved);
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'blocks'] });
+    },
+  });
+
+  const submit = () => {
+    if (kind === 'contacts') {
+      if (channels.whatsapp.trim() && !/^\+?[\d\s()-]{9,20}$/.test(channels.whatsapp.trim()))
+        return setProblem(c.badPhone);
+      if (channels.youtube.trim() && !/^https:\/\//.test(channels.youtube.trim()))
+        return setProblem(c.badLink);
+    }
+    setProblem(null);
+    save.mutate();
   };
 
+  const setText = (l: Locale, field: 'title' | 'body', value: string) =>
+    setTr((prev) => ({ ...prev, [l]: { ...prev[l], [field]: value } }));
+
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="font-serif text-2xl">{t.admin.banners}</h2>
-        <Button size="sm" onClick={() => open()}>
-          {t.admin.newBanner}
-        </Button>
+    <form className="card space-y-6 p-5 sm:p-6" onSubmit={(e) => (e.preventDefault(), submit())}>
+      <div>
+        <h2 className="font-serif text-2xl text-nk-ink">{c.blocks[blockKey].name}</h2>
+        <p className="mt-1 text-sm text-nk-muted">
+          {c.where} <span className="font-medium text-nk-forest">{c.blocks[blockKey].where}</span>
+        </p>
+        <p className="mt-1 text-sm text-nk-muted">{c.languageHint}</p>
       </div>
-      {editing && (
-        <form className="card space-y-4 p-6" onSubmit={(e) => (e.preventDefault(), save.mutate())}>
+
+      <div className="grid gap-5 md:grid-cols-2">
+        {locales.map((l) => (
+          <div key={l} className="space-y-4 rounded-2xl bg-nk-cream/70 p-4">
+            <p className="text-sm font-semibold uppercase tracking-wider text-olive">
+              {localeNames[l]}
+            </p>
+            <Field label={c.titleField}>
+              {(id) => (
+                <Input
+                  id={id}
+                  maxLength={300}
+                  value={tr[l].title}
+                  onChange={(e) => setText(l, 'title', e.target.value)}
+                />
+              )}
+            </Field>
+            <Field label={c.bodyField} hint={c.bodyHint}>
+              {(id, d) => (
+                <Textarea
+                  id={id}
+                  aria-describedby={d}
+                  rows={kind === 'text' ? 12 : 5}
+                  maxLength={20000}
+                  value={tr[l].body}
+                  onChange={(e) => setText(l, 'body', e.target.value)}
+                />
+              )}
+            </Field>
+          </div>
+        ))}
+      </div>
+
+      {kind === 'contacts' && (
+        <div className="space-y-4">
+          <h3 className="font-serif text-xl text-nk-ink">{c.contactsTitle}</h3>
           <div className="grid gap-4 md:grid-cols-2">
-            {locales.map((l) => (
-              <div key={l} className="space-y-3">
-                <Field label={`${t.admin.bannerTitle} (${localeNames[l]})`}>
-                  {(id) => (
-                    <Input
-                      id={id}
-                      maxLength={200}
-                      value={tr[l].title}
-                      onChange={(e) => setTr({ ...tr, [l]: { ...tr[l], title: e.target.value } })}
-                    />
-                  )}
-                </Field>
-                <Field label={`${t.admin.subtitle} (${localeNames[l]})`}>
-                  {(id) => (
-                    <Input
-                      id={id}
-                      maxLength={500}
-                      value={tr[l].subtitle}
-                      onChange={(e) =>
-                        setTr({ ...tr, [l]: { ...tr[l], subtitle: e.target.value } })
-                      }
-                    />
-                  )}
-                </Field>
-                <Field label={`${t.admin.buttonLabel} (${localeNames[l]})`}>
-                  {(id) => (
-                    <Input
-                      id={id}
-                      maxLength={60}
-                      value={tr[l].buttonLabel}
-                      onChange={(e) =>
-                        setTr({ ...tr, [l]: { ...tr[l], buttonLabel: e.target.value } })
-                      }
-                    />
-                  )}
-                </Field>
-              </div>
-            ))}
-            <Field label={t.admin.linkUrl} hint="/catalog">
+            <Field label={c.whatsapp} hint={c.whatsappHint}>
               {(id, d) => (
                 <Input
                   id={id}
                   aria-describedby={d}
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
+                  inputMode="tel"
+                  maxLength={30}
+                  placeholder="+996 …"
+                  value={channels.whatsapp}
+                  onChange={(e) => setChannels({ ...channels, whatsapp: e.target.value })}
                 />
               )}
             </Field>
-            <Field label={t.admin.imageUrl}>
-              {(id) => (
+            <Field label={c.instagram} hint={c.instagramHint}>
+              {(id, d) => (
                 <Input
                   id={id}
+                  aria-describedby={d}
+                  maxLength={60}
+                  value={channels.instagram}
+                  onChange={(e) => setChannels({ ...channels, instagram: e.target.value })}
+                />
+              )}
+            </Field>
+            <Field label={c.telegram} hint={c.telegramHint}>
+              {(id, d) => (
+                <Input
+                  id={id}
+                  aria-describedby={d}
+                  maxLength={60}
+                  value={channels.telegram}
+                  onChange={(e) => setChannels({ ...channels, telegram: e.target.value })}
+                />
+              )}
+            </Field>
+            <Field label={c.youtube} hint={c.youtubeHint}>
+              {(id, d) => (
+                <Input
+                  id={id}
+                  aria-describedby={d}
                   type="url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
+                  maxLength={200}
+                  placeholder="https://"
+                  value={channels.youtube}
+                  onChange={(e) => setChannels({ ...channels, youtube: e.target.value })}
                 />
               )}
             </Field>
           </div>
-          <Checkbox
-            label={t.admin.active}
-            checked={isActive}
-            onChange={(e) => setActive(e.target.checked)}
-          />
-          {save.error && <ErrorBox>{errorMessage(save.error, t.errors)}</ErrorBox>}
-          <div className="flex gap-2">
-            <Button type="submit" loading={save.isPending}>
-              {t.common.save}
-            </Button>
-            <Button variant="ghost" onClick={() => setEditing(null)}>
-              {t.common.cancel}
-            </Button>
-          </div>
-        </form>
-      )}
-      {list.isLoading ? (
-        <OrnamentLoader label={t.common.loading} />
-      ) : (
-        <ul className="space-y-2">
-          {list.data?.map((b) => (
-            <li key={b.id} className="card flex flex-wrap items-center justify-between gap-3 p-4">
-              <span className="font-medium">
-                {b.translations.find((x) => x.locale === locale)?.title ?? b.translations[0]?.title}
-              </span>
-              <span className="flex items-center gap-3">
-                <Badge tone={b.isActive ? 'green' : 'gray'}>
-                  {b.isActive ? t.admin.active : t.admin.inactive}
-                </Badge>
-                <button
-                  type="button"
-                  className="text-sm text-brand hover:underline"
-                  onClick={() => open(b)}
-                >
-                  {t.common.edit}
-                </button>
-                <button
-                  type="button"
-                  className="text-sm text-danger hover:underline"
-                  onClick={() => window.confirm(t.admin.deleteConfirm) && remove.mutate(b.id)}
-                >
-                  {t.common.delete}
-                </button>
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
-  );
-}
-
-function Blocks() {
-  const { t } = useI18n();
-  const queryClient = useQueryClient();
-  const toast = useToast((s) => s.show);
-  const list = useQuery({
-    queryKey: ['admin', 'blocks'],
-    queryFn: () => api<AdminSiteContent[]>('/admin/content/blocks'),
-  });
-  const [key, setKey] = useState('');
-  const [data, setData] = useState('');
-  const [tr, setTr] = useState<Record<Locale, { title: string; body: string }>>({
-    ky: { title: '', body: '' },
-    ru: { title: '', body: '' },
-  });
-  const [jsonError, setJsonError] = useState(false);
-  const save = useMutation({
-    mutationFn: (payload: unknown) =>
-      api(`/admin/content/blocks/${encodeURIComponent(key)}`, { method: 'PUT', body: payload }),
-    onSuccess: () => (
-      toast(t.common.saved),
-      queryClient.invalidateQueries({ queryKey: ['admin', 'blocks'] })
-    ),
-  });
-  const open = (b: AdminSiteContent) => {
-    setKey(b.key);
-    setData(b.data ? JSON.stringify(b.data, null, 2) : '');
-    const next = { ky: { title: '', body: '' }, ru: { title: '', body: '' } };
-    b.translations.forEach((x) => (next[x.locale] = { title: x.title ?? '', body: x.body ?? '' }));
-    setTr(next);
-  };
-  const submit = () => {
-    let parsed: unknown = null;
-    if (data.trim()) {
-      try {
-        parsed = JSON.parse(data);
-        if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('object');
-      } catch {
-        setJsonError(true);
-        return;
-      }
-    }
-    setJsonError(false);
-    save.mutate({
-      data: parsed,
-      translations: locales.map((l) => ({
-        locale: l,
-        title: tr[l].title || null,
-        body: tr[l].body || null,
-      })),
-    });
-  };
-
-  return (
-    <section className="space-y-4">
-      <h2 className="font-serif text-2xl">{t.admin.blocks}</h2>
-      <p className="text-sm text-ink-soft">{t.admin.blockHint}</p>
-      <div className="flex flex-wrap gap-2">
-        {list.data?.map((b) => (
-          <Button
-            key={b.id}
-            size="sm"
-            variant={b.key === key ? 'primary' : 'outline'}
-            onClick={() => open(b)}
-          >
-            {b.key}
-          </Button>
-        ))}
-      </div>
-      <form className="card space-y-4 p-6" onSubmit={(e) => (e.preventDefault(), submit())}>
-        <Field label={t.admin.blockKey}>
-          {(id) => (
-            <Input
-              id={id}
-              required
-              pattern="[a-z0-9]+([.\-][a-z0-9]+)*"
-              value={key}
-              onChange={(e) => setKey(e.target.value)}
-            />
-          )}
-        </Field>
-        <div className="grid gap-4 md:grid-cols-2">
-          {locales.map((l) => (
-            <div key={l} className="space-y-3">
-              <Field label={`${t.admin.blockTitle} (${localeNames[l]})`}>
-                {(id) => (
-                  <Input
-                    id={id}
-                    maxLength={300}
-                    value={tr[l].title}
-                    onChange={(e) => setTr({ ...tr, [l]: { ...tr[l], title: e.target.value } })}
-                  />
-                )}
-              </Field>
-              <Field label={`${t.admin.blockBody} (${localeNames[l]})`}>
-                {(id) => (
-                  <Textarea
-                    id={id}
-                    rows={6}
-                    maxLength={20000}
-                    value={tr[l].body}
-                    onChange={(e) => setTr({ ...tr, [l]: { ...tr[l], body: e.target.value } })}
-                  />
-                )}
-              </Field>
-            </div>
-          ))}
         </div>
-        <Field
-          label={t.admin.blockData}
-          hint='{"phone": "+996…", "email": "…", "instagram": "nuska_etno"}'
-          error={jsonError ? t.admin.invalidJson : undefined}
-        >
-          {(id, d) => (
-            <Textarea
-              id={id}
-              aria-describedby={d}
-              rows={4}
-              className="font-mono text-sm"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
-            />
-          )}
-        </Field>
-        {save.error && <ErrorBox>{errorMessage(save.error, t.errors)}</ErrorBox>}
-        <Button type="submit" loading={save.isPending} disabled={!key}>
+      )}
+
+      {kind === 'stores' && (
+        <div className="space-y-4">
+          <h3 className="font-serif text-xl text-nk-ink">{c.storesTitle}</h3>
+          <Field label={c.city} className="max-w-xs">
+            {(id) => (
+              <Input
+                id={id}
+                maxLength={100}
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+              />
+            )}
+          </Field>
+          <Field label={c.storesList} hint={c.storesHint}>
+            {(id, d) => (
+              <Textarea
+                id={id}
+                aria-describedby={d}
+                rows={10}
+                value={stores}
+                onChange={(e) => setStores(e.target.value)}
+              />
+            )}
+          </Field>
+        </div>
+      )}
+
+      {(problem || save.error) && (
+        <ErrorBox>{problem ?? errorMessage(save.error, t.errors)}</ErrorBox>
+      )}
+      <div className="flex flex-wrap items-center gap-4">
+        <Button type="submit" size="lg" loading={save.isPending}>
           {t.common.save}
         </Button>
-      </form>
-    </section>
+        <span className="text-sm text-nk-muted">{c.saveHint}</span>
+      </div>
+    </form>
   );
 }
 
 export default function AdminContentPage() {
   const { t } = useI18n();
+  const c = t.admin.contentEditor;
+  const [selected, setSelected] = useState<BlockKey>('contacts');
+  const list = useQuery({
+    queryKey: ['admin', 'blocks'],
+    queryFn: () => api<AdminSiteContent[]>('/admin/content/blocks'),
+  });
+  const byKey = new Map(list.data?.map((b) => [b.key, b]));
+  const isFilled = (key: string) =>
+    Boolean(byKey.get(key)?.translations.some((x) => x.title || x.body));
+  const current = BLOCKS.find((b) => b.key === selected)!;
+
   return (
-    <div className="space-y-10">
-      <AdminTitle>{t.admin.content}</AdminTitle>
-      <Banners />
-      <Blocks />
+    <div>
+      <AdminTitle hint={t.admin.pages.content}>{t.admin.content}</AdminTitle>
+      {list.isLoading ? (
+        <OrnamentLoader label={t.common.loading} />
+      ) : (
+        <div className="grid items-start gap-5 xl:grid-cols-[300px_minmax(0,1fr)]">
+          <div className="card space-y-1 p-3">
+            <p className="px-3 pb-1 pt-2 text-xs font-semibold uppercase tracking-widest text-olive">
+              {c.pick}
+            </p>
+            {BLOCKS.map((b) => (
+              <button
+                key={b.key}
+                type="button"
+                aria-pressed={selected === b.key}
+                onClick={() => setSelected(b.key)}
+                className={cn(
+                  'flex w-full items-center justify-between gap-3 rounded-xl px-3 py-2.5 text-left transition',
+                  selected === b.key ? 'bg-nk-forest text-white' : 'text-nk-ink hover:bg-nk-sage/50'
+                )}
+              >
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{c.blocks[b.key].name}</span>
+                  <span
+                    className={cn(
+                      'block truncate text-xs',
+                      selected === b.key ? 'text-white/75' : 'text-nk-muted'
+                    )}
+                  >
+                    {c.blocks[b.key].where}
+                  </span>
+                </span>
+                <span
+                  className={cn(
+                    'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs',
+                    isFilled(b.key)
+                      ? selected === b.key
+                        ? 'bg-white/20 text-white'
+                        : 'bg-nk-sage text-nk-forest'
+                      : selected === b.key
+                        ? 'bg-white/10 text-white/70'
+                        : 'bg-nk-cream text-nk-muted'
+                  )}
+                  title={isFilled(b.key) ? c.filled : c.empty}
+                >
+                  {isFilled(b.key) ? <CheckIcon width={14} height={14} /> : '–'}
+                </span>
+              </button>
+            ))}
+          </div>
+          <Editor
+            key={current.key}
+            blockKey={current.key}
+            kind={current.kind}
+            block={byKey.get(current.key)}
+          />
+        </div>
+      )}
     </div>
   );
 }

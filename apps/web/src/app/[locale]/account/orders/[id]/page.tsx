@@ -20,6 +20,7 @@ import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { formatDate, formatMoney, formatOrderNumber } from '@/lib/format';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 function ReviewForm({ item, orderId }: { item: OrderItem; orderId: string }) {
@@ -197,7 +198,11 @@ export default function OrderPage() {
               variant="danger"
               size="sm"
               loading={cancel.isPending}
-              onClick={() => window.confirm(t.account.cancelConfirm) && cancel.mutate()}
+              onClick={() =>
+                void askConfirm(t.account.cancelConfirm, { danger: true }).then(
+                  (ok) => ok && cancel.mutate()
+                )
+              }
             >
               {t.account.cancelOrder}
             </Button>

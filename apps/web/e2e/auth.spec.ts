@@ -31,8 +31,8 @@ test('register: password twice and the terms are required, then the account open
   const security = page.locator('section[aria-labelledby="security-title"]');
   await expect(security.getByText(ru.account.thisDevice)).toBeVisible();
   await expect(security.getByText(email)).toBeVisible();
-  page.once('dialog', (dialog) => dialog.accept());
   await security.getByRole('button', { name: ru.account.logoutAll }).click();
+  await page.getByRole('alertdialog').getByRole('button', { name: ru.common.confirm }).click();
   await page.waitForURL(/\/ru\/login/);
   await page.goto('/ru/account');
   await page.waitForURL(/\/ru\/login/);

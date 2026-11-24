@@ -46,12 +46,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, ComponentProps<'textarea
   }
 );
 
-export const Select = forwardRef<HTMLSelectElement, ComponentProps<'select'>>(function Select(
-  { className, ...props },
-  ref
-) {
-  return <select ref={ref} className={cn('field-input pr-10', className)} {...props} />;
-});
+export { Select } from './select';
 
 export function Checkbox({
   label,

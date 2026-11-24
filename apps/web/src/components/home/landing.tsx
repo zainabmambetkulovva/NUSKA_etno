@@ -110,7 +110,7 @@ export function CategoryArches({
   return (
     <section className="relative overflow-hidden py-16 lg:py-20" aria-labelledby="categories-title">
       <Branch className="-right-4 top-10 hidden lg:block" flip />
-      <div className="container grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,300px)_minmax(0,1fr)] xl:gap-14">
+      <div className="container grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,230px)_minmax(0,1fr)] lg:gap-8 xl:gap-8">
         <Reveal>
           <Eyebrow>{t.landing.productsEyebrow}</Eyebrow>
           <TextReveal
@@ -130,7 +130,7 @@ export function CategoryArches({
         </Reveal>
 
         {/* room above and below the scrolling row, so the lift on hover and the soft shadow are not cut */}
-        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:py-0 xl:grid-cols-6 [&::-webkit-scrollbar]:hidden">
+        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 sm:py-0 xl:grid-cols-6 [&::-webkit-scrollbar]:hidden">
           {categories.map((category, i) => {
             const photo = CATEGORY_PHOTOS[category.slug];
             return (

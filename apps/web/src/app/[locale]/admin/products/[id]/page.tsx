@@ -14,6 +14,7 @@ import { ErrorBox } from '@/components/ui/misc';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 export default function EditProductPage() {
@@ -58,7 +59,11 @@ export default function EditProductPage() {
               size="sm"
               variant="danger"
               loading={remove.isPending}
-              onClick={() => window.confirm(t.admin.deleteConfirm) && remove.mutate()}
+              onClick={() =>
+                void askConfirm(t.admin.deleteConfirm, { danger: true }).then(
+                  (ok) => ok && remove.mutate()
+                )
+              }
             >
               {t.common.delete}
             </Button>

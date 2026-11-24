@@ -5,6 +5,7 @@ import { useState } from 'react';
 import type { AdminProduct, Page, ProductStatus } from '@nuska/types';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { AdminTitle, Pager, Table, Td } from '@/components/admin/admin-ui';
 import { OrnamentLoader } from '@/components/brand/ornament';
@@ -19,6 +20,7 @@ const LIMIT = 25;
 
 export default function AdminProductsPage() {
   const { t, locale } = useI18n();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<ProductStatus | ''>('');
   const [offset, setOffset] = useState(0);
@@ -38,6 +40,7 @@ export default function AdminProductsPage() {
   return (
     <div>
       <AdminTitle
+        hint={t.admin.pages.products}
         action={
           <ButtonLink href={`/${locale}/admin/products/new`}>{t.admin.newProduct}</ButtonLink>
         }
@@ -73,7 +76,11 @@ export default function AdminProductsPage() {
         <>
           <Table head={[t.admin.name, t.admin.sku, t.admin.price, t.admin.stock, t.admin.status]}>
             {list.data?.data.map((p) => (
-              <tr key={p.id} className="hover:bg-cream-50/60">
+              <tr
+                key={p.id}
+                className="cursor-pointer transition hover:bg-nk-sage/30"
+                onClick={() => router.push(`/${locale}/admin/products/${p.id}`)}
+              >
                 <Td>
                   <Link
                     href={`/${locale}/admin/products/${p.id}`}

@@ -8,6 +8,7 @@ import { AiWidget } from '@/components/ai/ai-widget';
 import { BackToTop } from '@/components/layout/back-to-top';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
+import { SiteChrome } from '@/components/layout/site-chrome';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
 import { alternates, resolveLocale, siteUrl } from '@/lib/locale-params';
@@ -76,13 +77,17 @@ export default async function LocaleLayout({
           {t.common.skipToContent}
         </a>
         <AppProviders locale={locale} dictionary={t}>
-          <Header categories={categories.map(({ slug, name }) => ({ slug, name }))} />
+          <SiteChrome>
+            <Header categories={categories.map(({ slug, name }) => ({ slug, name }))} />
+          </SiteChrome>
           <main id="main" className="flex-1">
             {children}
           </main>
-          <Footer locale={locale} t={t} />
-          <AiWidget />
-          <BackToTop />
+          <SiteChrome>
+            <Footer locale={locale} t={t} />
+            <AiWidget />
+            <BackToTop />
+          </SiteChrome>
         </AppProviders>
       </body>
     </html>
