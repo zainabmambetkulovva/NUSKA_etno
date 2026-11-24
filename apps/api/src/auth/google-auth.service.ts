@@ -50,6 +50,15 @@ export class GoogleAuthService {
       config.get<string>('GOOGLE_REDIRECT_URI') || `${this.webUrl}/api/auth/google/callback`;
   }
 
+  /**
+   * The address Google sends the visitor back to. It must be listed in Google
+   * Cloud → Credentials → «Authorized redirect URIs» exactly as shown here
+   * (open /api/auth/providers on the website to see it).
+   */
+  get callbackUrl() {
+    return this.redirectUri;
+  }
+
   get configured() {
     return Boolean(this.clientId && this.clientSecret);
   }

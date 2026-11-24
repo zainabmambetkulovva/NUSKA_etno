@@ -43,7 +43,11 @@ export class AuthController {
   @Public()
   @Get('providers')
   providers() {
-    return { google: this.google.configured };
+    return {
+      google: this.google.configured,
+      // not secret (it is in the browser address while signing in); shown so it can be copied into Google Cloud
+      googleRedirectUri: this.google.configured ? this.google.callbackUrl : null,
+    };
   }
 
   /** Redirects to Google; `locale` and `next` decide where the user returns. */

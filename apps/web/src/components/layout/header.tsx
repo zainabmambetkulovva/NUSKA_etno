@@ -252,7 +252,7 @@ export function Header({ categories }: { categories: HeaderCategory[] }) {
           'sticky top-0 z-40 transition-[background-color,box-shadow,backdrop-filter] duration-500',
           overHero
             ? 'bg-transparent'
-            : 'bg-nk-cream/90 shadow-[0_10px_30px_-20px_rgba(43,42,34,0.45)] backdrop-blur-md'
+            : 'bg-nk-cream/90 shadow-[0_6px_16px_-12px_rgba(43,42,34,0.22)] backdrop-blur-md'
         )}
       >
         <div className="mx-auto flex h-[68px] max-w-[1320px] items-center gap-3 px-4 sm:px-6 lg:h-[80px] 2xl:px-10">

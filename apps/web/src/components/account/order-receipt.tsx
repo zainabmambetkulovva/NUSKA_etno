@@ -162,14 +162,18 @@ export function OrderReceipt({ id }: { id: string | null }) {
               <dt className="text-ink-soft">{t.checkout.receiptPayment}</dt>
               <dd className="break-all font-mono text-xs">{paid.id}</dd>
             </dl>
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 print:hidden"
-              onClick={() => window.print()}
-            >
-              {t.checkout.receiptPrint}
-            </Button>
+            <div className="mt-3 flex flex-wrap gap-2 print:hidden">
+              <a
+                href={`/api/orders/${o.id}/receipt.pdf?locale=${locale}`}
+                download
+                className="btn-forest px-5 py-2.5 text-sm"
+              >
+                {t.checkout.receiptPdf}
+              </a>
+              <Button variant="outline" size="sm" onClick={() => window.print()}>
+                {t.checkout.receiptPrint}
+              </Button>
+            </div>
           </section>
         )}
         {waiting && order.isFetching && (
