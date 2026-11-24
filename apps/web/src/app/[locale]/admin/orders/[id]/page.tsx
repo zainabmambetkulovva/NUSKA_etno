@@ -17,6 +17,7 @@ import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { formatDate, formatMoney, formatOrderNumber } from '@/lib/format';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 export default function AdminOrderPage() {
@@ -123,10 +124,14 @@ export default function AdminOrderPage() {
                     variant={status === 'CANCELLED' ? 'danger' : 'primary'}
                     loading={change.isPending && change.variables === status}
                     disabled={change.isPending}
-                    onClick={() =>
-                      (status !== 'CANCELLED' || window.confirm(t.account.cancelConfirm)) &&
-                      change.mutate(status)
-                    }
+                    onClick={async () => {
+                      if (
+                        status === 'CANCELLED' &&
+                        !(await askConfirm(t.account.cancelConfirm, { danger: true }))
+                      )
+                        return;
+                      change.mutate(status);
+                    }}
                   >
                     {orderStatusLabel(t, status, o.deliveryMethod)}
                   </Button>

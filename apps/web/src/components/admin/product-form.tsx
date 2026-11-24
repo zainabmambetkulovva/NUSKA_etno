@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import type {
   AdminCategory,
@@ -207,6 +207,19 @@ export function ProductForm({
       onSaved(saved);
     },
   });
+  // The page address is made from the code until the admin types their own
+  const slugTouched = useRef(Boolean(product?.slug));
+  const sku = form.watch('sku');
+  useEffect(() => {
+    if (isNew && !slugTouched.current)
+      form.setValue(
+        'slug',
+        sku
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+      );
+  }, [sku, isNew, form]);
   const tIndex = locales.indexOf(tab);
   const catName = (c: AdminCategory) =>
     c.translations.find((x) => x.locale === locale)?.name ?? c.slug;
@@ -214,12 +227,18 @@ export function ProductForm({
   return (
     <form className="space-y-6" onSubmit={form.handleSubmit((values) => save.mutate(values))}>
       <section className="card grid gap-4 p-6 md:grid-cols-2">
-        <Field label={t.admin.sku}>
-          {(id) => (
-            <Input id={id} required maxLength={64} {...form.register('sku', { required: true })} />
+        <Field label={t.admin.sku} hint={t.admin.hints.sku}>
+          {(id, d) => (
+            <Input
+              id={id}
+              aria-describedby={d}
+              required
+              maxLength={64}
+              {...form.register('sku', { required: true })}
+            />
           )}
         </Field>
-        <Field label={t.admin.slug} hint="navat-0-5">
+        <Field label={t.admin.slug} hint={t.admin.hints.slug}>
           {(id, d) => (
             <Input
               id={id}
@@ -227,14 +246,18 @@ export function ProductForm({
               required
               pattern="[a-z0-9]+(-[a-z0-9]+)*"
               maxLength={150}
-              {...form.register('slug', { required: true })}
+              {...form.register('slug', {
+                required: true,
+                onChange: () => (slugTouched.current = true),
+              })}
             />
           )}
         </Field>
-        <Field label={t.admin.price}>
-          {(id) => (
+        <Field label={t.admin.price} hint={t.admin.hints.price}>
+          {(id, d) => (
             <Input
               id={id}
+              aria-describedby={d}
               type="number"
               min={0}
               step="0.01"
@@ -243,9 +266,9 @@ export function ProductForm({
             />
           )}
         </Field>
-        <Field label={t.admin.status}>
-          {(id) => (
-            <Select id={id} {...form.register('status')}>
+        <Field label={t.admin.status} hint={t.admin.hints.status}>
+          {(id, d) => (
+            <Select id={id} aria-describedby={d} {...form.register('status')}>
               {(['DRAFT', 'ACTIVE', 'ARCHIVED'] as const).map((s) => (
                 <option key={s} value={s}>
                   {t.admin.statuses[s]}
@@ -265,19 +288,20 @@ export function ProductForm({
             </Select>
           )}
         </Field>
-        <Field label={t.admin.sortOrder}>
-          {(id) => (
+        <Field label={t.admin.sortOrder} hint={t.admin.hints.sortOrder}>
+          {(id, d) => (
             <Input
               id={id}
+              aria-describedby={d}
               type="number"
               min={0}
               {...form.register('sortOrder', { valueAsNumber: true })}
             />
           )}
         </Field>
-        <Field label={t.admin.packaging3d}>
-          {(id) => (
-            <Select id={id} {...form.register('packaging3d')}>
+        <Field label={t.admin.packaging3d} hint={t.admin.hints.packaging3d}>
+          {(id, d) => (
+            <Select id={id} aria-describedby={d} {...form.register('packaging3d')}>
               <option value="">{t.admin.packagingModels.NONE}</option>
               {(['BOTTLE', 'JAR', 'BOX', 'PACK'] as const).map((m) => (
                 <option key={m} value={m}>
@@ -288,12 +312,20 @@ export function ProductForm({
           )}
         </Field>
         <div className="flex flex-col gap-3 md:col-span-2">
-          <Checkbox label={t.admin.trackInventory} {...form.register('trackInventory')} />
+          <div>
+            <Checkbox label={t.admin.trackInventory} {...form.register('trackInventory')} />
+            <p className="mt-1 text-xs text-ink-soft">{t.admin.hints.trackInventory}</p>
+          </div>
           {isNew && form.watch('trackInventory') && (
-            <Field label={t.admin.initialStock} className="max-w-xs">
-              {(id) => (
+            <Field
+              label={t.admin.initialStock}
+              hint={t.admin.hints.initialStock}
+              className="max-w-xs"
+            >
+              {(id, d) => (
                 <Input
                   id={id}
+                  aria-describedby={d}
                   type="number"
                   min={0}
                   {...form.register('initialStock', { valueAsNumber: true })}
@@ -301,7 +333,6 @@ export function ProductForm({
               )}
             </Field>
           )}
-          <Checkbox label={t.admin.featured} {...form.register('isFeatured')} />
         </div>
       </section>
 

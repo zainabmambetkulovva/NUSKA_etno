@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { OrderStatusBadge } from '@/components/account/order-status-badge';
 import { AdminTitle, Pager, Table, Td } from '@/components/admin/admin-ui';
 import { OrnamentLoader } from '@/components/brand/ornament';
+import { DateInput } from '@/components/ui/date-input';
 import { Input, Select } from '@/components/ui/field';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
@@ -48,7 +49,7 @@ export default function AdminOrdersPage() {
 
   return (
     <div>
-      <AdminTitle>{t.admin.orders}</AdminTitle>
+      <AdminTitle hint={t.admin.pages.orders}>{t.admin.orders}</AdminTitle>
       <div className="mb-4 flex flex-wrap gap-3">
         <Input
           className="max-w-xs"
@@ -71,19 +72,17 @@ export default function AdminOrdersPage() {
             </option>
           ))}
         </Select>
-        <Input
-          className="max-w-[170px]"
-          type="date"
+        <DateInput
+          className="w-[170px]"
           aria-label={t.admin.from}
           value={from}
-          onChange={(e) => (setFrom(e.target.value), reset())}
+          onChange={(v) => (setFrom(v), reset())}
         />
-        <Input
-          className="max-w-[170px]"
-          type="date"
+        <DateInput
+          className="w-[170px]"
           aria-label={t.admin.to}
           value={to}
-          onChange={(e) => (setTo(e.target.value), reset())}
+          onChange={(v) => (setTo(v), reset())}
         />
       </div>
       {list.isLoading ? (

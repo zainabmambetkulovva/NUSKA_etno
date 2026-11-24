@@ -5,8 +5,11 @@ import { useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
+import { Logo } from '@/components/brand/logo';
 import { OrnamentLoader } from '@/components/brand/ornament';
-import { useMe } from '@/hooks/use-auth';
+import { LanguageSwitcher } from '@/components/layout/language-switcher';
+import { ArrowRightIcon } from '@/components/ui/icons';
+import { useLogout, useMe } from '@/hooks/use-auth';
 import { useI18n } from '@/i18n/i18n-provider';
 import { cn } from '@/lib/cn';
 
@@ -14,6 +17,7 @@ import { cn } from '@/lib/cn';
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { t, locale } = useI18n();
   const me = useMe();
+  const logout = useLogout();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -57,33 +61,73 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="container py-8" data-no-reveal>
-      <div className="grid gap-8 lg:grid-cols-[220px_1fr]">
-        <nav
-          className="flex gap-1 overflow-x-auto lg:sticky lg:top-24 lg:h-fit lg:flex-col"
-          aria-label={t.admin.title}
-        >
-          <span className="mb-2 hidden px-4 text-xs font-semibold uppercase tracking-widest text-olive lg:block">
-            {t.admin.title}
-          </span>
-          {links.map((link) => {
-            const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
-            return (
+    <div
+      className="min-h-screen bg-gradient-to-br from-nk-cream via-white to-sand-light/70"
+      data-no-reveal
+    >
+      <div className="mx-auto grid max-w-[1600px] gap-4 p-3 sm:p-4 lg:grid-cols-[250px_minmax(0,1fr)] lg:gap-6 lg:p-5">
+        {/* The menu stays in place while the page scrolls */}
+        <aside className="lg:sticky lg:top-5 lg:h-[calc(100vh-2.5rem)]">
+          <div className="flex h-full flex-col gap-3 rounded-3xl border border-nk-beige bg-gradient-to-b from-white to-nk-cream/70 p-3 shadow-[0_18px_40px_-26px_rgba(70,48,20,0.55)] lg:p-4">
+            <div className="flex items-center justify-between gap-2 lg:block">
+              <Logo href={`/${locale}`} tone="dark" className="shrink-0" />
+              <div className="flex items-center gap-2 lg:hidden">
+                <LanguageSwitcher />
+              </div>
+            </div>
+            <span className="hidden px-3 pt-2 text-xs font-semibold uppercase tracking-widest text-olive lg:block">
+              {t.admin.title}
+            </span>
+            <nav
+              className="flex gap-1 overflow-x-auto pb-1 lg:flex-1 lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden lg:pb-0"
+              aria-label={t.admin.title}
+            >
+              {links.map((link) => {
+                const active = link.exact ? pathname === link.href : pathname.startsWith(link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'shrink-0 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm transition',
+                      active
+                        ? 'bg-nk-forest font-medium text-white shadow-[0_10px_20px_-12px_rgba(42,72,49,0.9)]'
+                        : 'text-nk-ink hover:bg-nk-sage/50'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <div className="hidden space-y-2 border-t border-nk-beige pt-3 lg:block">
               <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? 'page' : undefined}
-                className={cn(
-                  'whitespace-nowrap rounded-lg px-4 py-2.5 text-sm',
-                  active ? 'bg-brand text-cream-light' : 'hover:bg-cream-50'
-                )}
+                href={`/${locale}`}
+                className="flex items-center justify-between rounded-xl bg-nk-sage/50 px-4 py-2.5 text-sm font-medium text-nk-forest transition hover:bg-nk-sage"
               >
-                {link.label}
+                {t.admin.toSite}
+                <ArrowRightIcon width={16} height={16} />
               </Link>
-            );
-          })}
-        </nav>
-        <div className="min-w-0">{children}</div>
+              <div className="flex items-center justify-between gap-2 px-1">
+                <LanguageSwitcher />
+                <button
+                  type="button"
+                  className="rounded-xl px-3 py-2 text-sm text-nk-muted transition hover:bg-nk-sage/50 hover:text-danger"
+                  onClick={() =>
+                    logout.mutate(undefined, { onSettled: () => router.replace(`/${locale}`) })
+                  }
+                >
+                  {t.nav.logout}
+                </button>
+              </div>
+              <p className="truncate px-2 text-xs text-nk-muted" title={me.data.email}>
+                {me.data.email}
+              </p>
+            </div>
+          </div>
+        </aside>
+        <div className="min-w-0 pb-6">{children}</div>
       </div>
     </div>
   );

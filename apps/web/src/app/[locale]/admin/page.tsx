@@ -26,7 +26,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <AdminTitle>{t.admin.dashboard}</AdminTitle>
+      <AdminTitle hint={t.admin.pages.dashboard}>{t.admin.dashboard}</AdminTitle>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Stat label={t.admin.newOrders} value={d.orders.new} />
         <Stat label={t.admin.ordersTotal} value={d.orders.total} />

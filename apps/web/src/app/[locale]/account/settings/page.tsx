@@ -17,6 +17,7 @@ import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { cn } from '@/lib/cn';
 import { formatDate } from '@/lib/format';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 interface DeviceSession {
@@ -75,8 +76,8 @@ function SecurityCard() {
       <Button
         variant="secondary"
         loading={logoutAll.isPending}
-        onClick={() => {
-          if (!window.confirm(t.account.logoutAllConfirm)) return;
+        onClick={async () => {
+          if (!(await askConfirm(t.account.logoutAllConfirm))) return;
           logoutAll.mutate(undefined, {
             onSuccess: () => {
               toast(t.account.logoutAllDone);

@@ -5,6 +5,7 @@ import { useState, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MotionConfig } from 'framer-motion';
 
+import { ConfirmHost } from '@/components/ui/confirm-host';
 import { Toaster } from '@/components/ui/toaster';
 import type { Locale } from '@/i18n/config';
 import type { Dictionary } from '@/i18n/dictionaries/ky';
@@ -40,6 +41,7 @@ export function AppProviders({
         <MotionConfig reducedMotion="user">
           {children}
           <Toaster />
+          <ConfirmHost />
         </MotionConfig>
       </QueryClientProvider>
     </I18nProvider>

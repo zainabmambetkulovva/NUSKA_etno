@@ -43,7 +43,7 @@ export default function AdminReviewsPage() {
 
   return (
     <div>
-      <AdminTitle>{t.admin.reviews}</AdminTitle>
+      <AdminTitle hint={t.admin.pages.reviews}>{t.admin.reviews}</AdminTitle>
       <Select
         className="mb-4 max-w-[220px]"
         aria-label={t.admin.status}

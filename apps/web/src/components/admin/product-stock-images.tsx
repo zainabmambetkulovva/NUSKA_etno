@@ -14,6 +14,7 @@ import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { formatDate } from '@/lib/format';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 interface Movement {
@@ -223,7 +224,11 @@ export function ImagesPanel({ product }: { product: AdminProduct }) {
                   type="button"
                   className="rounded-full p-1.5 text-ink-soft hover:text-danger"
                   aria-label={t.common.delete}
-                  onClick={() => window.confirm(t.admin.deleteConfirm) && remove.mutate(image.id)}
+                  onClick={() =>
+                    void askConfirm(t.admin.deleteConfirm, { danger: true }).then(
+                      (ok) => ok && remove.mutate(image.id)
+                    )
+                  }
                 >
                   <TrashIcon width={16} height={16} />
                 </button>

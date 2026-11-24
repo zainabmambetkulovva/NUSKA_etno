@@ -9,12 +9,14 @@ import { AdminTitle } from '@/components/admin/admin-ui';
 import { OrnamentLoader } from '@/components/brand/ornament';
 import { Stars } from '@/components/home/stars';
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-input';
 import { Checkbox, Field, Input, Select, Textarea } from '@/components/ui/field';
 import { Badge, ErrorBox } from '@/components/ui/misc';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
 import { formatDate } from '@/lib/format';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 type Form = {
@@ -153,6 +155,7 @@ export default function AdminTestimonialsPage() {
   return (
     <div className="space-y-6">
       <AdminTitle
+        hint={t.admin.pages.testimonials}
         action={<Button onClick={() => (setForm(emptyForm()), setEditing('new'))}>{a.new}</Button>}
       >
         {t.admin.testimonials}
@@ -216,12 +219,11 @@ export default function AdminTestimonialsPage() {
           </Field>
           <Field label={a.date}>
             {(id) => (
-              <Input
+              <DateInput
                 id={id}
-                type="date"
                 required
                 value={form.reviewDate}
-                onChange={(e) => set('reviewDate', e.target.value)}
+                onChange={(v) => set('reviewDate', v)}
               />
             )}
           </Field>
@@ -336,7 +338,11 @@ export default function AdminTestimonialsPage() {
                 <button
                   type="button"
                   className="text-danger hover:underline"
-                  onClick={() => window.confirm(t.admin.confirmDelete) && remove.mutate(item.id)}
+                  onClick={() =>
+                    void askConfirm(t.admin.confirmDelete, { danger: true }).then(
+                      (ok) => ok && remove.mutate(item.id)
+                    )
+                  }
                 >
                   {t.common.delete}
                 </button>

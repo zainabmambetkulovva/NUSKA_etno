@@ -10,10 +10,10 @@ import {
   WhatsAppIcon,
   YouTubeIcon,
 } from '@/components/layout/social-icons';
-import { PinIcon } from '@/components/ui/icons';
 import { Reveal } from '@/components/ui/reveal';
 import { getDictionary } from '@/i18n/get-dictionary';
 import { serverApiSafe } from '@/lib/api/server';
+import { cn } from '@/lib/cn';
 import { resolveContacts } from '@/lib/contacts';
 import { alternates, resolveLocale } from '@/lib/locale-params';
 
@@ -29,7 +29,8 @@ export async function generateMetadata({
 
 /**
  * Contacts: the company's text and its channels as cards (WhatsApp, Instagram,
- * Telegram, YouTube, address). Data comes from
+ * Telegram, YouTube; the company works by delivery only, so there is no
+ * street address). Data comes from
  * the admin `contacts` block; the company's own values are the fallback.
  */
 export default async function ContactsPage({ params }: { params: Promise<{ locale: string }> }) {
@@ -74,7 +75,6 @@ export default async function ContactsPage({ params }: { params: Promise<{ local
       href: contacts.youtubeUrl,
       action: page.open,
     },
-    { icon: <PinIcon />, label: page.address, value: contacts.address, href: null, action: '' },
   ];
 
   return (
@@ -88,12 +88,15 @@ export default async function ContactsPage({ params }: { params: Promise<{ local
         </p>
       </header>
 
-      {/* three cards on top, the last row centred */}
+      {/* cards in rows of up to three, the last row centred */}
       <ul className="mx-auto mt-12 flex max-w-5xl flex-wrap justify-center gap-4">
         {cards.map((card, i) => (
           <li
             key={card.label}
-            className="w-full min-w-0 sm:w-[calc(50%-0.5rem)] lg:w-[calc((100%-2rem)/3)]"
+            className={cn(
+              'w-full min-w-0 sm:w-[calc(50%-0.5rem)]',
+              cards.length === 4 ? 'lg:w-[calc(50%-0.5rem)]' : 'lg:w-[calc((100%-2rem)/3)]'
+            )}
           >
             <Reveal delay={i * 0.05} className="h-full">
               <div className="card-hover flex h-full items-center gap-4 rounded-[1.5rem] border border-nk-beige bg-white/85 p-5 shadow-[0_18px_36px_-28px_rgba(80,60,30,0.6)]">

@@ -13,6 +13,7 @@ import { Badge, ErrorBox } from '@/components/ui/misc';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 const LOCALES: Locale[] = ['ky', 'ru'];
@@ -72,6 +73,7 @@ export default function AdminFaqPage() {
   return (
     <div className="space-y-6">
       <AdminTitle
+        hint={t.admin.pages.faq}
         action={
           <Button onClick={() => (setForm(empty), setEditing('new'))}>{t.admin.newFaq}</Button>
         }
@@ -199,7 +201,11 @@ export default function AdminFaqPage() {
                   <button
                     type="button"
                     className="text-danger hover:underline"
-                    onClick={() => window.confirm(t.admin.confirmDelete) && remove.mutate(item.id)}
+                    onClick={() =>
+                      void askConfirm(t.admin.confirmDelete, { danger: true }).then(
+                        (ok) => ok && remove.mutate(item.id)
+                      )
+                    }
                   >
                     {t.common.delete}
                   </button>

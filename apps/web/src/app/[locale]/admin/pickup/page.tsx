@@ -77,6 +77,7 @@ export default function AdminPickupPage() {
   return (
     <div className="space-y-6">
       <AdminTitle
+        hint={t.admin.pages.pickup}
         action={
           <Button onClick={() => (setForm(empty), setEditing('new'))}>{t.admin.newPickup}</Button>
         }

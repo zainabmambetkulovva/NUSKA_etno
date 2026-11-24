@@ -41,6 +41,7 @@ export default function AdminNewsletterPage() {
   return (
     <div className="space-y-6">
       <AdminTitle
+        hint={t.admin.pages.newsletter}
         action={
           <a href="/api/admin/newsletter/export" download className={buttonClass('outline', 'sm')}>
             {t.admin.exportCsv}

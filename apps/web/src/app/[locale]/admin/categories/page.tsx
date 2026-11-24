@@ -14,6 +14,7 @@ import { locales, localeNames } from '@/i18n/config';
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
+import { askConfirm } from '@/stores/confirm';
 import { useToast } from '@/stores/toast';
 
 interface FormState {
@@ -100,6 +101,7 @@ export default function AdminCategoriesPage() {
   return (
     <div className="space-y-6">
       <AdminTitle
+        hint={t.admin.pages.categories}
         action={
           <Button onClick={() => (setForm(emptyForm()), setEditing('new'))}>
             {t.admin.newCategory}
@@ -240,7 +242,11 @@ export default function AdminCategoriesPage() {
                 <button
                   type="button"
                   className="text-danger hover:underline"
-                  onClick={() => window.confirm(t.admin.deleteConfirm) && remove.mutate(c.id)}
+                  onClick={() =>
+                    void askConfirm(t.admin.deleteConfirm, { danger: true }).then(
+                      (ok) => ok && remove.mutate(c.id)
+                    )
+                  }
                 >
                   {t.common.delete}
                 </button>
