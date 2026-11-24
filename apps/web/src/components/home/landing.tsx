@@ -110,16 +110,23 @@ export function CategoryArches({
   return (
     <section className="relative overflow-hidden py-16 lg:py-20" aria-labelledby="categories-title">
       <Branch className="-right-4 top-10 hidden lg:block" flip />
-      <div className="container grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,230px)_minmax(0,1fr)] lg:gap-8 xl:gap-8">
-        <Reveal>
-          <Eyebrow>{t.landing.productsEyebrow}</Eyebrow>
-          <TextReveal
-            id="categories-title"
-            text={t.landing.productsTitle}
-            className="mt-3 font-serif text-[2.1rem] leading-[1.1] text-nk-ink sm:text-[2.5rem]"
-          />
-          <p className="mt-4 text-[15px] leading-relaxed text-nk-muted">{t.landing.productsText}</p>
-          <Link href={`/${locale}/catalog`} className="btn-forest group mt-7">
+      <div className="container">
+        <Reveal className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
+          <div className="max-w-4xl">
+            <Eyebrow>{t.landing.productsEyebrow}</Eyebrow>
+            <TextReveal
+              id="categories-title"
+              text={t.landing.productsTitle}
+              className="mt-3 font-serif text-[2.1rem] leading-[1.1] text-nk-ink sm:text-[2.6rem] lg:text-[3rem]"
+            />
+            <p className="mt-4 text-[16px] leading-relaxed text-nk-muted">
+              {t.landing.productsText}
+            </p>
+          </div>
+          <Link
+            href={`/${locale}/catalog`}
+            className="btn-forest group shrink-0 self-start lg:self-end"
+          >
             {t.landing.productsButton}
             <ArrowRightIcon
               width={18}
@@ -130,7 +137,7 @@ export function CategoryArches({
         </Reveal>
 
         {/* room above and below the scrolling row, so the lift on hover and the soft shadow are not cut */}
-        <ul className="-mx-4 -my-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:my-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 sm:py-0 xl:grid-cols-6 [&::-webkit-scrollbar]:hidden">
+        <ul className="-mx-4 mt-2 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 py-10 [scrollbar-width:none] sm:mx-0 sm:mx-0 sm:mt-10 sm:grid sm:grid-cols-3 sm:gap-4 sm:overflow-visible sm:px-0 sm:py-0 lg:grid-cols-6 [&::-webkit-scrollbar]:hidden">
           {categories.map((category, i) => {
             const photo = CATEGORY_PHOTOS[category.slug];
             return (
@@ -146,14 +153,16 @@ export function CategoryArches({
                     >
                       <span className="relative flex-1">
                         {photo ? (
-                          <Image
-                            src={photo}
-                            alt=""
-                            fill
-                            quality={95}
-                            sizes="(min-width: 1024px) 200px, 45vw"
-                            className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 [mask-composite:intersect] [mask-image:linear-gradient(to_right,transparent_2%,#000_16%,#000_78%,transparent_96%),linear-gradient(to_bottom,transparent_6%,#000_20%,#000_92%,transparent_100%)] group-hover:scale-110"
-                          />
+                          <span className="absolute inset-0 [mask-image:linear-gradient(to_right,transparent_2%,#000_16%,#000_78%,transparent_96%)]">
+                            <Image
+                              src={photo}
+                              alt=""
+                              fill
+                              quality={95}
+                              sizes="(min-width: 1024px) 200px, 45vw"
+                              className="object-contain px-2 pb-1 pt-6 drop-shadow-[0_14px_14px_rgba(70,45,20,0.35)] transition duration-700 [mask-image:linear-gradient(to_bottom,transparent_6%,#000_20%,#000_92%,transparent_100%)] group-hover:scale-110"
+                            />
+                          </span>
                         ) : (
                           <span className="flex h-full flex-col items-center justify-center gap-2 pt-6">
                             <LogoMark className="h-14 w-14 opacity-80 transition duration-700 group-hover:rotate-45" />

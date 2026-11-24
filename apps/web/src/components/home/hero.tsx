@@ -136,55 +136,59 @@ export function Hero({
           zoom={0.06}
           origin="60% 80%"
         >
-          <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,#000_82%,transparent)] lg:[mask-image:linear-gradient(to_right,transparent_0%,#000_18%),linear-gradient(to_bottom,transparent_0%,#000_9%,#000_86%,transparent)] lg:[mask-composite:intersect]">
-            <Image
-              src="/images/home/hero-scene.webp"
-              alt={t.home.heroSceneAlt}
-              fill
-              priority
-              unoptimized
-              className="object-cover motion-safe:animate-[hero-in_1.4s_cubic-bezier(.22,1,.36,1)_both]"
-            />
-            {/* the packages; one after another, each glows along its outline every 2 s */}
-            {SCENE_ITEMS.map((item, i) => (
-              <div key={item.name} className="contents">
-                {/* contact shadow on the tray */}
-                <span
-                  className="absolute rounded-[50%] bg-[rgba(45,25,8,0.45)] blur-[6px]"
-                  style={{
-                    left: `${((item.cx - item.w * 0.42) / SCENE_W) * 100}%`,
-                    top: `${((item.bottom - 9) / SCENE_H) * 100}%`,
-                    width: `${((item.w * 0.84) / SCENE_W) * 100}%`,
-                    height: `${(16 / SCENE_H) * 100}%`,
-                  }}
-                  aria-hidden
+          {/* two nested masks (left fade, then top/bottom fade): they multiply in every browser,
+              unlike two layers in one mask, which old Chrome adds up and leaves a hard edge */}
+          <div className="absolute inset-0 lg:[mask-image:linear-gradient(to_right,transparent_0%,rgba(0,0,0,0.5)_12%,#000_26%)]">
+            <div className="absolute inset-0 [mask-image:linear-gradient(to_bottom,#000_82%,transparent)] lg:[mask-image:linear-gradient(to_bottom,transparent_0%,rgba(0,0,0,0.5)_6%,#000_14%,#000_86%,transparent)]">
+              <Image
+                src="/images/home/hero-scene.webp"
+                alt={t.home.heroSceneAlt}
+                fill
+                priority
+                unoptimized
+                className="object-cover motion-safe:animate-[hero-in_1.4s_cubic-bezier(.22,1,.36,1)_both]"
+              />
+              {/* the packages; one after another, each glows along its outline every 2 s */}
+              {SCENE_ITEMS.map((item, i) => (
+                <div key={item.name} className="contents">
+                  {/* contact shadow on the tray */}
+                  <span
+                    className="absolute rounded-[50%] bg-[rgba(45,25,8,0.45)] blur-[6px]"
+                    style={{
+                      left: `${((item.cx - item.w * 0.42) / SCENE_W) * 100}%`,
+                      top: `${((item.bottom - 9) / SCENE_H) * 100}%`,
+                      width: `${((item.w * 0.84) / SCENE_W) * 100}%`,
+                      height: `${(16 / SCENE_H) * 100}%`,
+                    }}
+                    aria-hidden
+                  />
+                  <Image
+                    src={`/images/home/hero-items/${item.name}.webp`}
+                    alt=""
+                    width={item.w * 2}
+                    height={item.h * 2}
+                    priority
+                    unoptimized
+                    className="hero-glow absolute"
+                    style={{
+                      left: `${((item.cx - item.w / 2) / SCENE_W) * 100}%`,
+                      top: `${((item.bottom - item.h) / SCENE_H) * 100}%`,
+                      width: `${(item.w / SCENE_W) * 100}%`,
+                      height: `${(item.h / SCENE_H) * 100}%`,
+                      animationDelay: `${1.5 + i * 2}s`,
+                    }}
+                  />
+                </div>
+              ))}
+              <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
+                <Cloud className="left-[30%] top-[6%] h-14 w-52 [--drift:50px]" />
+                <Cloud
+                  className="right-[8%] top-[14%] h-12 w-44 [--drift:-40px] [--drift-duration:30s]"
+                  style={{ animationDelay: '-8s' }}
                 />
-                <Image
-                  src={`/images/home/hero-items/${item.name}.webp`}
-                  alt=""
-                  width={item.w * 2}
-                  height={item.h * 2}
-                  priority
-                  unoptimized
-                  className="hero-glow absolute"
-                  style={{
-                    left: `${((item.cx - item.w / 2) / SCENE_W) * 100}%`,
-                    top: `${((item.bottom - item.h) / SCENE_H) * 100}%`,
-                    width: `${(item.w / SCENE_W) * 100}%`,
-                    height: `${(item.h / SCENE_H) * 100}%`,
-                    animationDelay: `${1.5 + i * 2}s`,
-                  }}
-                />
-              </div>
-            ))}
+              </HeroAtmosphereSlot>
+            </div>
           </div>
-          <HeroAtmosphereSlot className="pointer-events-none absolute inset-0 hidden lg:block">
-            <Cloud className="left-[30%] top-[6%] h-14 w-52 [--drift:50px]" />
-            <Cloud
-              className="right-[8%] top-[14%] h-12 w-44 [--drift:-40px] [--drift-duration:30s]"
-              style={{ animationDelay: '-8s' }}
-            />
-          </HeroAtmosphereSlot>
         </HeroLayer>
 
         <div className="container relative z-10 -order-1 pt-6 lg:pt-[6vh] xl:pt-16">

@@ -102,7 +102,7 @@ export async function Footer({ locale, t }: { locale: Locale; t: Dictionary }) {
         className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(ellipse_at_10%_0%,rgba(83,122,74,0.35),transparent_55%)]"
         aria-hidden
       />
-      <YurtLine className="pointer-events-none absolute bottom-[4.75rem] right-8 hidden h-24 w-36 text-nk-gold/45 lg:block" />
+      <YurtLine className="pointer-events-none absolute bottom-[4.75rem] right-44 hidden h-24 w-36 text-nk-gold/45 lg:block" />
 
       {/* phones: the link columns two per row; desktop: one row */}
       <div className="container relative grid grid-cols-2 gap-x-6 gap-y-10 pb-10 pt-14 lg:grid-cols-[1.35fr_1fr_1fr_1fr_1.45fr] lg:gap-8">

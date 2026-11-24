@@ -192,3 +192,11 @@ for (const width of [1024, 1210, 1280, 1366]) {
     await expectNoHorizontalScroll(page);
   });
 }
+
+test('about page tells the company text with pictures and values', async ({ page }) => {
+  await page.goto('/ky/about');
+  await expect(page.getByRole('heading', { level: 1, name: ky.aboutPage.title })).toBeVisible();
+  await expect(page.getByText(ky.aboutPage.paragraphs[0]!)).toBeVisible();
+  await expect(page.getByRole('heading', { name: ky.aboutPage.valuesTitle })).toBeVisible();
+  await expect(page.locator('main img')).not.toHaveCount(0);
+});
