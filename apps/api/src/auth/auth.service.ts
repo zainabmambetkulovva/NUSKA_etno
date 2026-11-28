@@ -89,8 +89,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, meta: ClientMeta) {
-    const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
-    const passwordOk = await this.passwords.verify(dto.password, user?.passwordHash ?? null);
+    const { user, passwordOk } = await this.findForLogin(dto);
 
     if (!user || !passwordOk || user.deletedAt) {
       throw AppError.unauthorized('INVALID_CREDENTIALS', 'Invalid e-mail or password');
@@ -104,6 +103,36 @@ export class AuthService {
     });
     const tokens = await this.createSession(user.id, meta);
     return { user: toPublicUser(user), tokens };
+  }
+
+  /**
+   * The account and whether the password matches it. By phone: the number is
+   * normalised (0555 123 456 = +996555123456); if several accounts share it,
+   * the one whose password matches is taken. The answer is the same for an
+   * unknown login and a wrong password, and takes the same time.
+   */
+  private async findForLogin(dto: LoginDto) {
+    if (dto.email) {
+      const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      return {
+        user,
+        passwordOk: await this.passwords.verify(dto.password, user?.passwordHash ?? null),
+      };
+    }
+    const phone = normalizePhone(dto.phone ?? '');
+    const candidates = phone
+      ? await this.prisma.user.findMany({
+          where: { phone, deletedAt: null, passwordHash: { not: null } },
+          orderBy: { createdAt: 'asc' },
+          take: 5,
+        })
+      : [];
+    for (const user of candidates) {
+      if (await this.passwords.verify(dto.password, user.passwordHash))
+        return { user, passwordOk: true };
+    }
+    if (candidates.length === 0) await this.passwords.verify(dto.password, null);
+    return { user: null, passwordOk: false };
   }
 
   /**

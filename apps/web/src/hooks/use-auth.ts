@@ -47,7 +47,7 @@ function useAfterSignIn() {
 export function useLogin() {
   const afterSignIn = useAfterSignIn();
   return useMutation({
-    mutationFn: (body: { email: string; password: string }) =>
+    mutationFn: (body: ({ email: string } | { phone: string }) & { password: string }) =>
       api<{ user: User }>('/auth/login', { method: 'POST', body }),
     onSuccess: ({ user }) => afterSignIn(user),
   });

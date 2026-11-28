@@ -89,10 +89,10 @@ export function BenefitsBar({ t }: { t: Dictionary }) {
 
 /** Photo of each real category (the company's dish photos); null = photo to come. */
 const CATEGORY_PHOTOS: Record<string, string | null> = {
-  'natural-honey': '/images/dishes/bal.png',
-  'dairy-products': '/images/dishes/sary-mai.png',
-  'national-sweets': '/images/dishes/navat.png',
-  'traditional-dishes': '/images/dishes/besh-barmak.png',
+  'natural-honey': '/images/dishes/bal.webp',
+  'dairy-products': '/images/dishes/sary-mai.webp',
+  'national-sweets': '/images/dishes/navat.webp',
+  'traditional-dishes': '/images/dishes/besh-barmak.webp',
   'meat-products': '/images/products/kholodets.webp',
   drinks: '/images/products/kompot.webp',
 };
@@ -260,10 +260,10 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
             className="absolute inset-0 overflow-hidden rounded-[2rem] rounded-tl-[58%_88%] shadow-[0_40px_70px_-45px_rgba(60,40,15,0.75)]"
           >
             <Image
-              src="/images/home/cta.png"
+              src="/images/home/cta.webp"
               alt=""
               fill
-              unoptimized
+              sizes="(min-width: 1024px) 50vw, 100vw"
               className="object-cover object-[35%_58%]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#F4E5CB]/45 via-transparent to-transparent" />
@@ -273,7 +273,7 @@ export function BrandAbout({ t, locale }: { t: Dictionary; locale: Locale }) {
               src="/images/home/brand-girl.webp"
               alt={t.landing.aboutImageAlt}
               fill
-              unoptimized
+              sizes="(min-width: 1024px) 420px, 60vw"
               className="object-contain object-bottom drop-shadow-[0_20px_30px_rgba(60,35,10,0.35)]"
             />
           </div>

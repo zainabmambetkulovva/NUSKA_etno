@@ -36,11 +36,11 @@ export function AuthCard({
       <div className="mx-auto grid max-w-5xl overflow-hidden rounded-[2rem] border border-nk-beige bg-white shadow-[0_40px_80px_-50px_rgba(60,40,15,0.65)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <aside className="relative hidden min-h-[36rem] overflow-hidden lg:block" aria-hidden>
           <Image
-            src="/images/home/cta.png"
+            src="/images/home/cta.webp"
             alt=""
             fill
             priority
-            unoptimized
+            sizes="(min-width: 1024px) 520px, 1px"
             className="scale-105 object-cover object-[40%_55%] motion-safe:animate-[auth-pan_22s_ease-in-out_infinite_alternate]"
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(26,46,32,0.15)_0%,rgba(26,46,32,0.55)_45%,rgba(22,38,27,0.92)_100%)]" />

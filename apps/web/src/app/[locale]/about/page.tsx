@@ -71,7 +71,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
             <div className="grid grid-cols-5 gap-4">
               <div className="relative col-span-3 aspect-[4/5] overflow-hidden rounded-[2rem] border border-gold/40 shadow-lift">
                 <Image
-                  src="/images/home/cta.png"
+                  src="/images/home/cta.webp"
                   alt={page.images.yurt}
                   fill
                   sizes="(min-width: 1024px) 330px, 55vw"
@@ -81,7 +81,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
               <div className="col-span-2 flex flex-col gap-4">
                 <div className="relative flex-1 overflow-hidden rounded-[1.6rem] border border-gold/40 shadow-lift">
                   <Image
-                    src="/images/home/about.png"
+                    src="/images/home/about.webp"
                     alt={page.images.meadow}
                     fill
                     sizes="(min-width: 1024px) 220px, 35vw"
@@ -90,7 +90,7 @@ export default async function AboutPage({ params }: { params: Promise<{ locale: 
                 </div>
                 <div className="relative flex-1 overflow-hidden rounded-[1.6rem] border border-gold/40 shadow-lift">
                   <Image
-                    src="/images/home/hero.png"
+                    src="/images/home/hero.webp"
                     alt={page.images.scene}
                     fill
                     sizes="(min-width: 1024px) 220px, 35vw"

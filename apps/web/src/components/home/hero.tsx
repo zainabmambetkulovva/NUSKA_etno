@@ -145,7 +145,8 @@ export function Hero({
                 alt={t.home.heroSceneAlt}
                 fill
                 priority
-                unoptimized
+                quality={95}
+                sizes="(min-width: 1024px) 64vw, 100vw"
                 className="object-cover motion-safe:animate-[hero-in_1.4s_cubic-bezier(.22,1,.36,1)_both]"
               />
               {/* the packages; one after another, each glows along its outline every 2 s */}
@@ -168,7 +169,8 @@ export function Hero({
                     width={item.w * 2}
                     height={item.h * 2}
                     priority
-                    unoptimized
+                    quality={95}
+                    sizes={`(min-width: 1024px) ${Math.ceil((item.w / SCENE_W) * 64)}vw, ${Math.ceil((item.w / SCENE_W) * 100)}vw`}
                     className="hero-glow absolute"
                     style={{
                       left: `${((item.cx - item.w / 2) / SCENE_W) * 100}%`,
