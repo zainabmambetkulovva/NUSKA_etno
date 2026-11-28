@@ -15,6 +15,7 @@ import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useLogin } from '@/hooks/use-auth';
+import { useSlow } from '@/hooks/use-slow';
 import { useI18n } from '@/i18n/i18n-provider';
 import { errorMessage } from '@/lib/api/errors';
 
@@ -24,6 +25,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = safeNext(searchParams.get('next'), locale, `/${locale}/account`);
   const login = useLogin();
+  const slow = useSlow(login.isPending);
   // one field for the e-mail or the phone number saved in the profile
   const schema = z.object({
     login: z
@@ -114,6 +116,11 @@ function LoginForm() {
         <Button type="submit" className="w-full" size="lg" loading={login.isPending}>
           {t.auth.login}
         </Button>
+        {slow && (
+          <p role="status" className="text-center text-sm text-ink-muted">
+            {t.auth.waking}
+          </p>
+        )}
       </form>
     </AuthCard>
   );

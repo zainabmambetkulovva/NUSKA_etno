@@ -433,6 +433,7 @@ const ru: Dictionary = {
     suggestions: 'Подсказки',
   },
   auth: {
+    waking: 'Сервер просыпается, подождите немного…',
     registerPanelTitle: 'Добро пожаловать в семью NUSKA_etno',
     registerPanelText: 'Аккаунт — минута до традиционных вкусов.',
     registerSub: 'Заполните пару строк — и можно заказывать.',

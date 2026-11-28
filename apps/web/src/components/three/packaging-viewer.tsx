@@ -346,7 +346,7 @@ export default function PackagingViewer({
   return (
     <Canvas
       frameloop={reducedMotion ? 'demand' : 'always'}
-      dpr={[1, 1.75]}
+      dpr={[1, 1.5]}
       shadows
       camera={{ position: [2.6, 1.6, 3.8], fov: 35 }}
       gl={{ antialias: true, alpha: true }}

@@ -1,9 +1,12 @@
 'use client';
 
+import { useState } from 'react';
+
 import { useQuery } from '@tanstack/react-query';
 
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
+import { waitForApi } from '@/lib/api/wake';
 
 /**
  * "Continue with Google". Hidden only when the server says Google sign-in is
@@ -17,12 +20,22 @@ export function GoogleButton({ next }: { next: string }) {
     queryFn: () => api<{ google: boolean }>('/auth/providers'),
     staleTime: 10 * 60_000,
   });
+  const [waking, setWaking] = useState(false);
   if (providers.data && !providers.data.google) return null;
   const href = `/api/auth/google?locale=${locale}&next=${encodeURIComponent(next)}`;
   return (
     <div className="space-y-4">
       <a
         href={href}
+        aria-busy={waking || undefined}
+        onClick={async (event) => {
+          // the API may be asleep: wake it first, then go to Google
+          event.preventDefault();
+          if (waking) return;
+          setWaking(true);
+          await waitForApi();
+          window.location.assign(href);
+        }}
         className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-cream-dark bg-white text-sm font-medium text-ink shadow-soft transition hover:border-brand"
       >
         <svg viewBox="0 0 48 48" className="h-5 w-5" aria-hidden>
@@ -43,7 +56,7 @@ export function GoogleButton({ next }: { next: string }) {
             d="M24 48c6.5 0 11.9-2.1 15.8-5.8l-7.4-5.7c-2.1 1.4-4.8 2.2-8.4 2.2-6.3 0-11.6-4-13.5-9.6l-7.8 6C6.6 42.6 14.6 48 24 48z"
           />
         </svg>
-        {t.auth.google}
+        {waking ? t.auth.waking : t.auth.google}
       </a>
       {/* a new account created with Google accepts the terms (stored on the server) */}
       <p className="-mt-2 text-center text-xs text-ink-soft">

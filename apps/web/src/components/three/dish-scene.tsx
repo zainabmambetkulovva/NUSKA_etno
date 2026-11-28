@@ -433,7 +433,7 @@ export default function DishScene({
   return (
     <Canvas
       frameloop={active && !still ? 'always' : 'demand'}
-      dpr={[1, 1.75]}
+      dpr={[1, 1.5]}
       gl={{ alpha: true, antialias: true, powerPreference: 'low-power' }}
       camera={{ position: [0, 2.1, 6.6], fov: 34 }}
     >

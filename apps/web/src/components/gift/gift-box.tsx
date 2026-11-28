@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 
 import { KochkorMuyuz } from '@/components/brand/ornament';
 import type { BoxItem } from '@/components/three/gift-box-scene';
+import { canUseWebGL, lowPowerDevice } from '@/lib/device';
 
 const GiftBoxScene = dynamic(() => import('@/components/three/gift-box-scene'), { ssr: false });
 
@@ -61,13 +62,7 @@ export function GiftBox({
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    let ok = false;
-    try {
-      const canvas = document.createElement('canvas');
-      ok = Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'));
-    } catch {
-      ok = false;
-    }
+    const ok = canUseWebGL() && !lowPowerDevice();
     setLite(window.matchMedia('(max-width: 767px), (pointer: coarse)').matches);
     setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     setMode(ok ? '3d' : '2d');

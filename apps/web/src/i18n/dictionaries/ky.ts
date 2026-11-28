@@ -434,6 +434,7 @@ const ky = {
     suggestions: 'Сунуштар',
   },
   auth: {
+    waking: 'Сервер ойгонуп жатат, бир аз күтүңүз…',
     registerPanelTitle: 'NUSKA_etno үй-бүлөсүнө кош келиңиз',
     registerPanelText: 'Аккаунт — салттуу даамдарга бир мүнөттүк жол.',
     registerSub: 'Бир нече сапты толтуруңуз — заказ беришке даяр болосуз.',
