@@ -22,6 +22,7 @@ import {
 import dynamic from 'next/dynamic';
 
 import { useMotionEnabled } from '@/components/motion/use-motion-enabled';
+import { canUseWebGL, heroWebGLEnabled, lowPowerDevice } from '@/lib/device';
 
 // three.js is fetched only on desktops with WebGL, after the page has loaded.
 const HeroAtmosphere = dynamic(() => import('@/components/three/hero-atmosphere'), { ssr: false });
@@ -138,18 +139,9 @@ export function HeroLayer({
   );
 }
 
-function canUseWebGL() {
-  try {
-    const canvas = document.createElement('canvas');
-    return Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
-
 /**
- * Loads the WebGL atmosphere on desktops (≥ 1024 px, fine pointer, WebGL,
- * no reduced motion) once the page is idle, and pauses it while the hero is
+ * Loads the WebGL atmosphere, when it is switched on (NEXT_PUBLIC_HERO_WEBGL),
+ * on capable desktops (≥ 1024 px, fine pointer, WebGL, no reduced motion) once the page is idle, and pauses it while the hero is
  * out of view. Phones keep the light CSS clouds and eagle.
  */
 export function HeroAtmosphereSlot({
@@ -166,7 +158,7 @@ export function HeroAtmosphereSlot({
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (still) return;
+    if (still || !heroWebGLEnabled || lowPowerDevice()) return;
     const desktop = window.matchMedia('(min-width: 1024px) and (pointer: fine)');
     if (!desktop.matches || !canUseWebGL()) return;
     const start = () => setEnabled(true);

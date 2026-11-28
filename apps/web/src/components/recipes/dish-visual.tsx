@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { layerY, type DishLayerKind } from './dish-layers';
 
 import { cn } from '@/lib/cn';
+import { canUseWebGL, lowPowerDevice } from '@/lib/device';
 
 const DishScene = dynamic(() => import('@/components/three/dish-scene'), { ssr: false });
 
@@ -47,15 +48,6 @@ const FLAT: Record<DishLayerKind, string> = {
 /** Approximate screen position of a layer (used before the 3D scene measures it). */
 const guess = (i: number, n: number) => 0.5 - layerY(i, n) / 4.3;
 
-function canUseWebGL() {
-  try {
-    const canvas = document.createElement('canvas');
-    return Boolean(canvas.getContext('webgl2') || canvas.getContext('webgl'));
-  } catch {
-    return false;
-  }
-}
-
 /**
  * The dish in an exploded view: its parts float one above another, turn
  * slowly, and every part has its name in a card beside it. The 3D scene is
@@ -86,7 +78,9 @@ export function DishVisual({
       ([entry]) => {
         setVisible(entry.isIntersecting);
         if (entry.isIntersecting)
-          setMode((m) => (m === 'pending' ? (canUseWebGL() ? '3d' : 'flat') : m));
+          setMode((m) =>
+            m === 'pending' ? (canUseWebGL() && !lowPowerDevice() ? '3d' : 'flat') : m
+          );
       },
       { rootMargin: '200px 0px' }
     );

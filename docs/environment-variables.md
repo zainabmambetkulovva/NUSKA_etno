@@ -203,3 +203,9 @@ cancellation by the customer. Without a token nothing is sent and orders work as
 Setup: @BotFather → `/newbot` → copy the token to Render (`TELEGRAM_BOT_TOKEN`) →
 open the bot and press Start (or add it to a group) → Admin → Telegram →
 «Find chats» → «Connect» → «Send a test».
+
+## Website: WebGL clouds on the home picture (optional)
+
+| Variable                 | Default | Description                                                                                         |
+| ------------------------ | ------- | --------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_HERO_WEBGL` | –       | `on` brings back the WebGL clouds and pollen over the home picture on capable desktops. Off by default: they made pages stutter while scrolling; light CSS clouds are shown instead. |

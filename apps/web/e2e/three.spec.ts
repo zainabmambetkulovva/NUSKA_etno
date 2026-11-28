@@ -25,16 +25,17 @@ test('without WebGL the product page keeps the photo and hides the 3D switch', a
   await expect(page.locator('main canvas')).toHaveCount(0);
 });
 
-test('home hero: WebGL clouds and pollen load on desktop and follow the mouse', async ({
+test('home hero: light CSS clouds, no WebGL scene by default, page stays usable', async ({
   page,
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/ky');
-  await expect(page.locator('[data-hero-3d="on"] canvas')).toBeVisible({ timeout: 30_000 });
+  await page.waitForTimeout(3000);
+  await expect(page.locator('[data-hero-3d]')).toHaveAttribute('data-hero-3d', 'off');
+  await expect(page.locator('[data-hero-3d] canvas')).toHaveCount(0);
   await page.mouse.move(200, 200);
   await page.mouse.move(1200, 600, { steps: 5 });
-  // scrolling past the hero pauses the scene but keeps the page usable
   await page.mouse.wheel(0, 1600);
   await expect(page.getByRole('heading', { name: ky.landing.productsTitle })).toBeVisible();
   expect(errors).toEqual([]);

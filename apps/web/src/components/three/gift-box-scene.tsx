@@ -278,7 +278,7 @@ export default function GiftBoxScene({
   return (
     <Canvas
       frameloop={reducedMotion ? 'demand' : 'always'}
-      dpr={lite ? [1, 1.25] : [1, 1.75]}
+      dpr={lite ? [1, 1.25] : [1, 1.5]}
       shadows={!lite}
       camera={{ position: [0, 2.4, 3.6], fov: 36 }}
       gl={{ antialias: true, alpha: true }}
