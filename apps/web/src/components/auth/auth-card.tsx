@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 import Image from 'next/image';
 
@@ -31,6 +31,11 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   const { t } = useI18n();
+  // Wakes the API (asleep on a free plan) while the visitor is typing, so the
+  // sign-in or sign-up does not have to wait for it to start.
+  useEffect(() => {
+    void fetch('/api/health/live', { cache: 'no-store' }).catch(() => undefined);
+  }, []);
   return (
     <div className="container py-10 md:py-16">
       <div className="mx-auto grid max-w-5xl overflow-hidden rounded-[2rem] border border-nk-beige bg-white shadow-[0_40px_80px_-50px_rgba(60,40,15,0.65)] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

@@ -28,7 +28,7 @@ const MAX_BODY_BYTES = 4.4 * 1024 * 1024;
 const agent = new Agent({ keepAliveTimeout: 2_000, keepAliveMaxTimeout: 2_000 });
 /** Pauses before trying a request again after a network error. */
 const RETRY_DELAYS = [150, 600];
-/** Pauses between read requests while the API host is starting (about 45 s in all). */
+/** Longer pauses while the API host is starting (about 45 s in all). */
 const WAKE_DELAYS = [1_000, 2_000, 4_000, 8_000, 12_000, 18_000];
 
 const HOP_BY_HOP = new Set([
@@ -98,35 +98,32 @@ async function proxy(request: NextRequest, { params }: { params: Promise<{ path:
       ...(streamed ? { duplex: 'half' } : {}),
     });
 
+  // The API host may be asleep (free plan) and need up to a minute to start.
+  // - A connection error means the request never reached the API, so any request
+  //   (sign-in too) is sent again: first quickly, then with longer pauses (~45 s).
+  // - 502/503 come from the host's router while the API is starting: the request
+  //   was not processed, so it is sent again too. 504 may come after the API did
+  //   the work, so only read requests (which change nothing) repeat on it.
+  const delays = [...RETRY_DELAYS, ...WAKE_DELAYS];
+  const where = `[api proxy] ${request.method} /${path.join('/')}`;
+  const starting = (status: number) =>
+    status === 502 || status === 503 || (!hasBody && status === 504);
   let upstream: Awaited<ReturnType<typeof send>> | undefined;
-  for (let attempt = 0; !upstream; attempt++) {
+  for (let attempt = 0; ; attempt++) {
     try {
       upstream = await send();
+      if (!starting(upstream.status) || streamed || attempt >= delays.length) break;
+      await upstream.body?.cancel();
     } catch (error) {
-      // A connection the API host already closed fails at once; the request never
-      // reached the API, so it is sent again on a fresh connection.
-      const where = `[api proxy] ${request.method} /${path.join('/')}`;
-      if (streamed || attempt >= RETRY_DELAYS.length) {
+      if (streamed || attempt >= delays.length) {
         console.error(`${where}: ${describe(error)}`);
         return unavailable();
       }
-      console.warn(`${where}: ${describe(error)}; retrying`);
-      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS[attempt]));
+      if (attempt === 0) console.warn(`${where}: ${describe(error)}; retrying`);
     }
+    await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
   }
-  // The API host was asleep (free plan) and is starting: read requests keep trying
-  // for up to ~45 s (they change nothing, so repeating them is safe).
-  for (const wait of hasBody ? [] : WAKE_DELAYS) {
-    if (![502, 503, 504].includes(upstream.status)) break;
-    await upstream.body?.cancel();
-    await new Promise((resolve) => setTimeout(resolve, wait));
-    try {
-      upstream = await send();
-    } catch {
-      // still starting: the next pause decides
-    }
-  }
-  if (!hasBody && [502, 503, 504].includes(upstream.status)) return unavailable();
+  if (starting(upstream.status)) return unavailable();
 
   const responseHeaders = new Headers();
   upstream.headers.forEach((value, key) => {
