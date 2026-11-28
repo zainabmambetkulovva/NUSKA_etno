@@ -13,10 +13,22 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     // 95: the company's product photos are shown without visible compression
     qualities: [75, 95],
+    // optimized copies are kept for 30 days; a changed picture gets a new file name
+    minimumCacheTTL: 2_592_000,
     remotePatterns: imagesHost ? [{ protocol: 'https', hostname: imagesHost }] : [],
   },
   async headers() {
     return [
+      {
+        // pictures in /public: a week in the browser, then quietly refreshed
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=604800, stale-while-revalidate=2592000',
+          },
+        ],
+      },
       {
         source: '/:path*',
         headers: [

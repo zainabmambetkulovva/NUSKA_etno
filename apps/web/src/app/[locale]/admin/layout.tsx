@@ -57,6 +57,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     { href: `${base}/faq`, label: t.admin.faq },
     { href: `${base}/testimonials`, label: t.admin.testimonials },
     { href: `${base}/newsletter`, label: t.admin.newsletter },
+    { href: `${base}/telegram`, label: 'Telegram' },
     { href: `${base}/ai`, label: t.admin.aiTitle },
   ];
 

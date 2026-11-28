@@ -1,4 +1,5 @@
 import { UserRole } from '@prisma/client';
+import { hash } from 'bcrypt';
 import request from 'supertest';
 
 import { MailService } from '../src/mail/mail.service';
@@ -131,6 +132,58 @@ describe('Auth & users (e2e)', () => {
       .expect(401);
     expect(wrong.body.code).toBe('INVALID_CREDENTIALS');
     expect(unknown.body).toEqual(wrong.body);
+  });
+
+  it('signs in with the phone number from the profile, in any usual form', async () => {
+    const user = await createUser(ctx.prisma);
+    await ctx.prisma.user.update({ where: { id: user.id }, data: { phone: '+996555123456' } });
+
+    for (const phone of ['0555 12 34 56', '+996 555 123 456', '996555123456', '555123456']) {
+      const res = await http()
+        .post('/api/auth/login')
+        .send({ phone, password: PASSWORD })
+        .expect(200);
+      expect(res.body.user.id).toBe(user.id);
+      expect(res.headers['set-cookie']).toBeDefined();
+    }
+
+    // a wrong password, an unknown number and a non-number answer like a wrong e-mail
+    const wrong = await http()
+      .post('/api/auth/login')
+      .send({ phone: '0555123456', password: 'Wrong1234' })
+      .expect(401);
+    const unknown = await http()
+      .post('/api/auth/login')
+      .send({ phone: '0700000000', password: PASSWORD })
+      .expect(401);
+    const junk = await http()
+      .post('/api/auth/login')
+      .send({ phone: 'abc-def-ghi', password: PASSWORD })
+      .expect(401);
+    expect(wrong.body.code).toBe('INVALID_CREDENTIALS');
+    expect(unknown.body).toEqual(wrong.body);
+    expect(junk.body).toEqual(wrong.body);
+
+    // neither e-mail nor phone
+    await http().post('/api/auth/login').send({ password: PASSWORD }).expect(422);
+  });
+
+  it('a phone shared by two accounts opens the one whose password matches', async () => {
+    const first = await createUser(ctx.prisma);
+    const second = await createUser(ctx.prisma);
+    await ctx.prisma.user.updateMany({
+      where: { id: { in: [first.id, second.id] } },
+      data: { phone: '+996700112233' },
+    });
+    await ctx.prisma.user.update({
+      where: { id: second.id },
+      data: { passwordHash: await hash('Other1234', 4) },
+    });
+    const res = await http()
+      .post('/api/auth/login')
+      .send({ phone: '0700 11 22 33', password: 'Other1234' })
+      .expect(200);
+    expect(res.body.user.id).toBe(second.id);
   });
 
   it('requires authentication by default and admin role for /admin', async () => {

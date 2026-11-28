@@ -52,7 +52,7 @@ export function LogoMark({ className }: { className?: string }) {
 
 /**
  * The NUSKA logo sent by the company on a transparent background: the five
- * swirls (public/images/logo-nuska.png, used as sent; the word "Nuska" under
+ * swirls (public/images/logo-nuska.webp; the word "Nuska" under
  * them is cut off at the clean gap), with the name NUSKA_etno next to it. On the light mobile menu ("dark" tone) it sits on a green badge, as
  * its white swirl needs a dark ground.
  */
@@ -80,10 +80,10 @@ export function Logo({
         )}
       >
         <Image
-          src="/images/logo-nuska.png"
+          src="/images/logo-nuska.webp"
           alt=""
-          width={922}
-          height={868}
+          width={460}
+          height={433}
           quality={95}
           sizes={size === 'lg' ? '100px' : '56px'}
           priority={size === 'md'}

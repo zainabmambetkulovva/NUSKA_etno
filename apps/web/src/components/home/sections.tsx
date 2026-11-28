@@ -123,13 +123,13 @@ const PODIUM = [
   {
     key: 'zhupka',
     block: { left: 118.3, right: 194.5, faceTop: 158.7, faceBottom: 216.6 },
-    photo: { src: 'zhupka.png', w: 480, h: 733, cx: 162.5, bottom: 150.1, height: 135, rotate: 0 },
+    photo: { src: 'zhupka.webp', w: 480, h: 733, cx: 162.5, bottom: 150.1, height: 135, rotate: 0 },
   },
   {
     key: 'sary-mai',
     block: { left: 214, right: 292, faceTop: 181.5, faceBottom: 229.3 },
     photo: {
-      src: 'sary-mai.png',
+      src: 'sary-mai.webp',
       w: 825,
       h: 1148,
       cx: 256.4,
@@ -148,7 +148,7 @@ const PODIUM = [
     block: { left: 434, right: 512, faceTop: 181.5, faceBottom: 229.3 },
     // the photo shows the bottle tilted; it is stood upright with a CSS rotation
     photo: {
-      src: 'keremet-shypaa.png',
+      src: 'keremet-shypaa.webp',
       w: 681,
       h: 1263,
       cx: 469.6,
@@ -160,7 +160,7 @@ const PODIUM = [
   {
     key: 'navat',
     block: { left: 531.5, right: 607.7, faceTop: 158.7, faceBottom: 216.6 },
-    photo: { src: 'navat.png', w: 723, h: 566, cx: 563.5, bottom: 150.1, height: 78, rotate: 0 },
+    photo: { src: 'navat.webp', w: 723, h: 566, cx: 563.5, bottom: 150.1, height: 78, rotate: 0 },
   },
 ] as const;
 
@@ -386,7 +386,7 @@ export function Story({ t, locale }: { t: Dictionary; locale: Locale }) {
         <Reveal>
           <figure className="relative aspect-[3/2] overflow-hidden rounded-[1.75rem] shadow-[0_30px_50px_-24px_rgba(60,40,15,0.65)]">
             <Image
-              src="/images/home/about.png"
+              src="/images/home/about.webp"
               alt={t.home.storyPhotoAlt}
               fill
               quality={95}
@@ -472,7 +472,7 @@ export function ProductsRow({
                   >
                     <span className="relative block aspect-[1/1] bg-[radial-gradient(circle_at_50%_40%,#FBF3DC_0%,#E9D6A8_36%,#55683B_76%,#27391F_100%)] sm:aspect-[5/4]">
                       <Image
-                        src={`/images/dishes/${key}.png`}
+                        src={`/images/dishes/${key}.webp`}
                         alt=""
                         fill
                         quality={95}
@@ -567,10 +567,9 @@ export function ClosingCta({ t, locale }: { t: Dictionary; locale: Locale }) {
     >
       <div className="relative h-[380px] sm:aspect-[16/7] sm:h-auto">
         <Image
-          src="/images/home/cta.png"
+          src="/images/home/cta.webp"
           alt=""
           fill
-          unoptimized
           sizes="100vw"
           className="object-cover object-[50%_72%] sm:object-[50%_55%]"
         />

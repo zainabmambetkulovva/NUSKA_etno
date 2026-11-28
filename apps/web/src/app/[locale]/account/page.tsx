@@ -63,9 +63,15 @@ export default function ProfilePage() {
           {(id) => <Input id={id} maxLength={100} {...form.register('lastName')} />}
         </Field>
       </div>
-      <Field label={t.auth.phone}>
-        {(id) => (
-          <Input id={id} type="tel" placeholder="+996 ___ ___ ___" {...form.register('phone')} />
+      <Field label={t.auth.phone} hint={t.account.phoneLoginHint}>
+        {(id, d) => (
+          <Input
+            id={id}
+            aria-describedby={d}
+            type="tel"
+            placeholder="+996 ___ ___ ___"
+            {...form.register('phone')}
+          />
         )}
       </Field>
       <Field label={t.auth.email}>

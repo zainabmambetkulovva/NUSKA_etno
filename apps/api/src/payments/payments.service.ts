@@ -4,6 +4,7 @@ import { PaymentMethod, PaymentStatus, Prisma } from '@prisma/client';
 import { AppError } from '../common/errors';
 import { paginate } from '../common/utils/pagination';
 import { PrismaService } from '../prisma/prisma.service';
+import { TelegramService } from '../telegram/telegram.service';
 
 import { canTransitionPayment } from './payment-status';
 
@@ -37,9 +38,20 @@ export type ProcessResult =
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly telegram: TelegramService
+  ) {}
 
   async processProviderEvent(event: ProviderPaymentEvent): Promise<ProcessResult> {
+    const result = await this.apply(event);
+    // after the commit: the shop learns about the money only when it is really recorded
+    if (result.result === 'applied' && result.status === PaymentStatus.PAID)
+      this.telegram.notifyOrderPaid(result.paymentId);
+    return result;
+  }
+
+  private apply(event: ProviderPaymentEvent): Promise<ProcessResult> {
     return this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.findUnique({
         where: {

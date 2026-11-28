@@ -1,16 +1,16 @@
 /**
  * Product photos sent by the company: the real packages on a transparent
- * background, stored exactly as sent (public/images/products). A product
+ * background, converted to WebP without visible loss (public/images/products). A product
  * shows its photo until the admin uploads another one, which always wins.
  * Matched by slug: "navat" also covers "navat-0-5", "navat-0-6", …
  */
 const PHOTOS: Record<string, string> = {
-  navat: '/images/products/navat.png',
-  'besh-barmak': '/images/products/besh-barmak.png',
+  navat: '/images/products/navat.webp',
+  'besh-barmak': '/images/products/besh-barmak.webp',
   kymyz: '/images/products/kymyz.webp',
-  zhupka: '/images/products/zhupka.png',
-  'sary-mai': '/images/products/sary-mai.png',
-  'keremet-shypaa': '/images/products/keremet-shypaa.png',
+  zhupka: '/images/products/zhupka.webp',
+  'sary-mai': '/images/products/sary-mai.webp',
+  'keremet-shypaa': '/images/products/keremet-shypaa.webp',
   kattama: '/images/products/kattama.webp',
   kholodets: '/images/products/kholodets.webp',
   bal: '/images/products/bal.webp',

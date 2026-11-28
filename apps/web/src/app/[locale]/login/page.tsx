@@ -24,8 +24,19 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const next = safeNext(searchParams.get('next'), locale, `/${locale}/account`);
   const login = useLogin();
+  // one field for the e-mail or the phone number saved in the profile
   const schema = z.object({
-    email: z.string().trim().email(t.validation.email),
+    login: z
+      .string()
+      .trim()
+      .min(1, t.validation.required)
+      .refine(
+        (v) =>
+          v.includes('@')
+            ? z.string().email().safeParse(v).success
+            : /^\+?[\d\s()-]{9,20}$/.test(v),
+        t.validation.emailOrPhone
+      ),
     password: z.string().min(1, t.validation.required),
   });
   const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
@@ -59,18 +70,28 @@ function LoginForm() {
       <form
         className="space-y-4"
         noValidate
-        onSubmit={form.handleSubmit((values) =>
-          login.mutate(values, { onSuccess: () => router.push(next) })
+        onSubmit={form.handleSubmit(({ login: value, password }) =>
+          login.mutate(
+            value.includes('@') ? { email: value, password } : { phone: value, password },
+            { onSuccess: () => router.push(next) }
+          )
         )}
       >
-        <Field label={t.auth.email} error={errors.email?.message}>
+        <Field
+          label={t.auth.emailOrPhone}
+          error={errors.login?.message}
+          hint={t.auth.emailOrPhoneHint}
+        >
           {(id, d) => (
             <Input
               id={id}
               aria-describedby={d}
-              type="email"
-              autoComplete="email"
-              {...form.register('email')}
+              type="text"
+              inputMode="email"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              {...form.register('login')}
             />
           )}
         </Field>

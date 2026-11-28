@@ -187,3 +187,19 @@ page. Finik calls the webhook; the API checks Finik's signature and that the
 money went to `FINIK_ACCOUNT_ID`, then marks the payment paid (once, even if
 Finik resends). The checkout offers online payment only when these variables
 are set (`GET /api/payments/methods`).
+
+## Telegram notifications (optional)
+
+The shop gets a Telegram message about every new order (customer, phone with a
+WhatsApp link, address, items, total, payment), every online payment and every
+cancellation by the customer. Without a token nothing is sent and orders work as usual.
+
+| Variable             | Default                    | Description                                                                 |
+| -------------------- | -------------------------- | --------------------------------------------------------------------------- |
+| `TELEGRAM_BOT_TOKEN` | –                          | Bot token from @BotFather (secret; set only on the server, e.g. Render)     |
+| `TELEGRAM_CHAT_ID`   | –                          | Optional chat ids (comma separated); usually chats are connected in the admin panel |
+| `TELEGRAM_API_URL`   | `https://api.telegram.org` | Only for tests                                                              |
+
+Setup: @BotFather → `/newbot` → copy the token to Render (`TELEGRAM_BOT_TOKEN`) →
+open the bot and press Start (or add it to a group) → Admin → Telegram →
+«Find chats» → «Connect» → «Send a test».

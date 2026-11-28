@@ -14,6 +14,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { FinikError, FinikService } from '../payments/finik/finik.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DbClient } from '../prisma/prisma.types';
+import { TelegramService } from '../telegram/telegram.service';
 
 import { AdminOrdersQueryDto, ChangeOrderStatusDto, CreateOrderDto } from './dto/orders.dto';
 import { canTransition, CUSTOMER_CANCELLABLE } from './order-status';
@@ -68,6 +69,7 @@ export class OrdersService {
     private readonly audit: AuditService,
     private readonly cart: CartService,
     private readonly finik: FinikService,
+    private readonly telegram: TelegramService,
     config: ConfigService
   ) {
     this.webUrl = webOrigin(config);
@@ -214,6 +216,7 @@ export class OrdersService {
       },
       { timeout: 15_000 }
     );
+    this.telegram.notifyNewOrder(orderId);
 
     const view = await this.getForUser(userId, orderId);
     if (!online) return view;
@@ -366,6 +369,7 @@ export class OrdersService {
     await this.prisma.$transaction((tx) =>
       this.transition(tx, orderId, OrderStatus.CANCELLED, { userId, isAdmin: false }, comment)
     );
+    this.telegram.notifyOrderCancelled(orderId);
     return this.getForUser(userId, orderId);
   }
 

@@ -12,6 +12,7 @@ import {
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
+  ValidateIf,
 } from 'class-validator';
 
 import { LOCALES, Locale } from '../../common/utils/locale';
@@ -95,12 +96,23 @@ export class RegisterDto extends PasswordFields {
   locale?: Locale;
 }
 
+/** Sign in with the e-mail or with the phone number saved in the profile. */
 export class LoginDto {
-  @ApiProperty()
+  @ApiPropertyOptional({ description: 'E-mail (or send `phone` instead)' })
+  @ValidateIf((o: LoginDto) => !o.phone)
   @Transform(toLower)
   @IsEmail()
   @MaxLength(254)
-  email!: string;
+  email?: string;
+
+  @ApiPropertyOptional({
+    description: 'Phone number from the profile, any usual form: 0555 123 456, +996 555 123 456',
+  })
+  @ValidateIf((o: LoginDto) => !o.email)
+  @IsString()
+  @MinLength(6)
+  @MaxLength(32)
+  phone?: string;
 
   @ApiProperty()
   @IsString()

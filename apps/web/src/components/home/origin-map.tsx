@@ -14,7 +14,7 @@ import { formatMoney } from '@/lib/format';
 import { EVERYWHERE, NO_REGION, PINNED, productsOfRegion, type OriginKey } from '@/lib/origin';
 import { companyPhoto } from '@/lib/product-photos';
 
-const DISH_PHOTOS: Partial<Record<OriginKey, string>> = { bal: '/images/dishes/bal.png' };
+const DISH_PHOTOS: Partial<Record<OriginKey, string>> = { bal: '/images/dishes/bal.webp' };
 
 function useProductLinks(products: ProductCard[]) {
   const { t, locale } = useI18n();

@@ -40,7 +40,7 @@ React Hook Form + Zod, Framer Motion.
 - Fonts: Lora (headings), Inter (text) and Caveat (handwritten accent), all with
   `cyrillic-ext` for Ң, Ө, Ү.
 - Logo (`components/brand/logo.tsx`): the NUSKA logo the company sent on a transparent
-  background, the five swirls only (`public/images/logo-nuska.png`, used as sent; the word
+  background, the five swirls only (`public/images/logo-nuska.webp`, converted from the PNG that was sent; the word
   "Nuska" under them is cut off at the clean gap between them, no pixel is changed) with the
   name NUSKA_etno in Lora, in the header, the phone menu (on a green badge,
   because its white swirl needs a dark ground) and the footer. The browser tab icon
@@ -62,7 +62,7 @@ Top to bottom (`app/[locale]/page.tsx`, `components/home/hero.tsx`, `components/
   The menu shows from 1210 px; below it a drawer with the same links and the categories.
 - **Hero**: badge, «Природная сила Кыргызстана», subtitle, «Перейти в каталог» and
   «▶ Узнать больше» (the YouTube channel, or the brand section). The company's picture
-  `hero.png` is shown untouched (`unoptimized`); only its lower 62 % is in view, so the logo
+  `hero.webp` is shown untouched (`unoptimized`); only its lower 62 % is in view, so the logo
   painted in its sky stays out of the frame. On it: the company's packages on a wooden stump
   with a felt carpet (SVG), drifting clouds and a gliding eagle (`brand/nature-decor.tsx`).
 - **Benefits bar**: five company claims only (100 % natural composition as on the labels, from
@@ -70,7 +70,7 @@ Top to bottom (`app/[locale]/page.tsx`, `components/home/hero.tsx`, `components/
 - **Categories** («Сила природы в каждой детали»): one arch per real category, with the
   company's dish photos (`CATEGORY_PHOTOS`); «Мясные продукты» shows an ornament until a photo
   is sent.
-- **About the brand** («Больше, чем натуральные продукты», `#brand`): the valley `cta.png`
+- **About the brand** («Больше, чем натуральные продукты», `#brand`): the valley `cta.webp`
   with the girl `brand-girl.webp` (as sent), the text, «Узнать больше» → /about, and the four
   values confirmed by the company.
 - **Origin map + bestsellers**: an interactive SVG map of the seven oblasts
@@ -94,17 +94,17 @@ products), `/origin`, and `/contacts` rebuilt as contact cards. Colours of the m
 
 The home page follows the full-page design the company sent, top to bottom:
 header → hero → "Why choose us?" → "Our prices" (podium) → about us → "Our products" →
-promises → closing call → footer (the closing banner uses `cta.png`, a yurt in the mountains). Sections live in `components/home/hero.tsx` and
+promises → closing call → footer (the closing banner uses `cta.webp`, a yurt in the mountains). Sections live in `components/home/hero.tsx` and
 `components/home/sections.tsx`.
 
-- **Pictures** (`public/images/home`): `hero.png` and `cta.png` are the company's pictures
+- **Pictures** (`public/images/home`): `hero.webp` and `cta.webp` are the company's pictures
   used exactly as sent (shown through next/image at quality 95, never cut or enhanced). The
   podium base and a few other scenes were cut out of the old design picture and are a little
   soft; replace a file with a full-resolution picture of the same proportions to sharpen it.
 - **Header** (`components/layout/header.tsx`): unchanged — logo, menu (Home · About · Our
   prices · Contacts), KG/RU, separate "Sign in" and "Register" buttons, cart icon only when
   the cart is not empty. Transparent over the hero.
-- **Hero:** the company's picture (`hero.png`: the NUSKA logo above a yurt, horses, curd and a
+- **Hero:** the company's picture (`hero.webp`: the NUSKA logo above a yurt, horses, curd and a
   bowl of milk) starts below the header strip (the logo painted in it sits right under the menu
   line) and dissolves into the strip at the top, so there is no seam. It is served untouched
   (`unoptimized`: no AVIF/WebP re-encoding, no zoom). The slogan, the text and the "Go to the
@@ -119,7 +119,7 @@ promises → closing call → footer (the closing banner uses `cta.png`, a yurt 
   placed in design pixels turned into % (`PODIUM` in `sections.tsx`), so they scale with the
   picture; each plate opens its product. Blocks: zhupka, sary may, kymyz, keremet shypaa,
   navat. On phones the prices are listed under the picture.
-- **About us:** the company's meadow photo (`about.png`, as sent) with a play button that opens the YouTube channel from the
+- **About us:** the company's meadow photo (`about.webp`) with a play button that opens the YouTube channel from the
   contacts block, the brand story and "Our story" → `/about`.
 - **Our products:** seven cards with the company's dish photos (`public/images/dishes`, stored
   exactly as sent): sary may, zhupka, beshbarmak, kymyz, navat, honey, keremet shypaa, with the
@@ -131,7 +131,7 @@ promises → closing call → footer (the closing banner uses `cta.png`, a yurt 
 - **Testimonials** are not on the home page in this design; the admin-managed list stays at
   `/reviews` (`/admin/testimonials`), the carousel component is kept in
   `components/home/testimonials.tsx`.
-- **Company product photos** (`public/images/products/*.png`, `lib/product-photos.ts`): the
+- **Company product photos** (`public/images/products/*.webp`, `lib/product-photos.ts`): the
   package photos the company sent, on a transparent background, stored exactly as sent (no
   cropping of the product, no resizing, no recompression; only the picture with two products
   was split in two). They are shown at quality 95 on the home page and stand in for a product
