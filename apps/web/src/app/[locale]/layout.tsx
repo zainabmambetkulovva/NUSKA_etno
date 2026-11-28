@@ -83,8 +83,10 @@ export default async function LocaleLayout({
           <main id="main" className="flex-1">
             {children}
           </main>
-          <SiteChrome>
+          <SiteChrome homeOnly>
             <Footer locale={locale} t={t} />
+          </SiteChrome>
+          <SiteChrome>
             <AiWidget />
             <BackToTop />
           </SiteChrome>

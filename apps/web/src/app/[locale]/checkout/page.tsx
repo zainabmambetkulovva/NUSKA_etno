@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { OrnamentLoader } from '@/components/brand/ornament';
+import { ProductImage } from '@/components/product/product-image';
 import { Button } from '@/components/ui/button';
 import { Field, Input, Textarea } from '@/components/ui/field';
 import { ClockIcon, PinIcon, TruckIcon } from '@/components/ui/icons';
@@ -22,6 +23,36 @@ import { errorMessage } from '@/lib/api/errors';
 import { cn } from '@/lib/cn';
 import { formatMoney } from '@/lib/format';
 import { useToast } from '@/stores/toast';
+
+/** The products of the cart with their pictures, quantities and sums. */
+function CartLines({ lines }: { lines: ReturnType<typeof useCart>['lines'] }) {
+  const { t, locale } = useI18n();
+  return (
+    <ul className="space-y-3">
+      {lines.map((line) => (
+        <li key={line.productId} className="flex items-center gap-3">
+          <ProductImage
+            url={line.product.image?.url}
+            slug={line.product.slug}
+            alt={line.product.image?.alt}
+            name={line.product.name}
+            sizes="64px"
+            className="h-16 w-16 shrink-0 rounded-xl"
+          />
+          <div className="min-w-0 flex-1">
+            <p className="font-medium leading-snug">{line.product.name}</p>
+            <p className="text-sm text-ink-soft">
+              {formatMoney(line.product.price, locale, t.common.som)} × {line.quantity}
+            </p>
+          </div>
+          <span className="shrink-0 font-semibold">
+            {formatMoney(line.lineTotal, locale, t.common.som)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function CheckoutPage() {
   const { t, locale } = useI18n();
@@ -176,6 +207,17 @@ export default function CheckoutPage() {
         noValidate
       >
         <div className="space-y-8">
+          {/* phones: what is being ordered is the first thing seen (the full summary is below) */}
+          <section className="card space-y-3 p-5 lg:hidden">
+            <h2 className="font-serif text-xl">{t.checkout.summary}</h2>
+            <CartLines lines={cart.lines} />
+            <p className="flex items-baseline justify-between border-t border-cream-dark/60 pt-3">
+              <span className="text-sm text-ink-muted">{t.checkout.subtotal}</span>
+              <span className="text-lg font-semibold text-brand-dark">
+                {formatMoney(cart.subtotal, locale, t.common.som)}
+              </span>
+            </p>
+          </section>
           <section className="card space-y-4 p-6">
             <h2 className="font-serif text-xl">{t.checkout.contacts}</h2>
             <Field label={t.checkout.name} error={errors.customerName?.message}>
@@ -428,18 +470,7 @@ export default function CheckoutPage() {
 
         <aside className="card h-fit space-y-4 p-6 lg:sticky lg:top-24">
           <h2 className="font-serif text-xl">{t.checkout.summary}</h2>
-          <ul className="space-y-2 text-sm">
-            {cart.lines.map((line) => (
-              <li key={line.productId} className="flex justify-between gap-3">
-                <span>
-                  {line.product.name} × {line.quantity}
-                </span>
-                <span className="shrink-0">
-                  {formatMoney(line.lineTotal, locale, t.common.som)}
-                </span>
-              </li>
-            ))}
-          </ul>
+          <CartLines lines={cart.lines} />
           <dl className="space-y-1.5 border-t border-cream-dark/60 pt-4 text-sm">
             <div className="flex justify-between gap-3">
               <dt className="text-ink-muted">{t.checkout.subtotal}</dt>

@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { useI18n } from '@/i18n/i18n-provider';
 import { api } from '@/lib/api/client';
+import { withWakeRetry } from '@/lib/api/wake';
 import { useGuestCart } from '@/stores/guest-cart';
 
 export const meKey = ['me'] as const;
@@ -48,7 +49,7 @@ export function useLogin() {
   const afterSignIn = useAfterSignIn();
   return useMutation({
     mutationFn: (body: ({ email: string } | { phone: string }) & { password: string }) =>
-      api<{ user: User }>('/auth/login', { method: 'POST', body }),
+      withWakeRetry(() => api<{ user: User }>('/auth/login', { method: 'POST', body })),
     onSuccess: ({ user }) => afterSignIn(user),
   });
 }
@@ -65,7 +66,10 @@ export function useRegister() {
       phone?: string;
       passwordConfirm: string;
       acceptTerms: true;
-    }) => api<{ user: User }>('/auth/register', { method: 'POST', body: { ...body, locale } }),
+    }) =>
+      withWakeRetry(() =>
+        api<{ user: User }>('/auth/register', { method: 'POST', body: { ...body, locale } })
+      ),
     onSuccess: ({ user }) => afterSignIn(user),
   });
 }

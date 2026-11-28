@@ -20,7 +20,7 @@ test('guest cart → login → checkout → admin confirms → customer sees the
 
   await login(shopper, customer, '/ky/checkout');
   // The guest cart was merged into the account.
-  await expect(shopper.getByText('Каттама').first()).toBeVisible();
+  await expect(shopper.getByText('Каттама').filter({ visible: true }).first()).toBeVisible();
   await shopper.getByLabel(ky.checkout.phone).fill('0555 12 34 56');
   await shopper.getByLabel(ky.checkout.city).fill('Бишкек');
   await shopper.getByLabel(ky.checkout.address).fill('Орозбеков көч., 136');

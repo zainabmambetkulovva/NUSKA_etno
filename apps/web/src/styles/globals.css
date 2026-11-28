@@ -324,3 +324,8 @@ main:has([data-flush-footer]) + footer {
     animation: hero-glow 12s ease-in-out infinite;
   }
 }
+
+/* Pages without the footer (it is only on the home page): room for the floating buttons */
+body:not(:has(footer)) main {
+  padding-bottom: 5rem;
+}

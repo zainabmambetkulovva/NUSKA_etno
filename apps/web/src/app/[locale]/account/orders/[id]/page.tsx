@@ -223,10 +223,11 @@ export default function OrderPage() {
           <div key={item.id} className="flex flex-wrap items-center gap-4 p-4">
             <ProductImage
               url={item.image?.url}
+              slug={item.productSlug}
               alt={item.image?.alt}
               name={item.name}
-              sizes="64px"
-              className="h-16 w-16 shrink-0 rounded-lg"
+              sizes="80px"
+              className="h-20 w-20 shrink-0 rounded-xl"
             />
             <div className="min-w-0 flex-1">
               {item.productSlug ? (

@@ -6,6 +6,7 @@ import Link from 'next/link';
 
 import { OrderStatusBadge } from '@/components/account/order-status-badge';
 import { OrnamentLoader } from '@/components/brand/ornament';
+import { ProductImage } from '@/components/product/product-image';
 import { ButtonLink } from '@/components/ui/button';
 import { ChevronRightIcon } from '@/components/ui/icons';
 import { EmptyState } from '@/components/ui/misc';
@@ -44,8 +45,23 @@ export default function OrdersPage() {
               <div className="text-sm text-ink-soft">{formatDate(order.createdAt, locale)}</div>
             </div>
             <OrderStatusBadge status={order.status} method={order.deliveryMethod} />
-            <div className="flex-1 truncate text-sm text-ink-muted">
-              {order.items.map((i) => `${i.name} × ${i.quantity}`).join(', ')}
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex shrink-0 -space-x-3">
+                {order.items.slice(0, 3).map((i) => (
+                  <ProductImage
+                    key={i.id}
+                    url={i.image?.url}
+                    slug={i.productSlug}
+                    alt={i.image?.alt}
+                    name={i.name}
+                    sizes="48px"
+                    className="h-12 w-12 rounded-xl border-2 border-white"
+                  />
+                ))}
+              </div>
+              <div className="truncate text-sm text-ink-muted">
+                {order.items.map((i) => `${i.name} × ${i.quantity}`).join(', ')}
+              </div>
             </div>
             <div className="font-semibold">{formatMoney(order.total, locale, t.common.som)}</div>
             <ChevronRightIcon className="text-ink-soft" />

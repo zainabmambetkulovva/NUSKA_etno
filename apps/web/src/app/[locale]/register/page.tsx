@@ -16,6 +16,7 @@ import { Field, Input } from '@/components/ui/field';
 import { ErrorBox } from '@/components/ui/misc';
 import { PasswordInput } from '@/components/ui/password-input';
 import { useRegister } from '@/hooks/use-auth';
+import { useSlow } from '@/hooks/use-slow';
 import { useI18n } from '@/i18n/i18n-provider';
 import { ApiError } from '@/lib/api/client';
 import { errorMessage } from '@/lib/api/errors';
@@ -38,6 +39,7 @@ function RegisterForm() {
   const router = useRouter();
   const next = safeNext(useSearchParams().get('next'), locale, `/${locale}/account`);
   const register = useRegister();
+  const slow = useSlow(register.isPending);
   const schema = z
     .object({
       firstName: z.string().trim().min(1, t.validation.required).max(100),
@@ -218,6 +220,11 @@ function RegisterForm() {
         <Button type="submit" className="w-full" size="lg" loading={register.isPending}>
           {t.auth.register}
         </Button>
+        {slow && (
+          <p role="status" className="text-center text-sm text-ink-muted">
+            {t.auth.waking}
+          </p>
+        )}
       </form>
     </AuthCard>
   );
